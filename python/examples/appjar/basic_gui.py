@@ -1,9 +1,10 @@
 from appJar import gui
 
-app = gui('title of the app','300x200')
+app = gui('app title','400x300')
 def press(button):
     if button == 'click me':
-        response = app.textBox('question box title','type something')
-        app.infoBox('information box title','you typed: '+response)
+        response = app.textBox('a question box','type something')
+        app.infoBox('an info box','you typed: '+response)
 app.addButton('click me',press)
+
 app.go()
