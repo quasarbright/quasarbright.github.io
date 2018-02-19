@@ -12,3 +12,10 @@ This allows you to display any graph and then edit the locations of vertices by 
 This randomly generates two ginchulates, which are a consonant sound, a vowel, and finally, an "nch". They just sound funny
 ## [Magnetic Pendulum](https://quasarbright.github.io/p5js/magnetic%20pendulum)
 This simulates three magnets on a table with a pendulum hanging a magnetic object above the center. Depending on where you release the magnet, you could end up at any of the three magnets. Click and drag to release pendulums and see where they end up. Where the pendulum ends up is extremely sensitive to the initial dropping position. Here is a picture of where a pendulum ends up based on the starting position: ![](https://quasarbright.github.io/images/magnet%20pendulum.PNG)
+## [random circles with no overlap](https://quasarbright.github.io/p5js/random%20circles%20no%20overlap)
+## [random graph](https://quasarbright.github.io/p5js/random%20%graph)
+## [random squares with no overlap](https://quasarbright.github.io/p5js/random%20squares%20no%20overlap)
+## [Minimum Spanning Tree](https://quasarbright.github.io/p5js/spanning%20tree)
+This generates a [minimum spanning tree](https://www.wikiwand.com/en/Minimum_spanning_tree) of a random collection of points. You can add points to see how the MST changes
+## [Travelling salesman problem](https://quasarbright.github.io/p5js/travelling%20salesman)
+This solves the [travelling salesman problem](https://www.wikiwand.com/en/Travelling_salesman_problem) for a random collection of points.
