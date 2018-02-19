@@ -11,4 +11,3 @@ This allows you to display any graph and then edit the locations of vertices by 
 ## [Ginchology](https://quasarbright.github.io/p5js/ginchology)
 This randomly generates two ginchulates, which are a consonant sound, a vowel, and finally, an "nch". They just sound funny
 ## [Magnetic Pendulum](https://quasarbright.github.io/p5js/magnetic%20pendulum)
-This simulates three magnets on a table with a pendulum hanging a magnetic object above the center. Depending on where you release the magnet, you could end up at any of the three magnets. Click and drag to release pendulums and see where they end up.
