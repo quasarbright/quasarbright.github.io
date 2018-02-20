@@ -2,7 +2,7 @@
 title: Where to Learn Stuff
 ---
 # SAT prep:
-* Khan academy: https://www.khanacademy.org/sat
+* [Khan academy: ](https://www.khanacademy.org/sat)
 You can connect this to your college board account. If you do this, it can see what you got wrong on your PSAT or past SATs and you can practice only what you need to with practices specifically designed for what you got wrong.
 
 # Calculus:
