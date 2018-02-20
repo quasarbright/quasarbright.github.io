@@ -6,33 +6,32 @@ title: Where to Learn Stuff
 You can connect this to your college board account. If you do this, it can see what you got wrong on your PSAT or past SATs and you can practice only what you need to with practices specifically designed for what you got wrong.
 
 # Calculus:
-* 3blue1Brown essence of calculus: https://www.youtube.com/playlist?list=PLZHQObOWTQDMsr9K-rj53DwVRMYO3t5Yr
+* [3blue1Brown essence of calculus:](https://www.youtube.com/playlist?list=PLZHQObOWTQDMsr9K-rj53DwVRMYO3t5Yr)
 What are derivatives and integrals and where are they from? Gives you a “feel” for calculus which is EXTREMELY valuable. With stuff like this, getting the right picture in your head makes everything else easy. 
-* Khan academy’s calculus playlist: https://www.youtube.com/watch?v=EKvHQc3QEow&list=PL19E79A0638C8D449 
+* [Khan academy’s calculus playlist:](https://www.youtube.com/watch?v=EKvHQc3QEow&list=PL19E79A0638C8D449) 
 		Some of the videos are old and low quality, which is annoying. 
-* Khan Academy/3blue1brown multivariable playlist: https://www.youtube.com/watch?v=TrcCbdWwCBc&list=PLSQl0a2vh4HC5feHa6Rc5c0wbRTx56nF7 
+* [Khan Academy/3blue1brown multivariable playlist:](https://www.youtube.com/watch?v=TrcCbdWwCBc&list=PLSQl0a2vh4HC5feHa6Rc5c0wbRTx56nF7) 
 By 3blue1brown but on khanacademy for some reason. Really good and in depth
-* Khan Academy differential equations: https://www.youtube.com/watch?v=-_POEWfygmU&list=PL96AE8D9C68FEB902 
+* [Khan Academy differential equations:](https://www.youtube.com/watch?v=-_POEWfygmU&list=PL96AE8D9C68FEB902) 
    This is a good place to get started on DEs, but if you really want to learn them do the next bullet when you finish this playlist:
-* MIT OpenCourseWare Differential equations: https://ocw.mit.edu/courses/mathematics/18-03sc-differential-equations-fall-2011/unit-i-first-order-differential-equations/ 
+* [MIT OpenCourseWare Differential equations:] (https://ocw.mit.edu/courses/mathematics/18-03sc-differential-equations-fall-2011/unit-i-first-order-differential-equations/) 
 * Differential equations are basically the most important things in physics, calculus-wise. Once you have a good handle on these, that’s pretty much the extent of any physics math you’ll need for college. It’s important in all sciences including economics as well. Highly recommended. Ordinary differential equations can be done right after single variable
-* MathTheBeautiful Tensors: https://www.youtube.com/watch?v=e0eJXttPRZI&list=PLlXfTHzgMRULkodlIEqfgTS-H1AY_bNtq 
+* [MathTheBeautiful Tensors:](https://www.youtube.com/watch?v=e0eJXttPRZI&list=PLlXfTHzgMRULkodlIEqfgTS-H1AY_bNtq) 
 Probably some of the coolest stuff in calculus, maybe tied with differential equations. This can be done right after after multivariable, it doesn’t necessarily have to come after differential equations. Definitely wait a while after learning multivariable so you let it sit and become a part of you. Also, have a good understanding of vectors. Tensors are pretty high up and advanced, so you have to be very comfortable with multivariable and vector calculus. If you watch the 3blue1brown/khan academy multivariable and get it, you should be fine. Tensors are necessary for general relativity, advanced theoretical physics, and coordinate independent analysis
-* http://tutorial.math.lamar.edu/ is good for finding practice problems and filling in some of the gaps left by other videos. Basically google something like “double integral” and find something from this site. It might say something about Paul’s online math notes. That’s just the name of the professor who posts notes on this university’s website I guess. After you finish a video, do some problems from here sometimes. I usually look them up before a boring class and do them during it. There are some things the playlists don’t cover that are on this site so go through it and learn what you don’t know after you finish a playlist. 
+* [http://tutorial.math.lamar.edu/](http://tutorial.math.lamar.edu/) is good for finding practice problems and filling in some of the gaps left by other videos. Basically google something like “double integral” and find something from this site. It might say something about Paul’s online math notes. That’s just the name of the professor who posts notes on this university’s website I guess. After you finish a video, do some problems from here sometimes. I usually look them up before a boring class and do them during it. There are some things the playlists don’t cover that are on this site so go through it and learn what you don’t know after you finish a playlist. 
 
 # Here’s what I find helps me: 
 * Try problems on your own before the video does them. Don’t expect yourself to actually solve it, but just think for a while when you run into a road block like not knowing how to deal with a certain kind of derivative. Interacting with the material independently and thinking of things in your own way to understand them better is really important. If you try to discover something for yourself before being taught it, you retain it better and appreciate it more. 
-Do practice problems. A good place to find them is Paul’s online math notes. Basically google something like “double integral” and find something from this site: http://tutorial.math.lamar.edu/ Weirdly, some important topics are missed in the playlists so just go through all of the topics on this website and learn what you don’t know.
-Go to wikipedia to find things to learn, DON’T TRY TO LEARN HOW TO DO SOMETHING FROM WIKIPEDIA. For example, look at the article for a vector: https://en.wikipedia.org/wiki/Euclidean_vector There’s so much extra, confusing, overwhelming information and formal definition. It’s good to look over once you know it, but not before or while you are still learning it. You won’t know what’s important and what’s weird formal stuff. 
+Do practice problems. A good place to find them is Paul’s online math notes. Basically google something like “double integral” and find something from this site: [http://tutorial.math.lamar.edu/](http://tutorial.math.lamar.edu/) Weirdly, some important topics are missed in the playlists so just go through all of the topics on this website and learn what you don’t know.
+Go to wikipedia to find things to learn, DON’T TRY TO LEARN HOW TO DO SOMETHING FROM WIKIPEDIA. For example, look at the article for a vector: [https://en.wikipedia.org/wiki/Euclidean_vector](https://en.wikipedia.org/wiki/Euclidean_vector) There’s so much extra, confusing, overwhelming information and formal definition. It’s good to look over once you know it, but not before or while you are still learning it. You won’t know what’s important and what’s weird formal stuff. 
 * Look at animations and pictures. These are extremely important. Some very difficult concepts like curved space are just about getting a single picture in your head correctly. 
-* Geogebra can do 3D graphing: https://www.geogebra.org/3d Type something like sin(x)+1/y. This will be useful in multivariable calculus. There’s a lot of things geogebra can do. For example, just google ”geogebra vector field plotter” and it’ll come up.
-* Desmos graphing calculator is good too: https://www.desmos.com/calculator 
+* [Geogebra](https://www.geogebra.org/3d) can do 3D graphing. Type something like sin(x)+1/y. This will be useful in multivariable calculus. There’s a lot of things geogebra can do. For example, just google ”geogebra vector field plotter” and it’ll come up.
+* [Desmos](https://www.desmos.com/calculator) graphing calculator is good too
 
 # Physics:
-* PBS SpaceTime General Relativity (conceptual) playlist: https://www.youtube.com/watch?v=YycAzdtUIko&list=PLsPUh22kYmNAmjsHke4pd8S9z6m_hVRur I think I remember the math not being too bad, but it’s mostly conceptual anyway, which is nice.
-* PBS SpaceTime Origin of Matter and Time playlist: https://www.youtube.com/playlist?list=PLsPUh22kYmNCLrXgf8e6nC_xEzxdx4nmY 
-* PBSSpaceTime channel: Relativity stuff, quantum physics, cosmology, astrophysics, etc. https://www.youtube.com/channel/UC7_gcs09iThXybpVgjHZ_7g/videos 
-Probably the best channel for theoretical physics. I recommend pretty much every single video from them
+* [PBS SpaceTime General Relativity (conceptual) playlist:](https://www.youtube.com/watch?v=YycAzdtUIko&list=PLsPUh22kYmNAmjsHke4pd8S9z6m_hVRur) I think I remember the math not being too bad, but it’s mostly conceptual anyway, which is nice.
+* [PBS SpaceTime Origin of Matter and Time playlist:](https://www.youtube.com/playlist?list=PLsPUh22kYmNCLrXgf8e6nC_xEzxdx4nmY) 
+* [PBSSpaceTime channel:](https://www.youtube.com/channel/UC7_gcs09iThXybpVgjHZ_7g/videos)  Relativity stuff, quantum physics, cosmology, astrophysics, etc. Probably the best channel for theoretical physics. I recommend pretty much every single video from them
 * Fermilab quantum physics and a bit of cosmology, string theory, and relativity: https://www.youtube.com/watch?v=oPNrcKeqbBM&list=PLSjv6Eq-pc3057ILZ16fTBQ8wmMVACOd4 I’m not sure if this playlist is complete. The fermilab channel has a lot of unimportant videos, this playlist has the informative ones. 
 * Sixtysymbols channel: https://www.youtube.com/channel/UCvBqzzvUBLCs8Y7Axb-jZew All kinds of physics. Made by the same guy as numberphile
 * VSauce channel: https://www.youtube.com/user/Vsauce/videos 
