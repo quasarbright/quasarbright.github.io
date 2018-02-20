@@ -1,48 +1,45 @@
-const squares = []
-const maxs = 100
+const circles = []
+const maxrad = 50
 
 function setup() {
     createCanvas(400, 400);
     noStroke()
     rectMode(CENTER)
-    squares.push({
+    circles.push({
         pos: createVector(random(width), random(height)),
-        s: random(maxs),
-        hu:floor(random(256))
+        r: random(maxrad)
     })
-    colorMode(HSB)
 }
 
 function draw() {
     background(51);
 
-    //add a square
+    //add a circle
     let attempts = 0
     while (attempts < 1000) {
-        const newSquare = {
+        const newCirc = {
             pos: createVector(random(width), random(height)),
-            s: random(maxs),
-            hu:floor(random(256))
+            r: random(maxrad)
         }
         failed = false
-        for (square of squares) {
-            const dx = abs(square.pos.x-newSquare.pos.x)
-            const dy = abs(square.pos.y-newSquare.pos.y)
-            if (min(dx,dy) < .5*(square.s+newSquare.s)) {
+        for (circ of circles) {
+            // const d = dist(circ.pos.x, circ.pos.y, newCirc.pos.x, newCirc.pos.y)
+            const dx = abs(circ.pos.x-newCirc.pos.x)
+            const dy = abs(circ.pos.y-newCirc.pos.y)
+            if ((dy < circ.r/2.0 + newCirc.r/2.0) && (dx < circ.r/2.0 + newCirc.r/2.0)) {//maybe there's a problem with min
                 failed = true
                 break
             }
         }
         if(!failed){
-            squares.push(newSquare)
+            circles.push(newCirc)
             break
         }
         attempts++;
     }
 
-    //draw all squares
-    for (square of squares) {
-        fill(square.hu,255,255)
-        rect(square.pos.x, square.pos.y, square.s, square.s)
+    //draw all circles
+    for (circ of circles) {
+        rect(circ.pos.x, circ.pos.y, circ.r, circ.r)
     }
 }
