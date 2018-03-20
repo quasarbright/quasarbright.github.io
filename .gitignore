@@ -2,3 +2,4 @@
 *node_modules
 *notepad
 *.ipynb_checkpoints*
+*.pyc
