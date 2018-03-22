@@ -1,0 +1,27 @@
+<script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+<div class="container">
+    <form action="{% url 'app:get_input' %}" method="post">
+      {% csrf_token %}
+      <div class="row">
+        <div class="input-field">
+          <textarea id="players" class="materialize-textarea" name="players"></textarea>
+          <label for="players">players separated by commas</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field">
+          <textarea id="friends" class="materialize-textarea" name="friends"></textarea>
+          <label for="friends">friend pairs separated by commas and newlines</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field">
+          <textarea id="enemies" class="materialize-textarea" name="enemies"></textarea>
+          <label for="enemies">enemy pairs separated by commas and newlines</label>
+        </div>
+      </div>
+      <input type="submit" class="btn" value="submit">
+    </form>
+</div>

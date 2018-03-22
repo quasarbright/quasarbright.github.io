@@ -1,6 +1,5 @@
 from my_libraries.lexicographicOrder import *
 from my_libraries.graph_theory.MyGraph import *
-from appJar import gui
 import random,math
 
 def randind(arr):
@@ -72,9 +71,3 @@ for perm in allPerms(players):
     if check(guess(perm)):
         print(perm,guess(perm))
         break
-
-
-
-# app = gui('friends and enemies','600x400')
-
-# app.go()

@@ -1,0 +1,17 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'polls/style.css' %}" />
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g=" crossorigin="anonymous"></script>
+<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css"> -->
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script> -->
+<div class="container">
+  <h1>polls</h1>
+  {% if latest_question_list %}
+  <ul>
+    {% for question in latest_question_list %}
+    <li><a href={% url 'polls:detail' question.id %}>{{ question.question_text }}</a></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>No polls are available.</p>
+  {% endif %}
+</div>
