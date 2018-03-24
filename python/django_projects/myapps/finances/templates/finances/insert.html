@@ -1,0 +1,8 @@
+{% extends 'finances/base.html' %}
+{% block content %}
+<form action="{% url 'finances:insertResult' %}" method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="submit" class="btn" value="Submit" />
+</form>
+{% endblock %}
