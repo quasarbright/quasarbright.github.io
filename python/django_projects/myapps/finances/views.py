@@ -6,7 +6,11 @@ from django.utils import timezone
 from .reference import TYPE_CHOICES
 from django.views import generic
 # Create your views here.
-class TransactionView(generic.ListView):
+class TransactionView(generic.detail.DetailView):
+    model = Transaction
+    context_object_name = 'transaction'
+    template_name = 'finances/viewTransaction.html'
+class TransactionsView(generic.ListView):
     model=Transaction
     context_object_name = 'transactions'
     template_name = 'finances/view.html'

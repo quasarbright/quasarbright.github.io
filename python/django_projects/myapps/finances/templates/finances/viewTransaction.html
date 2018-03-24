@@ -1,6 +1,6 @@
 {% extends 'finances/base.html' %}
 {% block content %}
-<title>View Transactions</title>
+<title>View a Transaction</title>
 <table class="responsive-table highlight">
   <thead>
     <tr>
@@ -11,14 +11,12 @@
     </tr>
   </thead>
   <tbody>
-    {% for transaction in transactions %}
-    <tr onclick="window.location='{% url 'finances:view_transaction' transaction.id %}';">
+    <tr>
       <td>{{ transaction.description }}</td>
       <td>{{ transaction.amount }}</td>
       <td>{{ transaction.type }}</td>
       <td>{{ transaction.date }}</td>
     </tr>
-    {% endfor %}
   </tbody>
 </table>
 {% endblock %}
