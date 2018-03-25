@@ -21,9 +21,10 @@ class TransactionsView(LoginRequiredMixin, generic.ListView):
 @login_required
 def index(request):
     return render(request, 'finances/index.html')
-@login_required
-def insert(request):
-    return render(request, 'finances/insert.html',context={'form':TransactionForm})
+class TransactionFormView(LoginRequiredMixin,generic.edit.FormView):
+    template_name='finances/insert.html'
+    context_object_name='form'
+    form_class = TransactionForm
 @login_required
 def insertResult(request):
     amount = request.POST['amount']
