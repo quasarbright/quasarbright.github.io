@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.urls import reverse
+from django.http import HttpResponse, HttpResponseRedirect
 from .forms import TransactionForm
 from .models import Transaction
 from django.utils import timezone
@@ -28,5 +29,6 @@ def insertResult(request):
             break
     description = request.POST['description']
     context = {'amount':amount,'type':context_type,'description':description}
-    Transaction.objects.create(date=timezone.now(),amount=amount,type=type,description=description)
-    return render(request,'finances/insertResult.html',context=context)
+    transaction = Transaction.objects.create(date=timezone.now(),amount=amount,type=type,description=description)
+    pk = transaction.id
+    return HttpResponseRedirect(reverse('finances:view_transaction',args=[pk]))
