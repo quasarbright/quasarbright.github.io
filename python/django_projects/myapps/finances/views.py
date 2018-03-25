@@ -16,7 +16,7 @@ class TransactionsView(generic.ListView):
     context_object_name = 'transactions'
     template_name = 'finances/view.html'
 def index(request):
-    return HttpResponse('this is the finances app')
+    return render(request, 'finances/index.html')
 def insert(request):
     return render(request, 'finances/insert.html',context={'form':TransactionForm})
 def insertResult(request):
