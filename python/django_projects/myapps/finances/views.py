@@ -6,19 +6,25 @@ from .models import Transaction
 from django.utils import timezone
 from .reference import TYPE_CHOICES
 from django.views import generic
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 # Create your views here.
-class TransactionView(generic.detail.DetailView):
+class TransactionView(LoginRequiredMixin, generic.detail.DetailView):
     model = Transaction
     context_object_name = 'transaction'
     template_name = 'finances/viewTransaction.html'
-class TransactionsView(generic.ListView):
+class TransactionsView(LoginRequiredMixin, generic.ListView):
     model=Transaction
     context_object_name = 'transactions'
     template_name = 'finances/view.html'
+@login_required
 def index(request):
     return render(request, 'finances/index.html')
+@login_required
 def insert(request):
     return render(request, 'finances/insert.html',context={'form':TransactionForm})
+@login_required
 def insertResult(request):
     amount = request.POST['amount']
     type = request.POST['type']

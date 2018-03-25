@@ -1,10 +1,6 @@
-<script src="https://code.jquery.com/jquery-3.3.1.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
-<script type="text/javascript">
-  $('document').ready(() => $('select').material_select())
-</script>
+{% extends 'base.html' %}
 
+{% block base_content %}
 <body>
     <nav>
       <div class="nav-wrapper teal">
@@ -19,3 +15,4 @@
       {% block content %} {% endblock %}
     </div>
 </body>
+{% endblock %}
