@@ -1,6 +1,10 @@
-{% extemds 'finaces/templates/finances/base.html'}
-{% block content %}
-<p>Logged out!</p>
+{% extends 'base.html' %} {% block base_content %}
 
-<a href="{% url 'login'%}">Click here to login again.</a>
+<body class="align-center valign-wrapper">
+    <div class="center card-panel hoverable">
+        <p>Logged out!</p>
+
+        <a href="{% url 'login'%}">Click here to login again.</a>
+    </div>
+</body>
 {% endblock %}
