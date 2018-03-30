@@ -14,6 +14,7 @@ class Transaction(models.Model):
         default='CA'
     )
     description = models.CharField(max_length=255)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     def __str__(self):
         return '\"{0}\" for ${1} by {2}'.format(self.description, self.amount, self.user)
 # class BalanceEntry(models.Model):
