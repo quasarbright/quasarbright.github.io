@@ -3,3 +3,4 @@
 *notepad
 *.ipynb_checkpoints*
 *.pyc
+events.out.tfevents*
