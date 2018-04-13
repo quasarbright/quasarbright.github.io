@@ -5,6 +5,7 @@ import unittest
 POS_STR_REGEXP = r'[a-hA-H][1-8]'
 
 
+# board
 class Board(object):
     def __init__(self):
         self.arr = []
@@ -27,7 +28,7 @@ class Board(object):
             self.quick_set_piece(letter+'8', piece_type, 'black')
         # TODO put pieces in arr
 
-    def encode_pos(pos_tup):
+    def encode_pos(pos_tup) -> 'string like "a1"'':
         '''(2,1) => "b3"'''
         row, col = pos_tup
         if row < 0 or row > 7:
@@ -37,7 +38,7 @@ class Board(object):
         letters = 'abcdefgh'
         return letters[col] + str(row + 1)
 
-    def decode_pos(pos_str):
+    def decode_pos(pos_str) -> '[row, col]':
         '''expects pos_str to be in format "a1"
         returns a (row,col) tuple for use in the board.arr index
         ex: "b3" => (2,1)'''
@@ -50,7 +51,7 @@ class Board(object):
         row = int(pos_str[1]) - 1
         return (row, col)
 
-    def get_piece(self, pos_str):
+    def get_piece(self, pos_str) -> 'the piece at pos_str':
         row, col = Board.decode_pos(pos_str)
         return self.arr[row][col]
 
@@ -61,7 +62,7 @@ class Board(object):
     def quick_set_piece(self, pos_str, piece_type, color):
         self.set_piece(pos_str, piece_type(pos_str, color, self))
 
-    def in_game_move_piece(self, pos_str, dest_str):
+    def in_game_move_piece(self, pos_str, dest_str) -> 'whether the move happened':
         '''Like move_piece, but cares about colors and check
         To be used in actual game. For testing use move_piece (unless you're testing this)'''
         # make sure the move is actually legal
@@ -87,7 +88,7 @@ class Board(object):
         self.move_piece(pos_str, dest_str)
         return True
 
-    def move_piece(self, pos_str, dest_str):
+    def move_piece(self, pos_str, dest_str) -> 'whether the move happened':
         '''expects pos_str and dest_str to be in format "a1"'''
         pos_piece = self.get_piece(pos_str)
         dest_piece = self.get_piece(dest_str)
@@ -121,7 +122,7 @@ class Board(object):
             b = Board.decode_pos(b)
         return [a[0] - b[0], a[1] - b[1]]
 
-    def get_possible_moves(self,pos_str):
+    def get_possible_moves(self,pos_str) -> 'list of possible pos_strs for given piece':
         pos_piece = self.get_piece(pos_str)
         if pos_piece is None:
             return []
@@ -134,7 +135,7 @@ class Board(object):
                     legal_pos_strs.append(check_pos_str)
         return legal_pos_strs
 
-    def check_check(self): # haha
+    def check_check(self) -> 'list of colors that are in check': # haha
         colors_in_check = []
         for r in range(8):
             for c in range(8):
@@ -147,6 +148,9 @@ class Board(object):
                         if isinstance(possible_move_piece, King):
                             colors_in_check.append(possible_move_piece.color)
         return colors_in_check
+
+    def is_game_over(self) -> 'False or the color that won':
+        pass
 
     def __str__(self):
         ans = '  A B C D E F G H\n'
@@ -168,6 +172,7 @@ class Board(object):
         return ans
 
 
+# pieces
 class Piece(object):
     '''super piece object'''
 
