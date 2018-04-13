@@ -8,6 +8,7 @@ POS_STR_REGEXP = r'[a-hA-H][1-8]'
 class Board(object):
     def __init__(self):
         self.arr = []
+        self.turn = 'white'
         for i in range(8):
             row = []
             for j in range(8):
@@ -60,11 +61,39 @@ class Board(object):
     def quick_set_piece(self, pos_str, piece_type, color):
         self.set_piece(pos_str, piece_type(pos_str, color, self))
 
+    def in_game_move_piece(self, pos_str, dest_str):
+        '''Like move_piece, but cares about colors and check
+        To be used in actual game. For testing use move_piece (unless you're testing this)'''
+        # make sure the move is actually legal
+        board_copy = deepcopy(self)
+        if not board_copy.move_piece(pos_str, dest_str):
+            return False
+
+        # make sure the player isn't trying to move the other player's piece
+        pos_piece = self.get_piece(pos_str)
+        if pos_piece.color != self.turn:
+            return False
+
+        # make sure that the king isn't open after that move
+        # note that board_copy now has the piece moved if the execution gets here
+        if board_copy.check_check() == self.turn:
+            # the player moved in a way that left his king open
+            return False
+
+        if self.turn == 'white':
+            self.turn = 'black'
+        elif self.turn == 'black':
+            self.turn = 'white'
+        self.move_piece(pos_str, dest_str)
+        return True
+
     def move_piece(self, pos_str, dest_str):
         '''expects pos_str and dest_str to be in format "a1"'''
         pos_piece = self.get_piece(pos_str)
         dest_piece = self.get_piece(dest_str)
-        assert pos_piece is not None  # make sure there is a piece there
+        if pos_piece is None:
+            # make sure there is a piece there
+            return False
         if pos_piece.move_to(dest_str):  # if the piece can move there
             if self.get_piece(dest_str) is not None:
                 del pos_piece  # capture piece
@@ -92,6 +121,33 @@ class Board(object):
             b = Board.decode_pos(b)
         return [a[0] - b[0], a[1] - b[1]]
 
+    def get_possible_moves(self,pos_str):
+        pos_piece = self.get_piece(pos_str)
+        if pos_piece is None:
+            return []
+        legal_pos_strs = []
+        for r in range(8):
+            for c in range(8):
+                check_pos_tup = (r, c)
+                check_pos_str = Board.encode_pos(check_pos_tup)
+                if pos_piece.is_move_legal(check_pos_str):
+                    legal_pos_strs.append(check_pos_str)
+        return legal_pos_strs
+
+    def check_check(self): # haha
+        colors_in_check = []
+        for r in range(8):
+            for c in range(8):
+                pos_tup = (r, c)
+                pos_str = Board.encode_pos(pos_tup)
+                possible_move_strs = self.get_possible_moves(pos_str)
+                for possible_move_str in possible_move_strs:
+                    possible_move_piece = self.get_piece(possible_move_str)
+                    if possible_move_piece is not None:
+                        if isinstance(possible_move_piece, King):
+                            colors_in_check.append(possible_move_piece.color)
+        return colors_in_check
+
     def __str__(self):
         ans = '  A B C D E F G H\n'
         for i in range(len(self.arr)):
@@ -104,6 +160,11 @@ class Board(object):
                     ans += str(piece)
                 ans += '|'
             ans += '\n'
+        return ans
+
+    def __deepcopy__(self):
+        ans = Board()
+        ans.arr = self.arr[:]
         return ans
 
 
@@ -381,7 +442,7 @@ class King(Piece):
                 if x or y:
                     base_vec_tups.add((x, y))
                     base_vec_tups.add((y, x))
-        print(base_vec_tups) # debug print
+        # print(base_vec_tups) # debug print
         for base_vec_tup in base_vec_tups:
             attempt_pos_tup = Board.vec_sum(base_vec_tup, self.pos_str)
             attempt_pos_str = Board.encode_pos(attempt_pos_tup)
@@ -576,8 +637,100 @@ class TestPawnHasMoved(unittest.TestCase):
         self.assertTrue(self.board.get_piece('e4').has_moved)
 
 
+class TestCheck(unittest.TestCase):
+    def setUp(self):
+        self.board = Board()
+
+        # clear board
+        for i in range(8):
+            for j in range(8):
+                self.board.arr[i][j] = None
+
+        # put king
+        self.board.quick_set_piece('e8', King, 'black')
+
+    def tearDown(self):
+        del self.board
+
+    def test_pawn_check(self):
+        '''tests if a pawn can put a king in check'''
+        self.board.quick_set_piece('f6', Pawn, 'white')
+        self.assertEqual(self.board.check_check(), [])
+        self.board.move_piece('f6','f7')
+        self.assertEqual(self.board.check_check(), ['black'])
+
+    def test_rook_check(self):
+        '''tests if a rook can put a king in check'''
+        self.board.quick_set_piece('e1', Rook, 'white')
+        self.assertEqual(self.board.check_check(), ['black'])
+        self.board.move_piece('e1','d1')
+        self.assertEqual(self.board.check_check(), [])
+
+    def test_bishop_check(self):
+        '''tests if a bishop can put a king in check'''
+        self.board.quick_set_piece('b5', Bishop, 'white')
+        self.assertEqual(self.board.check_check(), ['black'])
+        self.board.move_piece('b5','c4')
+        self.assertEqual(self.board.check_check(), [])
+
+    def test_queen_check(self):
+        '''tests if a queen can put a king in check'''
+        self.board.quick_set_piece('b5', Queen, 'white')
+        self.assertEqual(self.board.check_check(), ['black'])
+        self.board.move_piece('b5','c4')
+        self.assertEqual(self.board.check_check(), [])
+        self.board.move_piece('c4','c8')
+        self.assertEqual(self.board.check_check(), ['black'])
+
+    def test_king_check(self):
+        self.board.quick_set_piece('d7', King, 'white')
+        self.assertEqual(self.board.check_check(), ['black', 'white'])
+        self.board.move_piece('d7','d6')
+        self.assertEqual(self.board.check_check(), [])
+
+class TestLandOnTeammates(unittest.TestCase):
+    def setUp(self):
+        self.board = Board()
+
+        # clear board
+        for i in range(8):
+            for j in range(8):
+                self.board.arr[i][j] = None
+
+        # put pawn
+        self.board.quick_set_piece('e7', Pawn, 'black')
+
+    def tearDown(self):
+        del self.board
+
+    def test_pawn_teammate(self):
+        '''test if a pawn can land on a teammate'''
+        self.board.quick_set_piece('e8', Pawn, 'black')
+        self.assertFalse(self.board.move_piece('e8', 'e7'))
+
+    def test_rook_teammate(self):
+        '''test if a rook can land on a teammate'''
+        self.board.quick_set_piece('e8', Rook, 'black')
+        self.assertFalse(self.board.move_piece('e8', 'e7'))
+
+    def test_bishop_teammate(self):
+        '''test if a bishop can land on a teammate'''
+        self.board.quick_set_piece('d8', Bishop, 'black')
+        self.assertFalse(self.board.move_piece('d8', 'e7'))
+
+    def test_queen_teammate(self):
+        '''test if a queen can land on a teammate'''
+        self.board.quick_set_piece('d8', Queen, 'black')
+        self.assertFalse(self.board.move_piece('d8', 'e7'))
+
+    def test_king_teammate(self):
+        '''test if a king can land on a teammate'''
+        self.board.quick_set_piece('d8', King, 'black')
+        self.assertFalse(self.board.move_piece('d8', 'e7'))
+
+
 if __name__ == '__main__':
-    switch = True
+    switch = False
     if switch:
         board = Board()
         # board.quick_set_piece('a7', King, 'black')
@@ -598,6 +751,7 @@ if __name__ == '__main__':
                     continue
                 else:
                     print('invalid input. type something like "a1 to a2" or "exit"')
+                    continue
             pos_str, dest_str = re.findall(POS_STR_REGEXP,response)
             board.move_piece(pos_str, dest_str)
     else:
@@ -613,17 +767,24 @@ things to check on is_move_legal:
     * is it a legal move for that piece type
     * is it in the right direction for that color (if applicable)
     * for rooks, bishops, and queens, is there a piece in the way if you're trying to go past it
-pawn tests:
-    * move forward once
-    * move forward twice
-    * move forward twice after first move
-    * can only capture
+--pawn tests:
+    --* move forward once
+    --* move forward twice
+    --* move forward twice after first move
+    --* can only capture
 general tests:
-    * can't hop over pieces if you shouldn't
-    * can't land on teammates
+    --* can't hop over pieces if you shouldn't
+    --* can't land on teammates
     * can't put king in vulnerability
-subclassing Piece:
+    * win conditions
+--subclassing Piece:
     is_move_legal returns true false (and calls super)
     testing classes
     __str__
+to do:
+    * check and chack mate stuff
+    * handle assertion error when they put in a bad position
+    * win condition
+    * GUI
+    --* test colors_in_check
 '''
