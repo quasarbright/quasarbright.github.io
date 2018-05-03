@@ -1,5 +1,6 @@
 import re
 import unittest
+import pdb
 
 
 POS_STR_REGEXP = r'[a-hA-H][1-8]'
@@ -28,7 +29,7 @@ class Board(object):
             self.quick_set_piece(letter+'8', piece_type, 'black')
         # TODO put pieces in arr
 
-    def encode_pos(pos_tup) -> 'string like "a1"'':
+    def encode_pos(pos_tup):
         '''(2,1) => "b3"'''
         row, col = pos_tup
         if row < 0 or row > 7:
@@ -38,7 +39,7 @@ class Board(object):
         letters = 'abcdefgh'
         return letters[col] + str(row + 1)
 
-    def decode_pos(pos_str) -> '[row, col]':
+    def decode_pos(pos_str):
         '''expects pos_str to be in format "a1"
         returns a (row,col) tuple for use in the board.arr index
         ex: "b3" => (2,1)'''
@@ -51,7 +52,7 @@ class Board(object):
         row = int(pos_str[1]) - 1
         return (row, col)
 
-    def get_piece(self, pos_str) -> 'the piece at pos_str':
+    def get_piece(self, pos_str):
         row, col = Board.decode_pos(pos_str)
         return self.arr[row][col]
 
@@ -62,33 +63,53 @@ class Board(object):
     def quick_set_piece(self, pos_str, piece_type, color):
         self.set_piece(pos_str, piece_type(pos_str, color, self))
 
-    def in_game_move_piece(self, pos_str, dest_str) -> 'whether the move happened':
+    def in_game_is_legal(self, pos_str, dest_str, ignore_turn=False):
+        '''checks if a given move is legal. Accounts for color and check'''
+        if not ignore_turn:
+            pos_piece = self.get_piece(pos_str)
+            if pos_piece.color != self.turn:
+                return False
+        board_copy = self.deep_copy()
+        if not board_copy.move_piece(pos_str, dest_str):
+            # if the move is very illegal
+            return False
+        board_copy = self.deep_copy()
+        board_copy.move_piece(pos_str, dest_str) # probably unnecessary
+        if pos_piece.color in board_copy.check_check():
+            #if they left their king in check
+            return False
+
+    def in_game_move_piece(self, pos_str, dest_str, simulate=False, ignore_turn=False):
         '''Like move_piece, but cares about colors and check
         To be used in actual game. For testing use move_piece (unless you're testing this)'''
         # make sure the move is actually legal
-        board_copy = deepcopy(self)
+        board_copy = self.deep_copy()
         if not board_copy.move_piece(pos_str, dest_str):
+            # if the move is very illegal
             return False
 
         # make sure the player isn't trying to move the other player's piece
-        pos_piece = self.get_piece(pos_str)
-        if pos_piece.color != self.turn:
-            return False
+        if not ignore_turn:
+            pos_piece = self.get_piece(pos_str)
+            # pdb.set_trace()
+            if pos_piece.color != self.turn:
+                return False
 
-        # make sure that the king isn't open after that move
-        # note that board_copy now has the piece moved if the execution gets here
-        if board_copy.check_check() == self.turn:
-            # the player moved in a way that left his king open
-            return False
+            # make sure that the king isn't open after that move
+            # note that board_copy now has the piece moved if the execution gets here
 
-        if self.turn == 'white':
-            self.turn = 'black'
-        elif self.turn == 'black':
-            self.turn = 'white'
-        self.move_piece(pos_str, dest_str)
+            if self.turn in board_copy.check_check():
+                # the player moved in a way that left his king open
+                return False
+        if not simulate:
+            if self.turn == 'white':
+                self.turn = 'black'
+            elif self.turn == 'black':
+                self.turn = 'white'
+            self.move_piece(pos_str, dest_str)
         return True
 
-    def move_piece(self, pos_str, dest_str) -> 'whether the move happened':
+    def move_piece(self, pos_str, dest_str):
         '''expects pos_str and dest_str to be in format "a1"'''
         pos_piece = self.get_piece(pos_str)
         dest_piece = self.get_piece(dest_str)
@@ -122,20 +143,33 @@ class Board(object):
             b = Board.decode_pos(b)
         return [a[0] - b[0], a[1] - b[1]]
 
-    def get_possible_moves(self,pos_str) -> 'list of possible pos_strs for given piece':
+    def get_in_game_possible_moves(self, pos_str):
+        legal_pos_strs = []
+        for r in range(8):
+            for c in range(8):
+                # check possible positions to move to
+                check_pos_tup = (r, c)
+                check_pos_str = Board.encode_pos(check_pos_tup)
+                if self.in_game_move_piece(pos_str, check_pos_str, simulate=True):
+                    legal_pos_strs.append(check_pos_str)
+        return legal_pos_strs
+    def get_possible_moves(self,pos_str):
+        '''returns legal pos_strs that piece at pos_str can move to'''
         pos_piece = self.get_piece(pos_str)
         if pos_piece is None:
             return []
         legal_pos_strs = []
         for r in range(8):
             for c in range(8):
+                # check possible positions to move to
                 check_pos_tup = (r, c)
                 check_pos_str = Board.encode_pos(check_pos_tup)
                 if pos_piece.is_move_legal(check_pos_str):
                     legal_pos_strs.append(check_pos_str)
         return legal_pos_strs
 
-    def check_check(self) -> 'list of colors that are in check': # haha
+    def check_check(self): # haha
+        '''returns a list of colors in check (ignores turn)'''
         colors_in_check = []
         for r in range(8):
             for c in range(8):
@@ -149,8 +183,53 @@ class Board(object):
                             colors_in_check.append(possible_move_piece.color)
         return colors_in_check
 
-    def is_game_over(self) -> 'False or the color that won':
-        pass
+    def will_be_in_check_after_move(self, pos_str, dest_str, color):
+        board_copy = self.deep_copy()
+        pos_piece = self.get_piece(pos_str)
+        assert pos_piece.color == color
+        board_copy.move_piece(pos_str, dest_str)
+        return color in board_copy.check_check()
+
+    def maybe_get_winner(self):
+        '''Checks if the game is over and if it is,
+        it returns the color that wins. Otherwise, return False
+        '''
+        board_copy = self.deep_copy()
+        colors_in_check = board_copy.check_check()
+        for color_in_check in colors_in_check:
+            # gather pieces from the color that's in check
+            # in order to see if they can get out of check
+            pos_tups_of_checked_color = []
+            for r in range(8):
+                for c in range(8):
+                    pos_tup = [r, c]
+                    pos_str = Board.encode_pos(pos_tup)
+                    pos_piece = board_copy.get_piece(pos_str)
+                    if pos_piece is not None:
+                        if pos_piece.color == color_in_check:
+                            pos_tups_of_checked_color.append(pos_tup)
+
+            for pos_tup in pos_tups_of_checked_color:
+                # iterate through the pieces of that color
+                # and check if there is a move that can be made
+                pos_str = Board.encode_pos(pos_tup)
+                for dest_str in board_copy.get_possible_moves(pos_str):
+                    board_copy.turn = color_in_check
+                    if board_copy.in_game_move_piece(pos_str, dest_str, ignore_turn=False, simulate=True):
+                        # if you can get out of check
+                        # pdb.set_trace()
+                        if not self.will_be_in_check_after_move(pos_str, dest_str, color_in_check):
+                            # make sure it won't be in check
+                            # print('it can get out of check', board_copy, pos_str, dest_str, board_copy.in_game_move_piece(pos_str, dest_str, simulate=True, ignore_turn=True)) # debug print
+                            return False
+            # only get here if nothing can move
+            # print('nothing can move') # debug print
+            if color_in_check == 'white':
+                return 'black'
+            elif color_in_check == 'black':
+                return 'white'
+        # print('it got to the end',board_copy) # debug print
+        return False
 
     def __str__(self):
         ans = '  A B C D E F G H\n'
@@ -166,9 +245,22 @@ class Board(object):
             ans += '\n'
         return ans
 
-    def __deepcopy__(self):
+    def deep_copy(self):
         ans = Board()
-        ans.arr = self.arr[:]
+        ans.arr = []
+        for row in self.arr:
+            newrow = []
+            for e in row:
+                if e is not None:
+                    newrow.append(e.deep_copy())
+                else:
+                    newrow.append(None)
+            ans.arr.append(newrow)
+        for row in ans.arr:
+            for piece in row:
+                if piece is not None:
+                    piece.board = ans
+        ans.turn = self.turn[:]
         return ans
 
 
@@ -226,7 +318,6 @@ class Pawn(Piece):
 
     def move_to(self, dest_str):
         if super().move_to(dest_str):
-            # print('super move to worked', vars(self))  # debug print
             self.has_moved = True
             return True
 
@@ -234,9 +325,7 @@ class Pawn(Piece):
         if not super().is_move_legal(dest_str):
             return False
         # else:
-            # print('passed the super test!')  # debug print
         # remember vector [1,0] is like going from a1 to a2 so it's down (white starts on top)
-        # print('testing if', self.pos_str, 'can go to', dest_str)  # debug print
 
         # initialize stuff
         base_vec_tup = None
@@ -248,12 +337,8 @@ class Pawn(Piece):
 
         # move forward one?
         forward_one_pos_tup = Board.vec_sum(self.pos_str, base_vec_tup)
-        # print('position of one forward', Board.encode_pos(
-        # forward_one_pos_tup))  # debug print
         if dest_str == Board.encode_pos(forward_one_pos_tup):
-            # print('you tried to move forward')  # debug print
             if dest_piece == None:
-                # print('you can move forward')  # debug print
                 return True
             else:
                 return False
@@ -261,8 +346,6 @@ class Pawn(Piece):
         # move forward two?
         double_base_vec_tup = Board.vec_sum(base_vec_tup, base_vec_tup)
         forward_two_pos_tup = Board.vec_sum(self.pos_str, double_base_vec_tup)
-        # print('position of two forward', Board.encode_pos(
-        #     forward_two_pos_tup))  # debug print
         if dest_str == Board.encode_pos(forward_two_pos_tup):
             if self.has_moved:
                 return False  # can't move forward twice if you've already moved
@@ -271,9 +354,7 @@ class Pawn(Piece):
             in_between_piece = self.board.get_piece(in_between_pos_str)
             if in_between_piece != None:
                 return False  # can't jump over a piece
-            # print('you tried to move forward two')  # debug print
             if dest_piece == None:
-                # print('you can move forward two') # debug print
                 return True
             else:
                 return False
@@ -306,6 +387,11 @@ class Pawn(Piece):
             return 'P'
         elif self.color == 'black':
             return 'p'
+
+    def deep_copy(self):
+        ans = Pawn(self.pos_str, self.color, self.board)
+        ans.has_moved = self.has_moved
+        return ans
 
 
 class Rook(Piece):
@@ -340,6 +426,9 @@ class Rook(Piece):
         elif self.color == 'black':
             return 'r'
 
+    def deep_copy(self):
+        return Rook(self.pos_str, self.color, self.board)
+
 
 class Bishop(Piece):
     def is_move_legal(self, dest_str):
@@ -372,6 +461,9 @@ class Bishop(Piece):
             return 'B'
         elif self.color == 'black':
             return 'b'
+
+    def deep_copy(self):
+        return Bishop(self.pos_str, self.color, self.board)
 
 
 class Queen(Piece):
@@ -410,6 +502,9 @@ class Queen(Piece):
         elif self.color == 'black':
             return 'q'
 
+    def deep_copy(self):
+        return Queen(self.pos_str, self.color, self.board)
+
 
 class Knight(Piece):
     def is_move_legal(self, dest_str):
@@ -436,6 +531,9 @@ class Knight(Piece):
         elif self.color == 'black':
             return 'h'
 
+    def deep_copy(self):
+        return Knight(self.pos_str, self.color, self.board)
+
 
 class King(Piece):
     def is_move_legal(self, dest_str):
@@ -447,7 +545,6 @@ class King(Piece):
                 if x or y:
                     base_vec_tups.add((x, y))
                     base_vec_tups.add((y, x))
-        # print(base_vec_tups) # debug print
         for base_vec_tup in base_vec_tups:
             attempt_pos_tup = Board.vec_sum(base_vec_tup, self.pos_str)
             attempt_pos_str = Board.encode_pos(attempt_pos_tup)
@@ -463,6 +560,9 @@ class King(Piece):
             return 'D'# d for duque
         elif self.color == 'black':
             return 'd'
+
+    def deep_copy(self):
+        return King(self.pos_str, self.color, self.board)
 
 
 # testing
@@ -487,6 +587,36 @@ class TestEncodeDecode(unittest.TestCase):
         self.assertFalse(Board.decode_pos('a9'))
         self.assertFalse(Board.decode_pos('j9'))
         self.assertFalse(Board.decode_pos('hey'))
+
+
+class TestPossibleMoves(unittest.TestCase):
+    def setUp(self):
+        self.board = Board()
+        for i in range(8):
+            for j in range(8):
+                self.board.arr[i][j] = None
+
+    def tearDown(self):
+        del self.board
+
+    def testSpecialCheckTemp(self):
+        '''
+          A B C D E F G H
+        1|_|_|_|_|_|_|_|_|
+        2|_|_|_|_|_|_|_|_|
+        3|_|_|_|_|_|_|_|_|
+        4|_|_|_|_|_|_|_|_|
+        5|_|_|_|_|Q|_|_|_|
+        6|_|_|_|_|_|_|_|_|
+        7|_|_|_|q|_|_|_|_|
+        8|_|_|_|_|d|_|_|_|
+        e8 should be in possible moves but it's not
+        '''
+        self.board.quick_set_piece('e8', King, 'black')
+        self.board.quick_set_piece('d7', Queen, 'black')
+        self.board.quick_set_piece('e5', Queen, 'white')
+        self.assertEqual(self.board.check_check(),['black'])
+        self.assertTrue('e8' in self.board.get_possible_moves('e5'))
 
 
 class TestVecSumDif(unittest.TestCase):
@@ -686,12 +816,39 @@ class TestCheck(unittest.TestCase):
         self.assertEqual(self.board.check_check(), [])
         self.board.move_piece('c4','c8')
         self.assertEqual(self.board.check_check(), ['black'])
+        self.board.move_piece('c8','d8')
+        self.assertEqual(self.board.check_check(), ['black'])
+
+    def can_move_out_of_check(self):
+        '''tests if a king can move itself out of check'''
+        self.board.quick_set_piece('a8', Rook, 'white')
+        self.assertEqual(self.board.check_check(), ['black'])
+        self.board.move_piece('e8', 'e7')
+        self.assertFalse(self.board.check_check())
 
     def test_king_check(self):
         self.board.quick_set_piece('d7', King, 'white')
         self.assertEqual(self.board.check_check(), ['black', 'white'])
         self.board.move_piece('d7','d6')
         self.assertEqual(self.board.check_check(), [])
+
+
+class TestInGameMovePiece(unittest.TestCase):
+    def setUp(self):
+        self.board = Board()
+        self.board.arr = [[None for x in range(8)] for y in range(8)]
+
+    def tearDown(self):
+        del self.board
+
+    def test_cant_leave_king_open(self):
+        '''make sure it is illegal to leave your king vulnerable'''
+        self.board.quick_set_piece('e8', King, 'black')
+        self.board.quick_set_piece('e7', Queen, 'black')
+        self.board.quick_set_piece('e5', Queen, 'white')
+        self.board.turn = 'black'
+        self.assertFalse(self.board.in_game_move_piece('e7','d7'))
+
 
 class TestLandOnTeammates(unittest.TestCase):
     def setUp(self):
@@ -734,8 +891,31 @@ class TestLandOnTeammates(unittest.TestCase):
         self.assertFalse(self.board.move_piece('d8', 'e7'))
 
 
+class TestWinConditions(unittest.TestCase):
+    def setUp(self):
+        self.board = Board()
+        self.board.arr = [[None for x in range(8)] for y in range(8)]
+
+    def tearDown(self):
+        del self.board
+
+    def test_valid_win(self):
+        '''test if valid win conditions return the color that won'''
+        self.board.quick_set_piece('h8',King,'black')
+        self.board.quick_set_piece('g6',Queen,'white')
+        self.board.quick_set_piece('a8',Rook,'white')
+        print(self.board)
+        self.assertEqual(self.board.maybe_get_winner(),'white')
+
+    def test_check_isnt_win(self):
+        '''tests if a check creates a win condition'''
+        self.board.quick_set_piece('h8',King,'black')
+        self.board.quick_set_piece('a8',Rook,'white')
+        self.assertFalse(self.board.maybe_get_winner())
+
+
 if __name__ == '__main__':
-    switch = False
+    switch = True
     if switch:
         board = Board()
         # board.quick_set_piece('a7', King, 'black')
@@ -748,6 +928,7 @@ if __name__ == '__main__':
         # print(pawn.has_moved)
         response = ''
         while response != 'exit':
+            print(board.turn)
             print(board)
             response = input('>>>')
             match = re.search('^{0} to {0}$'.format(POS_STR_REGEXP),response)
@@ -758,8 +939,13 @@ if __name__ == '__main__':
                     print('invalid input. type something like "a1 to a2" or "exit"')
                     continue
             pos_str, dest_str = re.findall(POS_STR_REGEXP,response)
-            board.move_piece(pos_str, dest_str)
+            if not board.in_game_move_piece(pos_str, dest_str):
+                print('illegal move')
+            if board.maybe_get_winner():
+                print('GAME OVER. {0} wins!'.format(board.maybe_get_winner()))
+                break
     else:
+        print(Pawn('a1','white','h').deep_copy(), 'l')
         unittest.main()
 
 
@@ -793,3 +979,4 @@ to do:
     * GUI
     --* test colors_in_check
 '''
+##### left off debugging maybe_get_winner and thinking about making a check situation test for in_game_move_piece 4-12-18
