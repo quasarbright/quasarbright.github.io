@@ -176,5 +176,3 @@ print('\n'.join(sarr))
 # print(re.search(r'(\t+)├─ (.|[\n\t])+\1└─ ', s).group())
 
 print(lineTree(tree))#, ['documents', 'school']))
-
-#####################################
