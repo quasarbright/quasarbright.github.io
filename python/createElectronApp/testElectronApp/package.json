@@ -1,0 +1,15 @@
+{
+    "author": "mdelmonaco",
+    "dependencies": {
+        "electron": "^2.0.0"
+    },
+    "description": "da",
+    "license": "MIT",
+    "main": "index.js",
+    "name": "testElectronApp",
+    "scripts": {
+        "start": "electron .",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "version": "1.0.0"
+}

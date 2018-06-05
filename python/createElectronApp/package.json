@@ -1,0 +1,15 @@
+{
+  "name": "placeholder-name",
+  "version": "1.0.0",
+  "description": "placeholder description",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "mdelmonaco",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^2.0.0"
+  }
+}
