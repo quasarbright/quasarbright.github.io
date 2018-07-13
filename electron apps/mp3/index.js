@@ -13,7 +13,7 @@ app.on('ready', () => {
     width: 800,
     height: 600
   });
-  mainWindow.loadURL(__dirname + '/index.html');
+  mainWindow.loadURL('file://' + __dirname + '/index.html');
   mainWindow.on('closed', function() {
     app.quit();
   });
