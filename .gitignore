@@ -4,3 +4,4 @@
 *.ipynb_checkpoints*
 *.pyc
 events.out.tfevents*
+*DS_Store
