@@ -8,7 +8,10 @@ import subprocess
 
 scriptDir = sys.path[0]
 cwd = os.getcwd()
-cwdSplit = cwd.split('\\')
+if sys.platform == 'win32':
+    cwdSplit = cwd.split('\\')
+else:
+    cwdSplit = cwd.split('/')
 cwdName = cwdSplit[-1]
 
 
@@ -55,4 +58,7 @@ shutil.copyfile(os.path.join(scriptDir, 'index.html'), os.path.join(cwd, 'index.
 
 
 # run npm install
-subprocess.call(['npm', 'install'], shell=True)
+if sys.platform == 'win32':
+    subprocess.call(['npm', 'install'], shell=True)
+else:
+    subprocess.call(['npm', 'install'])
