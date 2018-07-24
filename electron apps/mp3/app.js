@@ -59,7 +59,7 @@ function isBetween(x, a, b){
   return a <= x && x<= b
 }
 /*
- * songs: [{name:'',tags:[],bangericity:1}]
+ * songs: [{name:'',tags:[],bangericity:1}, ...]
  * key: {includedTags:[''],excludedTags:[''],minBangericity:1,maxBangericity:1}
  * excludes override includes, must meet tag requirements AND bangericity requirements to be in playlist
  */

@@ -1,7 +1,7 @@
 {
     "author": "mdelmonaco",
     "dependencies": {
-        "electron": "^2.0.4"
+        "electron": "^2.0.5"
     },
     "description": "mp3 player",
     "license": "MIT",
