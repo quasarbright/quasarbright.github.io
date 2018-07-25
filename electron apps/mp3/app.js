@@ -1,36 +1,47 @@
-songs = [{
-        name: 'unravel',
-        tags: ['banger', 'tokyo ghoul', 'anime', 'weeb', 'opening', 'driving', 'public', 'loud', 'string', 'rock'],
-        bangericity: 100
-    },
-    {
-        name: 'spice',
-        tags: ['banger', 'shokugeki no soma', 'anime', 'weeb', 'ending', 'driving', 'loud', 'pop'],
-        bangericity: 85
-    },
-    {
-        name: 'azalea',
-        tags: ['banger', 'citrus', 'anime', 'weeb', 'opening', 'public', 'loud', 'string', 'rock'],
-        bangericity: 95
-    },
-    {
-        name: 'black song',
-        tags: ['game', 'weeb', 'drakenier', 'drakengard 3',
-            'weeb', 'ost', 'classical'
-        ],
-        bangericity: 70
-    },
-    {
-        name: 'mysterious destiny',
-        tags: ['game', 'bayonetta', 'weeb', 'ost', 'electronic'],
-        bangericity: 80
-    },
-    {
-      name: "[A]ddiction - Giga and Reol",
-      tags: ['osu', 'banger', 'weeb', 'electronic', 'reol', 'giga', 'giga p', 'loud', 'for the uncultured'],
-      bangericity: 95
-    }
-]
+const {ipcRenderer, remote} = require('electron')
+const main = remote.require('./index.js')
+const storage = require('electron-storage')
+// songs = [{
+//         name: 'unravel',
+//         tags: ['banger', 'tokyo ghoul', 'anime', 'weeb', 'opening', 'driving', 'public', 'loud', 'string', 'rock'],
+//         bangericity: 100
+//     },
+//     {
+//         name: 'spice',
+//         tags: ['banger', 'shokugeki no soma', 'anime', 'weeb', 'ending', 'driving', 'loud', 'pop'],
+//         bangericity: 85
+//     },
+//     {
+//         name: 'azalea',
+//         tags: ['banger', 'citrus', 'anime', 'weeb', 'opening', 'public', 'loud', 'string', 'rock'],
+//         bangericity: 95
+//     },
+//     {
+//         name: 'black song',
+//         tags: ['game', 'weeb', 'drakenier', 'drakengard 3',
+//             'weeb', 'ost', 'classical'
+//         ],
+//         bangericity: 70
+//     },
+//     {
+//         name: 'mysterious destiny',
+//         tags: ['game', 'bayonetta', 'weeb', 'ost', 'electronic'],
+//         bangericity: 80
+//     },
+//     {
+//       name: "[A]ddiction - Giga and Reol",
+//       tags: ['osu', 'banger', 'weeb', 'electronic', 'reol', 'giga', 'giga p', 'loud', 'for the uncultured'],
+//       bangericity: 95
+//     }
+// ]
+// storage.set('songs.json', songs, err => console.log(err))
+let songs
+storage.get('songs.json', (err, data) => {
+  if(data){
+    songs = data
+    console.log(songs)
+  }
+})
 // TODO: make this a json and do fs.js stuff
 
 
