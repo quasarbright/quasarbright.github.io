@@ -37,20 +37,37 @@ let songs = [{
 */
 // storage.set('songs.json', songs, err => console.log(err))
 let songs
-fs.readFile(__dirname+'/songs.json', 'utf-8', function(err, data){
-  if(err) throw err
-  songs = JSON.parse(data)
-  main()
-})
-/*
-storage.get('songs.json', (err, data) => {
-  if(data){
-    songs = data
-    console.log(songs)
-    main()
+let songsPath = __dirname+'/songs.json'
+
+
+function getSongs(callback){
+  if(typeof(callback) !== 'function'){
+    throw 'getSongs(callback) requires a callback like f(songs)'
   }
-})
-*/
+  fs.readFile(songsPath, 'utf-8', function(err, data){
+    if(err) throw err
+    songs = JSON.parse(data)
+    callback(songs)
+  })
+}
+
+
+function writeSongs(songs){
+  if(songs === undefined){
+    throw 'writeSongs(songs) requires an array of song objects'
+  }
+    fs.writeFile(songsPath, JSON.stringify(songs), err => {
+      if(err) throw err
+    })
+}
+
+
+function addSong(song){
+  getSongs((songs) => {
+    songs.push(song)
+    writeSongs(songs)
+  })
+}
 
 
 Set.prototype.intersection = function(other){
@@ -108,6 +125,7 @@ function makePlaylist(songs, key) {
     if(key.maxBangericity === undefined){
       key.maxBangericity = 100
     }
+    //use sets
     let includedTags = new Set(key.includedTags)
     let excludedTags = new Set(key.excludedTags)
     for (let song of songs) {
@@ -135,7 +153,7 @@ function makePlaylist(songs, key) {
     return playlist
 }
 
-function main(){
+function main(songs){
   console.log(makePlaylist(songs, {
       includedTags: ['banger', 'osu'],
       excludedTags: ['osu'],
