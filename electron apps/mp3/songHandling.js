@@ -1,43 +1,9 @@
+const app = require('electron').remote.app
 const storage = require('electron-storage')
 const fs = require('fs')
-/*
-let songs = [{
-        name: 'unravel',
-        tags: ['banger', 'tokyo ghoul', 'anime', 'weeb', 'opening', 'driving', 'public', 'loud', 'string', 'rock'],
-        bangericity: 100
-    },
-    {
-        name: 'spice',
-        tags: ['banger', 'shokugeki no soma', 'anime', 'weeb', 'ending', 'driving', 'loud', 'pop'],
-        bangericity: 85
-    },
-    {
-        name: 'azalea',
-        tags: ['banger', 'citrus', 'anime', 'weeb', 'opening', 'public', 'loud', 'string', 'rock'],
-        bangericity: 95
-    },
-    {
-        name: 'black song',
-        tags: ['game', 'weeb', 'drakenier', 'drakengard 3',
-            'weeb', 'ost', 'classical'
-        ],
-        bangericity: 70
-    },
-    {
-        name: 'mysterious destiny',
-        tags: ['game', 'bayonetta', 'weeb', 'ost', 'electronic'],
-        bangericity: 80
-    },
-    {
-      name: "[A]ddiction - Giga and Reol",
-      tags: ['osu', 'banger', 'weeb', 'electronic', 'reol', 'giga', 'giga p', 'loud', 'for the uncultured'],
-      bangericity: 95
-    }
-]
-*/
-// storage.set('songs.json', songs, err => console.log(err))
-let songs
-let songsPath = __dirname+'/songs.json'
+let songs, playlists
+let songsPath = app.getAppPath()+'/data/songs.json'
+let playlistsPath = app.getAppPath()+'/data/playlists.json'
 
 
 function getSongs(callback){
@@ -47,7 +13,24 @@ function getSongs(callback){
   fs.readFile(songsPath, 'utf-8', function(err, data){
     if(err) throw err
     songs = JSON.parse(data)
+    if(!songs){
+      songs = []
+    }
     callback(songs)
+  })
+}
+
+function getPlaylists(callback){
+  if(typeof(callback) !== 'function'){
+    throw 'getPlaylists(callback) requires a callback like f(playlists)'
+  }
+  fs.readFile(playlistsPath, 'utf-8', function(err, data){
+    if(err) throw err
+    playlists = JSON.parse(data)
+    if(!playlists){
+      playlists = []
+    }
+    callback(playlists)
   })
 }
 
@@ -56,16 +39,46 @@ function writeSongs(songs){
   if(songs === undefined){
     throw 'writeSongs(songs) requires an array of song objects'
   }
-    fs.writeFile(songsPath, JSON.stringify(songs), err => {
-      if(err) throw err
-    })
+  fs.writeFile(songsPath, JSON.stringify(songs), err => {
+    if(err) throw err
+  })
+}
+
+function writePlaylists(playlists){
+  if(playlists === undefined){
+    throw 'writePlaylists(playlists) requires an array of playlists'
+  }
+  fs.writeFile(playlistsPath, JSON.stringify(playlists), err => {
+    if(err) throw err
+  })
 }
 
 
 function addSong(song){
   getSongs((songs) => {
+    //check song name duplicate
+    for(let s of songs){
+      if(s.name == song.name){
+        alert('cannot add due to duplicate song name')
+        return undefined
+      }
+    }
     songs.push(song)
     writeSongs(songs)
+  })
+}
+
+function addPlaylist(playlist){
+  getPlaylists(function(playlists){
+    //check for playlist name duplicate
+    for(let p of playlists){
+      if(playlist.name === p.name){
+        alert('cannot add due to duplicate playlist name')
+        return undefined
+      }
+    }
+    playlists.push(playlist)
+    writePlaylists(playlists)
   })
 }
 
@@ -106,7 +119,7 @@ function isBetween(x, a, b){
  * excludes override includes, must meet tag requirements AND bangericity requirements to be in playlist
  * includeLogic is and by default
  */
-function makePlaylist(songs, key) {
+function makePlaylistArr(songs, key) {
     let playlist = []
 
     //initialize key to defaults
@@ -153,8 +166,20 @@ function makePlaylist(songs, key) {
     return playlist
 }
 
-function main(songs){
-  console.log(makePlaylist(songs, {
+function makePlaylist(name, songs, key){
+  let playlistSongs = makePlaylistArr(songs, key)
+  //this contains song objects
+  let playlist = {name:name,songs:[], key:key}
+  for(let song of playlistSongs){
+    playlist.songs.push(song.name)
+  }
+  // return playlist
+  addPlaylist(playlist)
+}
+
+
+function test(songs){
+  console.log(makePlaylistArr(songs, {
       includedTags: ['banger', 'osu'],
       excludedTags: ['osu'],
       // minBangericity: 90,
