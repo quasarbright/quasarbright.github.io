@@ -38,9 +38,9 @@ storage.get('songs.json', (err, data) => {
   if(data){
     songs = data
     console.log(songs)
+    main()
   }
 })
-// TODO: make this a json and do fs.js stuff
 
 
 Set.prototype.intersection = function(other){
@@ -52,6 +52,7 @@ Set.prototype.intersection = function(other){
   }
   return ans
 }
+
 
 Set.prototype.equals = function(other){
   if(this.size !== other.size){
@@ -70,6 +71,8 @@ Set.prototype.equals = function(other){
 function isBetween(x, a, b){
   return a <= x && x<= b
 }
+
+
 /*
  * songs: [{name:'',tags:[],bangericity:1}, ...]
  * key: {includedTags:[''],excludedTags:[''],minBangericity:1,maxBangericity:100,includeLogic:'and',}
@@ -77,7 +80,6 @@ function isBetween(x, a, b){
  * includeLogic is and by default
  */
 function makePlaylist(songs, key) {
-  console.log(key)//debug
     let playlist = []
 
     //initialize key to defaults
@@ -100,17 +102,11 @@ function makePlaylist(songs, key) {
     let excludedTags = new Set(key.excludedTags)
     for (let song of songs) {
       let tags = new Set(song.tags)
-      // console.log(song.tags, key.includedTags, getIntersection(song.tags, key.includedTags))
-      // console.log(song.tags, key.excludedTags, getIntersection(song.tags, key.excludedTags))
-      // console.log(arrEqual(getIntersection(song.tags, key.excludedTags), []), arrEqual(getIntersection(song.tags, key.includedTags), key.includedTags), isBetween(song.bangericity, key.minBangericity, key.maxBangericity))
       if(key.includeLogic === 'and'){
         if (
             tags.intersection(excludedTags).equals(new Set([]))
             && tags.intersection(includedTags).equals(includedTags)
             && isBetween(song.bangericity, key.minBangericity, key.maxBangericity)
-            // arrEqual(getIntersection(song.tags, key.excludedTags), [])
-            // && arrEqual(getIntersection(song.tags, key.includedTags), key.includedTags)
-            // && isBetween(song.bangericity, key.minBangericity, key.maxBangericity)
           ){
             playlist.push(song)
         }
@@ -120,9 +116,6 @@ function makePlaylist(songs, key) {
             tags.intersection(excludedTags).equals(new Set([]))
             && !tags.intersection(includedTags).equals(new Set([]))
             && isBetween(song.bangericity, key.minBangericity, key.maxBangericity)
-            // arrEqual(getIntersection(song.tags, key.excludedTags), [])
-            // && !arrEqual(getIntersection(song.tags, key.includedTags), [])
-            // && isBetween(song.bangericity, key.minBangericity, key.maxBangericity)
           ){
             playlist.push(song)
         }
@@ -132,10 +125,12 @@ function makePlaylist(songs, key) {
     return playlist
 }
 
-console.log(makePlaylist(songs, {
-    includedTags: ['banger', 'osu'],
-    excludedTags: ['osu'],
-    // minBangericity: 90,
-    // maxBangericity: 100,
-    includeLogic:'or'
-}));
+function main(){
+  console.log(makePlaylist(songs, {
+      includedTags: ['banger', 'osu'],
+      excludedTags: ['osu'],
+      // minBangericity: 90,
+      // maxBangericity: 100,
+      includeLogic:'or'
+  }));
+}
