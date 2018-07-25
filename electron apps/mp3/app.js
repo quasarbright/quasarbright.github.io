@@ -1,5 +1,3 @@
-const {ipcRenderer, remote} = require('electron')
-const main = remote.require('./index.js')
 const storage = require('electron-storage')
 // songs = [{
 //         name: 'unravel',
