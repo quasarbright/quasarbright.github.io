@@ -1,5 +1,4 @@
-const {app, BrowserWindow, ipcMain} = require('electron');
-const storage = require('electron-storage')
+const {app, BrowserWindow} = require('electron');
 let mainWindow;
 app.on('ready', () => {
   mainWindow = new BrowserWindow({
