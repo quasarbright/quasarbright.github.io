@@ -1,33 +1,29 @@
 [{
-        "name": "unravel",
-        "tags": ["banger", "tokyo ghoul", "anime", "weeb", "opening", "driving", "public", "loud", "string", "rock"],
-        "bangericity": 100
-    },
-    {
-        "name": "spice",
-        "tags": ["banger", "shokugeki no soma", "anime", "weeb", "ending", "driving", "loud", "pop"],
-        "bangericity": 85
-    },
-    {
-        "name": "azalea",
-        "tags": ["banger", "citrus", "anime", "weeb", "opening", "public", "loud", "string", "rock"],
-        "bangericity": 95
-    },
-    {
-        "name": "black song",
-        "tags": ["game", "weeb", "drakenier", "drakengard 3",
-            "weeb", "ost", "classical"
-        ],
-        "bangericity": 70
-    },
-    {
-        "name": "mysterious destiny",
-        "tags": ["game", "bayonetta", "weeb", "ost", "electronic"],
-        "bangericity": 80
-    },
-    {
-      "name": "[A]ddiction - Giga and Reol",
-      "tags": ["osu", "banger", "weeb", "electronic", "reol", "giga", "giga p", "loud", "for the uncultured"],
-      "bangericity": 95
-    }
-]
+  "name": "unravel",
+  "tags": ["banger", "tokyo ghoul", "anime", "weeb", "opening", "driving", "public", "loud", "string", "rock"],
+  "bangericity": 100
+}, {
+  "name": "spice",
+  "tags": ["banger", "shokugeki no soma", "anime", "weeb", "ending", "driving", "loud", "pop"],
+  "bangericity": 85
+}, {
+  "name": "azalea",
+  "tags": ["banger", "citrus", "anime", "weeb", "opening", "public", "loud", "string", "rock"],
+  "bangericity": 95
+}, {
+  "name": "black song",
+  "tags": ["game", "weeb", "drakenier", "drakengard 3", "weeb", "ost", "classical"],
+  "bangericity": 70
+}, {
+  "name": "mysterious destiny",
+  "tags": ["game", "bayonetta", "weeb", "ost", "electronic"],
+  "bangericity": 80
+}, {
+  "name": "[A]ddiction - Giga and Reol",
+  "tags": ["osu", "banger", "weeb", "electronic", "reol", "giga", "giga p", "loud", "for the uncultured"],
+  "bangericity": 95
+}, {
+  "name": "asymmetry - reol",
+  "tags": ["osu", "banger", "weeb", "for the uncultured", "reol", "loud", "electronic"],
+  "bangericity": 90
+}]
