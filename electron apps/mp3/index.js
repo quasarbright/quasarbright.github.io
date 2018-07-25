@@ -1,12 +1,10 @@
-const {
-  app,
-  BrowserWindow
-} = require('electron');
+const {app, BrowserWindow, ipcMain} = require('electron');
+const storage = require('electron-storage')
 let mainWindow;
 app.on('ready', () => {
   mainWindow = new BrowserWindow({
     webPreferences: {
-      nodeIntegration: false,
+      nodeIntegration: true,
       preload: './preload.js'
     },
     Title: "window title",
