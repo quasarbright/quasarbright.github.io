@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>create playlist</title>
+    <link rel="stylesheet" href="../index/style.css">
+    <script src="../songHandling.js" charset="utf-8"></script>
+  </head>
+  <body>
+    <div class="container">
+      <form>
+        Name: <input type="text" id="name-input"><br>
+        Minimum Bangericity: <input type="number" min="0" max="100" id="min-bangericity-input" value="0"><br>
+        Maximum Bangericity: <input type="number" min="0" max="100" id="max-bangericity-input" value="100"><br>
+        <tr>
+          <th>Included Tags</th>
+          <th>Excluded Tags</th>
+        </tr>
+        <tr>
+          <td id="included-tags-td"></td>
+          <td id="excluded-tags-td"></td>
+        </tr><br>
+        <input type="reset" onclick="resetForm()" name="reset" value="reset">
+        <input type="submit" name="submit" value="add">
+      </form>
+    </div>
+  </body>
+</html>

@@ -20,6 +20,7 @@ function getSongs(callback){
   })
 }
 
+
 function getPlaylists(callback){
   if(typeof(callback) !== 'function'){
     throw 'getPlaylists(callback) requires a callback like f(playlists)'
@@ -31,6 +32,19 @@ function getPlaylists(callback){
       playlists = []
     }
     callback(playlists)
+  })
+}
+
+
+function getTags(callback){
+  let tags = new Set([])
+  getSongs(function(songs){
+    for(let song of songs){
+      for(let tag of song.tags){
+        tags.add(tag)
+      }
+    }
+    callback(tags)
   })
 }
 
@@ -165,6 +179,7 @@ function makePlaylistArr(songs, key) {
     }
     return playlist
 }
+
 
 function makePlaylist(name, songs, key){
   let playlistSongs = makePlaylistArr(songs, key)
