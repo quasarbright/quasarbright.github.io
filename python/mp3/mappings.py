@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Table, Column, Integer, String, ForeignKey, Float
+from sqlalchemy import create_engine, Table, Column, Integer, String, ForeignKey, Float, Boolean
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -65,6 +65,7 @@ class Playlist(Base):
     minBangericity = Column(Float, nullable=False)
     maxBangericity = Column(Float, nullable=False)
     name = Column(String, nullable=False, unique=True)
+    andLogic = Column(Boolean, default=True, nullable=False)
     def __repr__(self):
         return '<Playlist(name="{0}")>'.format(self.name)
 
