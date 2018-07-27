@@ -3,12 +3,6 @@ from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 
-engine = create_engine('sqlite:///database.db', echo=True)
-Session = sessionmaker(bind=engine)
-session = Session()
-Base = declarative_base()
-
-
 songTag_table = Table('songTag', Base.metadata,
     Column('song_id', Integer, ForeignKey('song.id')),
     Column('tag_id', Integer, ForeignKey('tag.id'))
@@ -61,4 +55,9 @@ class Playlist(Base):
         return '<Playlist(name="{0}")>'.format(self.name)
 
 
-Base.metadata.create_all(engine)
+if __name__ == __main__:
+    engine = create_engine('sqlite:///database.db', echo=True)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    Base = declarative_base()
+    Base.metadata.create_all(engine)
