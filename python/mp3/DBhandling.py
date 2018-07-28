@@ -14,7 +14,9 @@ engine = create_engine('sqlite:///database.db', echo=True)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-def getSong(name):
+def getSong(song):
+    if type(song) == Song:
+        return song
     return session.query(Song).filter_by(name=name).one()
 
 def addSong(path, name, bangericity):
@@ -39,7 +41,9 @@ def removeSong(name):
     session.commit()
 
 
-def getTag(name):
+def getTag(tag):
+    if type(tag) == Tag:
+        return tag
     return session.query(Tag).filter_by(name=name).one()
 
 def addTag(name):
@@ -47,12 +51,14 @@ def addTag(name):
     session.add(tag)
     session.commit()
 
-def removeTag(id):
-    tag = session.query(Tag).filter_by(name=name).one()
+def removeTag(tag):
+    tag = getTag(tag)
     session.delete(tag)
     session.commit()
 
-def getPlaylist(name):
+def getPlaylist(playlist):
+    if type(playlist) == Playlist:
+        return playlist
     return session.query(Tag).filter_by(name=name).one()
 
 def addPlaylist(name='', includedTags=[], excludedTags=[], minBangericity=0, maxBangericity=100, andLogic=True):
@@ -67,14 +73,15 @@ def addPlaylist(name='', includedTags=[], excludedTags=[], minBangericity=0, max
     sessin.add(playlist)
     session.commit()
 
-def removePlaylist(name):
-    playlist = session.query(Playlist).filter_by(name=name)
+def removePlaylist(playlist):
+    playlist = getPlaylist(playlist)
     session.delete(playlist)
     session.commit()
 
-def applyTag(songName, tagName):
-    song = getSong(songName)
-    song.tags.append(getTag(tagName))
+def applyTag(song, tag):
+    song = getSong(song)
+    tag = getTag(tag)
+    song.tags.append(tag)
     session.commit()
 
 def applyTags(songName, *tagNames):
@@ -86,3 +93,12 @@ def applyTags(songName, *tagNames):
             badNames.append(tagName)
     if len(badNames) > 0:
         raise ValueError('these tag names don\'t exist: {0}'.format(badNames))
+
+def getAllSongs():
+    return session.query(Song).all()
+
+def getAllTags():
+    return session.query(Tag).all()
+
+def getAllPlaylists():
+    return session.query(Playlist).all()
