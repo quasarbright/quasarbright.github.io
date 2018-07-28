@@ -1,12 +1,25 @@
 import os
 import random
+from queue import Queue
 import DBhandling as db
 from playlistLogic import buildPlaylist
 from pyglet.media import load, Player
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 song_dir = os.path.join(script_dir, 'songs')
-player = Player()
+
+class MusicPlayer(Player):
+    def __init__(self):
+        super().__init__(self)
+        self.songQueue = Queue()
+        self.songIndex = 0
+
+    def eos():
+        
+
+
+
+player = MusicPlayer()
 
 def songPath(song):
     song = db.getSong(song)
