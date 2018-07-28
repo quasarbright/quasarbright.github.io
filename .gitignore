@@ -7,3 +7,4 @@ events.out.tfevents*
 *DS_Store
 python/mp3/sqlalchemy_tutorial.py
 python/mp3/database.db
+python/mp3/songs/*
