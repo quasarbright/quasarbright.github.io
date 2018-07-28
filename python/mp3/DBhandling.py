@@ -59,18 +59,20 @@ def removeTag(tag):
 def getPlaylist(playlist):
     if type(playlist) == Playlist:
         return playlist
-    return session.query(Tag).filter_by(name=playlist).one()
+    return session.query(Playlist).filter_by(name=playlist).one()
 
-def addPlaylist(name='', includedTags=[], excludedTags=[], minBangericity=0, maxBangericity=100, andLogic=True):
+def addPlaylist(name, includedTags=[], excludedTags=[], minBangericity=0, maxBangericity=100, andLogic=True):
+    includes = [getTag(tag) for tag in includedTags]
+    excludes = [getTag(tag) for tag in excludedTags]
     playlist = Playlist(
         name=name,
-        includedTags=includedTags,
-        excludedTags=[],
+        includedTags=includes,
+        excludedTags=excludes,
         minBangericity=minBangericity,
         maxBangericity=maxBangericity,
         andLogic=andLogic
     )
-    sessin.add(playlist)
+    session.add(playlist)
     session.commit()
 
 def removePlaylist(playlist):

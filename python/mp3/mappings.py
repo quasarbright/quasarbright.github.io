@@ -3,14 +3,22 @@ from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
-
+if __name__ == '__main__':
+    engine = create_engine('sqlite:///database.db', echo=True)
+    Session = sessionmaker(bind=engine)
+    session = Session()
 
 songTag_table = Table('songTag', Base.metadata,
     Column('song_id', Integer, ForeignKey('song.id')),
     Column('tag_id', Integer, ForeignKey('tag.id'))
 )
 
-playlistTag_table = Table('playlistTag', Base.metadata,
+playlistIncludedTag_table = Table('playlistIncludedTag', Base.metadata,
+    Column('playlist_id', Integer, ForeignKey('playlist.id')),
+    Column('tag_id', Integer, ForeignKey('tag.id'))
+)
+
+playlistExcludedTag_table = Table('playlistExcludedTag', Base.metadata,
     Column('playlist_id', Integer, ForeignKey('playlist.id')),
     Column('tag_id', Integer, ForeignKey('tag.id'))
 )
@@ -40,11 +48,11 @@ class Tag(Base):
         back_populates='tags'
     )
     includedPlaylists = relationship('Playlist',
-        secondary=playlistTag_table,
+        secondary=playlistIncludedTag_table,
         back_populates='includedTags'
     )
     excludedPlaylists = relationship('Playlist',
-        secondary=playlistTag_table,
+        secondary=playlistExcludedTag_table,
         back_populates='excludedTags'
     )
     name = Column(String, nullable=False, unique=True)
@@ -55,15 +63,15 @@ class Playlist(Base):
     __tablename__ = 'playlist'
     id = Column(Integer, primary_key=True)
     includedTags = relationship('Tag',
-        secondary=playlistTag_table,
+        secondary=playlistIncludedTag_table,
         back_populates='includedPlaylists'
     )
     excludedTags = relationship('Tag',
-        secondary=playlistTag_table,
+        secondary=playlistExcludedTag_table,
         back_populates='excludedPlaylists'
     )
-    minBangericity = Column(Float, nullable=False)
-    maxBangericity = Column(Float, nullable=False)
+    minBangericity = Column(Float, nullable=False, default=0)
+    maxBangericity = Column(Float, nullable=False, default=100)
     name = Column(String, nullable=False, unique=True)
     andLogic = Column(Boolean, default=True, nullable=False)
     def __repr__(self):
@@ -71,8 +79,4 @@ class Playlist(Base):
 
 
 if __name__ == '__main__':
-    engine = create_engine('sqlite:///database.db', echo=True)
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    Base = declarative_base()
     Base.metadata.create_all(engine)
