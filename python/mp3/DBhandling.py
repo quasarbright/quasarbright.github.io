@@ -17,7 +17,7 @@ session = Session()
 def getSong(song):
     if type(song) == Song:
         return song
-    return session.query(Song).filter_by(name=name).one()
+    return session.query(Song).filter_by(name=song).one()
 
 def addSong(path, name, bangericity):
     '''hardlinks song to local songs folder and
@@ -34,8 +34,8 @@ def addSong(path, name, bangericity):
     session.add(song)
     session.commit()
 
-def removeSong(name):
-    song = session.query(Song).filter_by(name=name).one()
+def removeSong(song):
+    song = getSong(song)
     os.remove(os.path.join(song_dir, song.name+'.mp3'))
     session.delete(song)
     session.commit()
@@ -44,7 +44,7 @@ def removeSong(name):
 def getTag(tag):
     if type(tag) == Tag:
         return tag
-    return session.query(Tag).filter_by(name=name).one()
+    return session.query(Tag).filter_by(name=tag).one()
 
 def addTag(name):
     tag = Tag(name=name)
@@ -59,7 +59,7 @@ def removeTag(tag):
 def getPlaylist(playlist):
     if type(playlist) == Playlist:
         return playlist
-    return session.query(Tag).filter_by(name=name).one()
+    return session.query(Tag).filter_by(name=playlist).one()
 
 def addPlaylist(name='', includedTags=[], excludedTags=[], minBangericity=0, maxBangericity=100, andLogic=True):
     playlist = Playlist(
@@ -81,16 +81,20 @@ def removePlaylist(playlist):
 def applyTag(song, tag):
     song = getSong(song)
     tag = getTag(tag)
-    song.tags.append(tag)
+    if not tag in song.tags:
+        song.tags.append(tag)
     session.commit()
 
-def applyTags(songName, *tagNames):
+def applyTags(song, *tags):
     badNames = []
-    for tagName in tagNames:
+    for tag in tags:
         try:
-            applyTag(songName, tagName)
+            applyTag(song, tag)
         except NoResultFound:
-            badNames.append(tagName)
+            if type(tag) == Tag:
+                badNames.append(tag.name)
+            else:
+                badNames.append(tag)
     if len(badNames) > 0:
         raise ValueError('these tag names don\'t exist: {0}'.format(badNames))
 
