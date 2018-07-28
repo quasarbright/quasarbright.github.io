@@ -27,7 +27,7 @@ class Song(Base):
     def addTag(tag):
         tags.append(tag)
     def __repr__(self):
-        return '<Song(name="{0}", bangericity="{1}")>'.format(
+        return '<Song(name="{0}", bangericity={1})>'.format(
             self.name,
             self.bangericity
         )
