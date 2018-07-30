@@ -10,3 +10,4 @@ python/mp3/database.db
 python/mp3/songs/*
 python/mp3/test.db
 python/mp3/old_database.db
+python/mp3/.media.db
