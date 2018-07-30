@@ -1,3 +1,4 @@
+'''this is before switching to sqlalchemy. IGNORE'''
 import sqlite3
 connection = sqlite3.connect('media.db')
 cursor = connection.cursor()
