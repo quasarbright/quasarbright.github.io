@@ -14,6 +14,7 @@ tests to run:
 import os
 import sys
 import threading
+import time
 import DBhandling as db
 import playlistLogic as pl
 from pyglet.media import load, Player
@@ -39,6 +40,10 @@ def quit():
     stop()
     sys.exit()
 
+def getTime():
+    if player.source == None:
+        return None
+    return player.time
 
 def seekRatio(x):
     '''expects x from 0 to 1'''
@@ -58,7 +63,7 @@ def nextSong():
     '''skips to next song and returns True, returns False and does nothing if
     there is no next song
     '''
-    if songIndex != len(songQueue) - 1:
+    if songIndex != len(songQueue) - 1 and len(songQueue) != 0:
         player.next_source()
         on_eos()
         return True
@@ -73,7 +78,8 @@ def previousSong():
     if songIndex > 0:
         songIndex -= 1
     player.next_source()
-    realQueue(songQueue[songIndex])
+    if len(songQueue) != 0:
+        realQueue(songQueue[songIndex])
     play()
 
 def queue(song):
@@ -134,9 +140,9 @@ def loop():
     # put stuff to be executed every second here
     global shouldLoop
     global update
-    update()
-    if shouldLoop:
-        threading.Timer(1, loop).start()
+    while shouldLoop and threading.main_thread().is_alive():
+        update()
+        time.sleep(1)
 
 def stopLoop():
     global shouldLoop
@@ -168,17 +174,19 @@ def queuePlaylist(playlist):
 
 
 def initialize():
-    loop()
+    t = threading.Thread(target=loop)
+    t.start()
+
 
 if __name__ == '__main__':
     # queuePlaylist(db.getPlaylist('test'))
     queue(pl.buildPlaylist(db.getPlaylist('test')).pop())
     play()
     player.volume = .3
-    songIndex = len(songQueue) - 2
-    nextSong()
+    # songIndex = len(songQueue) - 2
+    # nextSong()
     seekRatio(.97)
-    loop()
+    initialize()
 # play = player.play
 # pause = player.pause
 # seek = player.seek
