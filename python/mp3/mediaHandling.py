@@ -45,6 +45,11 @@ def getTime():
         return None
     return player.time
 
+def getDuration():
+    if player.source == None:
+        return None
+    return player.source.duration
+
 def seekRatio(x):
     '''expects x from 0 to 1'''
     seek(x*player.source.duration)
@@ -58,6 +63,12 @@ def getPlaying():
     if len(songQueue) != 0 and len(songQueue) > songIndex:
         return songQueue[songIndex]
     return False
+
+def clearQueue():
+    '''clears songs after currently playing song'''
+    global songQueue, songIndex
+    if len(songQueue) != 0:
+        songQueue = songQueue[:songIndex + 1]
 
 def nextSong():
     '''skips to next song and returns True, returns False and does nothing if
@@ -179,8 +190,8 @@ def initialize():
 
 
 if __name__ == '__main__':
-    # queuePlaylist(db.getPlaylist('test'))
-    queue(pl.buildPlaylist(db.getPlaylist('test')).pop())
+    queuePlaylist(db.getPlaylist('test'))
+    # queue(pl.buildPlaylist(db.getPlaylist('test')).pop())
     play()
     player.volume = .3
     # songIndex = len(songQueue) - 2
