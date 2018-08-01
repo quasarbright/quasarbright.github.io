@@ -10,6 +10,7 @@ tests to run:
 - playing one song by itself should work (nothing else in queue)
 - one song in queue, finish, previousSong, finish, should reach end of queue
 - start loop then queue and play works
+- forcePlay on empty queue
 '''
 import os
 import sys
@@ -142,8 +143,12 @@ def getNextSong():
 
 def forcePlay(song):
     '''plays a song right now'''
-    songQueue.insert(songIndex+1, song)
-    nextSong()
+    if len(songQueue) == 0:
+        queue(song)
+        play()
+    else:
+        songQueue.insert(songIndex+1, song)
+        nextSong()
 
 # looping
 shouldLoop = True
