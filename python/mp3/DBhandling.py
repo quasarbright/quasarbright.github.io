@@ -18,13 +18,15 @@ def getSong(song):
         return song
     return session.query(Song).filter_by(name=song).one()
 
+def validateBangericity(bangericity):
+    if not (0 <= bangericity and bangericity <= 100):
+        raise ValueError('bangericity must be between 0 and 100')
+
 def addSong(path, name, bangericity):
     '''hardlinks song to local songs folder and
     adds them to database.
     link path is ./songs/$SONG_NAME.mp3'''
-    # validate bangericity
-    if not (0 <= bangericity and bangericity <= 100):
-        raise ValueError('bangericity must be between 0 and 100')
+    validateBangericity(bangericity)
     # don't want .mp3 at the end of the name
     if name[-4:] == '.mp3':
         name = name[:-4]
@@ -98,6 +100,18 @@ def applyTags(song, *tags):
                 badNames.append(tag)
     if len(badNames) > 0:
         raise ValueError('these tag names don\'t exist: {0}'.format(badNames))
+
+def removeTagFromSong(song, tag):
+    song = getSong(song)
+    tag = getTag(tag)
+    song.tags.remove(tag)
+    session.commit()
+
+def changeBangericity(song, bangericity):
+    validateBangericity(bangericity)
+    song = getSong(song)
+    song.bangericity = bangericity
+    session.commit()
 
 def getAllSongs():
     return session.query(Song).all()
