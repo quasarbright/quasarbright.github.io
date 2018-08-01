@@ -10,7 +10,7 @@ import mediaHandling as media
 script_dir = os.path.dirname(os.path.realpath(__file__))
 app = gui('main menu', '600x500', showIcon=True)
 media.initialize()
-media.queuePlaylist(db.getPlaylist('test'))# testing
+# media.queuePlaylist(db.getPlaylist('test'))# testing
 
 
 app.setIcon('icon.gif')
