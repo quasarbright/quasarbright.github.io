@@ -112,7 +112,7 @@ def update():
     global player, on_eos, reachedEnd
     if player.playing:
         reahchedEnd = False
-    if player.source != None and abs(player.source.duration - player.time < .001):
+    if player.source != None and abs(player.source.duration - player.time < .1):
         on_eos()
 
 def on_eos():
