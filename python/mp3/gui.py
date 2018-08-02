@@ -88,6 +88,7 @@ def temporaryWindow(title, body):
         if not isDestroying:
             isDestroying = True
             app.destroySubWindow(title)
+            isDestroying = False
         return True
     app.startSubWindow(title, modal=True, transient=True)
     app.setStopFunction(destroy)
@@ -100,16 +101,35 @@ def temporaryWindow(title, body):
 def songOptionsWindow(song):
     song = db.getSong(song)
     title = song.name+' options'
-    def body():
+    def optionsContent():
         def press(button):
             if button == 'play now':
                 media.forcePlay(song)
             elif button == 'add to queue':
                 media.queue(song)
-            elif button == 'add tags':
-                pass
-            elif button == 'remove tags':
-                pass
+            elif button == 'edit tags':
+                # new window for editing tags
+                def body1():
+                    allTags = db.getAllTags()
+                    songTags = song.tags
+                    boolDict = {}
+                    for tag in allTags:
+                        if tag in songTags:
+                            boolDict[tag.name] = True
+                        else:
+                            boolDict[tag.name] = False
+                    app.properties('song tag selection', value=boolDict)
+                    def editTagPress(button):
+                        if button == 'submit':
+                            result = app.getProperties('song tag selection')
+                            newTags = []
+                            for tag in result:
+                                if result[tag] is True:
+                                    newTags.append(db.getTag(tag))
+                            db.setSongTags(song, newTags)
+                            app.destroySubWindow('edit tags window')
+                    app.addButton('submit', editTagPress)
+                temporaryWindow('edit tags window', body1)
             elif button == 'change bangericity':
                 bangericity = 0.0
                 while True:
@@ -125,22 +145,22 @@ def songOptionsWindow(song):
                     db.changeBangericity(song, bangericity)
                     updateSongTable()
             elif button == 'remove from library':
-
-                db.removeSong(song)
-                updateSongTable()
-                ### left off here
+                confirmation = app.yesNoBox('remove song?', 'Are you sure you want to remove this song?')
+                if confirmation is True:
+                    db.removeSong(song)
+                    updateSongTable()
+                    app.destroySubWindow(title)
                 '''
                 - it appears that songs like tear rain and
                 crossing field (those with album art) crash
                 the app when played. Possibly investigate
-                - need to implement functionality in these buttons
                 - should try to close window or disable buttons
                 after removing from library. Or maybe just error
                 box if they try to do something to the song
                 '''
 
-        app.addButtons(['play now', 'add to queue', 'add tags', 'remove tags', 'change bangericity', 'remove from library'], press)
-    temporaryWindow(title, body)
+        app.addButtons(['play now', 'add to queue', 'edit tags', 'change bangericity', 'remove from library'], press)
+    temporaryWindow(title, optionsContent)
 
 
 
@@ -204,5 +224,10 @@ with app.frame('bottom', row=3):
     t.start()
     app.setScaleChangeFunction('slider', seek)
     app.addButtons(['previous', 'pause', 'play', 'next'], mediaPress)
+    app.setButtonImage('play', os.path.join(app.icon_path, 'md-play.png'))
+    app.setButtonImage('pause', os.path.join(app.icon_path, 'md-pause.png'))
+    app.setButtonImage('next', os.path.join(app.icon_path, 'md-next.png'))
+    app.setButtonImage('previous', os.path.join(app.icon_path, 'md-previous.png'))
+
 
 app.go()

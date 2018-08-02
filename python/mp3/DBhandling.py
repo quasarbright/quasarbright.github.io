@@ -107,6 +107,12 @@ def removeTagFromSong(song, tag):
     song.tags.remove(tag)
     session.commit()
 
+def setSongTags(song, tags):
+    song = getSong(song)
+    realTags = [getTag(tag) for tag in tags]
+    song.tags = realTags
+    session.commit()
+
 def changeBangericity(song, bangericity):
     validateBangericity(bangericity)
     song = getSong(song)
