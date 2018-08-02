@@ -13,7 +13,7 @@ media.initialize()
 # media.queuePlaylist(db.getPlaylist('test'))# testing
 
 
-app.setIcon('icon.gif')
+app.setIcon(os.path.join(script_dir, 'icon.ico'))
 
 def stopFunction():
     # stop the infinite loop in media
