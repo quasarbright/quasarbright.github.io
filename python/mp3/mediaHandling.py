@@ -19,6 +19,7 @@ import time
 import DBhandling as db
 import playlistLogic as pl
 from pyglet.media import load, Player
+import pyglet
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 song_dir = os.path.join(script_dir, 'songs')
@@ -106,7 +107,10 @@ def getSource(song):
 def realQueue(song):
     # actually queue the song on the player
     print('really queueing', song)
-    player.queue(getSource(song))
+    try:
+        player.queue(getSource(song))
+    except pyglet.media.sources.avbin.AVbinException:
+        nextSong()
 
 def update():
     # check for eos
