@@ -13,7 +13,7 @@ media.initialize()
 # media.queuePlaylist(db.getPlaylist('test'))# testing
 
 
-app.setIcon('icon.gif')
+app.setIcon('icon.ico')
 
 def stopFunction():
     # stop the infinite loop in media
@@ -99,6 +99,7 @@ def temporaryWindow(title, body):
 
 def songOptionsWindow(song):
     song = db.getSong(song)
+    title = song.name+' options'
     def body():
         def press(button):
             if button == 'play now':
@@ -110,8 +111,21 @@ def songOptionsWindow(song):
             elif button == 'remove tags':
                 pass
             elif button == 'change bangericity':
-                pass
+                bangericity = 0.0
+                while True:
+                    bangericity = app.floatBox('bangericity input', 'enter a bangericity from 0 to 100')
+                    if bangericity is None:
+                        # user cancelled
+                        break
+                    # validate bangericity
+                    if 0 <= bangericity and bangericity <= 100:
+                        break
+                    app.errorBox('invalid bangericity box', 'Error: bangericity must be between 0 and 100', parent=title)
+                if bangericity is not None:
+                    db.changeBangericity(song, bangericity)
+                    updateSongTable()
             elif button == 'remove from library':
+
                 db.removeSong(song)
                 updateSongTable()
                 ### left off here
@@ -126,7 +140,6 @@ def songOptionsWindow(song):
                 '''
 
         app.addButtons(['play now', 'add to queue', 'add tags', 'remove tags', 'change bangericity', 'remove from library'], press)
-    title = song.name+' options'
     temporaryWindow(title, body)
 
 
