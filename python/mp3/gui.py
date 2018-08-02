@@ -13,6 +13,7 @@ media.initialize()
 # media.queuePlaylist(db.getPlaylist('test'))# testing
 
 
+app.setIcon(os.path.join(script_dir, 'icon.ico'))
 app.setIcon('icon.ico')
 
 def stopFunction():
@@ -140,7 +141,7 @@ def songOptionsWindow(song):
                     # validate bangericity
                     if 0 <= bangericity and bangericity <= 100:
                         break
-                    app.errorBox('invalid bangericity box', 'Error: bangericity must be between 0 and 100', parent=title)
+                    app.errorBox('invalid bangericity box', 'Error: bangericity must be between 0 and 100')
                 if bangericity is not None:
                     db.changeBangericity(song, bangericity)
                     updateSongTable()
