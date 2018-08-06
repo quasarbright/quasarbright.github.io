@@ -1,15 +1,18 @@
 import os
+from shutil import copyfile
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.pool import SingletonThreadPool
 import mappings
 from mappings import Song, Tag, Playlist
+import mp3Handling as mp3
 
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 song_dir = os.path.join(script_dir, 'songs')
 
-engine = create_engine('sqlite:///database.db', echo=True)
+engine = create_engine('sqlite:///database.db', echo=True, poolclass=SingletonThreadPool)
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -30,10 +33,15 @@ def addSong(path, name, bangericity):
     # don't want .mp3 at the end of the name
     if name[-4:] == '.mp3':
         name = name[:-4]
-    os.link(path, os.path.join(song_dir, name+'.mp3'))
+    mp3.addSong(path, name)
     song = mappings.Song(name=name, bangericity=bangericity)
-    session.add(song)
-    session.commit()
+    try:
+        session.add(song)
+        session.commit()
+    except:
+        # if it's not in the database, get rid of the link
+        os.remove(os.path.join(song_dir, name+'.mp3'))
+
 
 def removeSong(song):
     song = getSong(song)

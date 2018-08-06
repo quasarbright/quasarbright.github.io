@@ -6,6 +6,7 @@ import time
 from appJar import gui
 import DBhandling as db
 import mediaHandling as media
+import playlistLogic as pl
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 app = gui('main menu', '600x500', showIcon=True)
@@ -23,6 +24,29 @@ def stopFunction():
 
 app.setStopFunction(stopFunction)
 
+def temporaryWindow(title, body):
+    '''
+    produces and opens destructible subwindow.
+    - title is the title of the subwindow
+    - body is a function where the contents of the window are specified (adding
+    buttons, etc.)
+    '''
+    global isDestroying
+    # prevents stopFunction - destroySubWindow infinite recursion
+    isDestroying = False
+    def destroy():
+        global isDestroying
+        if not isDestroying:
+            isDestroying = True
+            app.destroySubWindow(title)
+            isDestroying = False
+        return True
+    app.startSubWindow(title, modal=True, transient=True)
+    app.setStopFunction(destroy)
+    body()
+    app.stopSubWindow()
+    app.showSubWindow(title)
+
 
 def addSong():
     path = app.openBox('select a song to add', fileTypes=[('Audio', '*.mp3')])
@@ -31,20 +55,23 @@ def addSong():
         app.infoBox('test', path+'\n'+name)
         bangericity = 0.0
         while True:
-            bangericity = app.floatBox('bangericity input', 'enter a bangericity from 0 to 100')
+            bangericity = app.floatBox('bangericity input', 'enter a\
+             bangericity from 0 to 100')
             if bangericity is None:
                 # user cancelled
                 break
             # validate bangericity
             if 0 <= bangericity and bangericity <= 100:
                 break
-            app.errorBox('invalid bangericity box', 'Error: bangericity must be between 0 and 100')
+            app.errorBox('invalid bangericity box', 'Error: bangericity must be\
+             between 0 and 100')
         if bangericity is not None:
             try:
                 db.addSong(path, name, bangericity)
             except FileExistsError:
                 app.errorBox('duplicate song error box',
-                    'Error: A song with this name already exists. The song will not be added.')
+                    'Error: A song with this name already exists. The song will\
+                     not be added.')
             updateSongTable()
 
 
@@ -73,31 +100,6 @@ def updateSlider():
 
 def songAction(rowNum):
     songOptionsWindow(app.getTableRow('song table', rowNum)[0])
-
-def temporaryWindow(title, body):
-    '''
-    produces and opens destructible subwindow.
-    - title is the title of the subwindow
-    - body is a function where the contents of the window are specified (adding
-    buttons, etc.)
-    '''
-    global isDestroying
-    # prevents stopFunction - destroySubWindow infinite recursion
-    isDestroying = False
-    def destroy():
-        global isDestroying
-        if not isDestroying:
-            isDestroying = True
-            app.destroySubWindow(title)
-            isDestroying = False
-        return True
-    app.startSubWindow(title, modal=True, transient=True)
-    app.setStopFunction(destroy)
-    body()
-    app.stopSubWindow()
-    app.showSubWindow(title)
-
-
 
 def songOptionsWindow(song):
     song = db.getSong(song)
@@ -134,41 +136,181 @@ def songOptionsWindow(song):
             elif button == 'change bangericity':
                 bangericity = 0.0
                 while True:
-                    bangericity = app.floatBox('bangericity input', 'enter a bangericity from 0 to 100')
+                    bangericity = app.floatBox('bangericity input', 'enter a\
+                     bangericity from 0 to 100')
                     if bangericity is None:
                         # user cancelled
                         break
                     # validate bangericity
                     if 0 <= bangericity and bangericity <= 100:
                         break
-                    app.errorBox('invalid bangericity box', 'Error: bangericity must be between 0 and 100')
+                    app.errorBox('invalid bangericity box', 'Error: bangericity\
+                     must be between 0 and 100')
                 if bangericity is not None:
                     db.changeBangericity(song, bangericity)
                     updateSongTable()
             elif button == 'remove from library':
-                confirmation = app.yesNoBox('remove song?', 'Are you sure you want to remove this song?')
+                confirmation = app.yesNoBox('remove song?', 'Are you sure you\
+                 want to remove this song?')
                 if confirmation is True:
                     db.removeSong(song)
                     updateSongTable()
                     app.destroySubWindow(title)
-                '''
-                - it appears that songs like tear rain and
-                crossing field (those with album art) crash
-                the app when played. Possibly investigate
-                - should try to close window or disable buttons
-                after removing from library. Or maybe just error
-                box if they try to do something to the song
-                '''
 
-        app.addButtons(['play now', 'add to queue', 'edit tags', 'change bangericity', 'remove from library'], press)
+        app.addButtons(['play now', 'add to queue', 'edit tags',
+            'change bangericity', 'remove from library'], press
+        )
     temporaryWindow(title, optionsContent)
 
+def playlistForm(playlist=None):
+    '''can be used for creation and editing.
+    if playlist is None, it goes to creation mode
+    '''
+    if playlist == 'newRow':
+        playlist = None
+    title = ''
+    if playlist is not None:
+        playlist = db.getPlaylist(playlist)
+        title = 'edit playlist '+playlist.name
+    else:
+        title = 'create playlist'
 
+    def formContents():
+        allTags = db.getAllTags()
+        includedTags = []
+        excludedTags = []
+        if playlist is not None:
+            includedTags = playlist.includedTags
+            excludedTags = playlist.excludedTags
+        includedTagDict = {}
+        excludedTagDict = {}
+        # both going to be {tagname => boolean, ...}
+        for tag in allTags:
+            includedTagDict[tag.name] = tag in includedTags
+            excludedTagDict[tag.name] = tag in excludedTags
+        if playlist is None:
+            app.entry('name')
+
+        app.properties('included tags', includedTagDict)
+        app.properties('excluded tags', excludedTagDict)
+
+        app.addNumericEntry('minimum bangericity')
+        app.addNumericEntry('maximum bangericity')
+        min = 0
+        max = 100
+        if playlist is not None:
+            min = playlist.minBangericity
+            max = playlist.maxBangericity
+        app.setEntry('minimum bangericity', min)
+        app.setEntry('maximum bangericity', max)
+
+        app.addCheckBox('use AND logic on includes')
+        ticked = True
+        if playlist is not None:
+            ticked = playlist.andLogic
+        app.setCheckBox('use AND logic on includes', ticked=ticked)
+
+
+        def submit(button):
+            if button == 'submit':
+                # bangericity
+                minBangericity = float(app.getEntry('minimum bangericity'))
+                maxBangericity = float(app.getEntry('maximum bangericity'))
+                # validate bangericities
+                if not minBangericity < maxBangericity:
+                    app.errorBox('invalid bangericities', 'minimum bangericity\
+                     must be less than maximum bangericity')
+                    return None
+                # include logic
+                andLogic = app.getCheckBox('use AND logic on includes')
+                # tags
+                newIncludedTags = []
+                newExcludedTags = []
+                includedTagDict = app.getProperties('included tags')
+                excludedTagDict = app.getProperties('excluded tags')
+                ##### left off here investigating bug where you can't edit then add
+                # also label entries
+                # figure out what the new tags will be
+                for tag in includedTagDict:
+                    if includedTagDict[tag] is True:
+                        newIncludedTags.append(db.getTag(tag))
+                    if excludedTagDict[tag] is True:
+                        newExcludedTags.append(db.getTag(tag))
+                # name
+                if playlist is None:
+                    name = app.getEntry('name')
+                    # validate name
+                    if name == '':
+                        app.errorBox('invalid name', 'playlist must have a name')
+                        return None
+                    existingPlaylistNames = [
+                        playlist.name for playlist in db.getAllPlaylists()
+                    ]
+                    if name in existingPlaylistNames:
+                        app.errorBox('duplicate name', 'a playlist with that\
+                         name already exists')
+                        return None
+                    # create playlist
+                    db.addPlaylist(name, newIncludedTags, newExcludedTags,
+                        minBangericity, maxBangericity, andLogic
+                    )
+                    showPlaylistSongs(name)
+                    updatePlaylistTable()
+                    app.destroySubWindow(title)
+                else:
+                    # edit playlist
+                    playlist.includedTags = newIncludedTags
+                    playlist.excludedTags = newExcludedTags
+                    playlist.minBangericity = minBangericity
+                    playlist.maxBangericity = maxBangericity
+                    playlist.andLogic = andLogic
+                    showPlaylistSongs(playlist)
+                    updatePlaylistTable()
+                    app.destroySubWindow(title)
+
+        app.addButton('submit', submit)
+
+    temporaryWindow(title, formContents)
+def showPlaylistSongs(playlist):
+    playlist = db.getPlaylist(playlist)
+    songs = list(pl.buildPlaylist(playlist))
+    songNames = [song.name for song in songs]
+    app.infoBox(playlist.name+' songs', '\n'.join(songNames))
+def playlistAction(rowNum):
+    playlistOptionsWindow(app.getTableRow('playlist table', rowNum)[0])
+
+def playlistOptionsWindow(playlist):
+    playlist = db.getPlaylist(playlist)
+    title = playlist.name+' playlist options window'
+
+    def optionsContent():
+        def press(button):
+            if button == 'play now':
+                media.forcePlayPlaylist(playlist)
+            elif button == 'add to queue':
+                media.queuePlaylist(playlist)
+            elif button == 'view songs':
+                showPlaylistSongs(playlist)
+            elif button == 'edit':
+                playlistForm(playlist)
+                # remember to edit bangericity and includeLogic too
+            elif button == 'remove':
+                confirmation = app.yesNoBox('remove playlist?',
+                    'Are you sure you want to remove this playlist?')
+                if confirmation is True:
+                    db.removePlaylist(playlist)
+                    updatePlaylistTable()
+                    app.destroySubWindow(title)
+        app.addButtons(['play now', 'add to queue', 'view songs', 'edit', 'remove'],
+            press)
+        # maybe don't do make into a tag
+    temporaryWindow(title, optionsContent)
 
 def loop():
     global updateSlider
     while threading.main_thread().is_alive():
         updateSlider()
+        updateSongLabel()
         time.sleep(1)
 
 
@@ -182,7 +324,7 @@ with app.tabbedFrame('tabs'):
         playlists = db.getAllPlaylists()
         tableArr = [[playlist.name] for playlist in playlists]
         tableArr.sort()
-        app.addTable('playlist table', [['Name']]+tableArr, colspan=3, showMenu=True)
+        app.addTable('playlist table', [['Name']]+tableArr, colspan=3, showMenu=True, action=playlistAction, addRow=playlistForm)
     with app.tab('tags'):
         tags = db.getAllTags()
         tableArr = [[tag.name] for tag in tags]
@@ -218,8 +360,13 @@ def mediaPress(button):
     elif button == 'next':
         media.nextSong()
 
+
+def updateSongLabel():
+    if media.getPlaying():
+        app.setLabel('currently playing label', media.getPlaying().name)
 with app.frame('bottom', row=3):
-    app.addScale('slider', row=1)
+    app.addLabel('currently playing label', '')
+    app.addScale('slider')
     app.setScaleIncrement('slider', 0)
     t = threading.Thread(target=loop)
     t.start()

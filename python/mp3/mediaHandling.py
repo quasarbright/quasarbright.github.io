@@ -20,6 +20,7 @@ import DBhandling as db
 import playlistLogic as pl
 from pyglet.media import load, Player
 import pyglet
+import playlistLogic as pl
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 song_dir = os.path.join(script_dir, 'songs')
@@ -101,6 +102,12 @@ def queue(song):
     if len(songQueue) == 1:
         realQueue(song)
 
+def queuePlaylist(playlist):
+    playlist = db.getPlaylist(playlist)
+    playlist = list(playlist)
+    for song in pl.buildPlaylist(playlist):
+        queue(song)
+
 def getSource(song):
     return load(songPath(song))
 
@@ -120,8 +127,13 @@ def update():
     if player.source != None and abs(player.source.duration - player.time < .1):
         on_eos()
 
+
+eos_funcs = []
+# other scripts can push listeners here
 def on_eos():
-    global songIndex, songQueue, player, load, songPath, reachedEnd
+    global songIndex, songQueue, player, load, songPath, reachedEnd, eos_funcs
+    for func in eos_funcs:
+        func()
     if len(songQueue) > songIndex:
         print(songQueue[songIndex], 'ended')
     if len(songQueue) == songIndex:
@@ -134,6 +146,9 @@ def on_eos():
         reachedEnd = False
         realQueue(songQueue[songIndex])
         player.play()
+
+def push_on_eos(func):
+    eos_funcs.append(func)
 
 def reset():
     global player, songQueue, songIndex
@@ -153,6 +168,18 @@ def forcePlay(song):
     else:
         songQueue.insert(songIndex+1, song)
         nextSong()
+
+def forcePlayPlaylist(playlist):
+    playlist = db.getPlaylist(playlist)
+    if len(songQueue) == 0:
+        queuePlaylist(playlist)
+    else:
+        songs = pl.buildPlaylist(playlist)
+        for song in songs:
+            songQueue.insert(songIndex+1, song)
+            # order doesn't matter
+        nextSong()
+
 
 # looping
 shouldLoop = True
