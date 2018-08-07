@@ -189,11 +189,12 @@ def playlistForm(playlist=None):
             includedTagDict[tag.name] = tag in includedTags
             excludedTagDict[tag.name] = tag in excludedTags
         if playlist is None:
+            app.addLabel('playlist name:')
             app.entry('name')
 
         app.properties('included tags', includedTagDict)
         app.properties('excluded tags', excludedTagDict)
-
+        app.addLabel('minimum and maximum bangericity:')
         app.addNumericEntry('minimum bangericity')
         app.addNumericEntry('maximum bangericity')
         min = 0
@@ -306,6 +307,26 @@ def playlistOptionsWindow(playlist):
         # maybe don't do make into a tag
     temporaryWindow(title, optionsContent)
 
+def tagAction(rowNum):
+    tagOptionsWindow(app.getTableRow('tag table', rowNum)[0])
+
+def tagOptionsWindow(tag):
+    tag = db.getTag(tag)
+    title = tag.name + ' tag options window'
+    def press(button):
+        if button == 'view songs':
+            songs = tag.songs
+            songNames = [song.name for song in songs]
+            app.infoBox('songs', '\n'.join(songNames))
+        elif button == 'remove':
+            if app.yesNoBox('confirmation', 'are you sure you want to remove this tag?'):
+                db.removeTag(tag)
+                updateTagTable()
+                app.destroySubWindow(title)
+    def optionsContent():
+        app.addButtons(['view songs', 'remove'], press)
+    temporaryWindow(title, optionsContent)
+
 def loop():
     global updateSlider
     while threading.main_thread().is_alive():
@@ -313,6 +334,10 @@ def loop():
         updateSongLabel()
         time.sleep(1)
 
+def addTag():
+    name = app.stringBox('create a tag', 'tag name:')
+    db.addTag(name)
+    updateTagTable()
 
 with app.tabbedFrame('tabs'):
     with app.tab('songs'):
@@ -329,7 +354,7 @@ with app.tabbedFrame('tabs'):
         tags = db.getAllTags()
         tableArr = [[tag.name] for tag in tags]
         tableArr.sort()
-        app.addTable('tag table', [['Name']]+tableArr, colspan=3, showMenu=True)
+        app.addTable('tag table', [['Name']]+tableArr, colspan=3, showMenu=True, action=tagAction, addRow=addTag)
 
 def updateSongTable():
     songs = db.getAllSongs()
@@ -344,7 +369,7 @@ def updatePlaylistTable():
     app.replaceAllTableRows('playlist table', tableArr)
 
 def updateTagTable():
-    tag = db.getAllTags()
+    tags = db.getAllTags()
     tableArr = [[tag.name] for tag in tags]
     tableArr.sort()
     app.replaceAllTableRows('tag table', tableArr)
@@ -364,6 +389,8 @@ def mediaPress(button):
 def updateSongLabel():
     if media.getPlaying():
         app.setLabel('currently playing label', media.getPlaying().name)
+
+
 with app.frame('bottom', row=3):
     app.addLabel('currently playing label', '')
     app.addScale('slider')
