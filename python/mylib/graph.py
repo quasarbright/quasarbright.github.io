@@ -20,6 +20,11 @@ import json
 class NodeAlreadyExistsError(Exception):
     pass
 class DiGraph(dict):
+    def __init__(self, d=None):
+        if d is None:
+            dict.__init__(self)
+        else:
+            dict.__init__(self, d)
     def add_node(self,*nodes):
         '''Add a node to the graph. Can be of any hashable type.
         Can add multiple nodes like G.add_node(n1,n2,...).
@@ -81,6 +86,8 @@ class DiGraph(dict):
             for b in self[a]['to']:
                 ans.add((a,b))
         return ans
+    def copy(self):
+        return DiGraph(dict(self))
 class Graph(DiGraph):
     def set_edge(self,a,b,obj={}):
         super().set_edge(a,b,obj)
