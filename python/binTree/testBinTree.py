@@ -17,18 +17,18 @@ bst = BST(5,
 '''
 bst2 = BST(10,
     BST(5,
-        BST(4,
+        BST(3,
             BST(2,
                 BST(1),
                 None),
-            BST(3)),
+            BST(4)),
         None),
-    BST(1))
+    BST(11))
 '''
      10
-    5  1
-  4
- 2 3
+    5  11
+  3
+ 2 4
 1
 '''
 def tryBadBST():
@@ -48,4 +48,9 @@ def tryBadBST():
 class TestBinTree(unittest.TestCase):
     def testFlatten(self):
         self.assertEqual(bst.flatten(), [2, 3, 4, 5, 6, 7, 8])
-        self.assertEqual(
+        self.assertEqual(bst2.flatten(), [1, 2, 3, 4, 5, 10, 11])
+    def testBadCreation(self):
+        self.assertRaises(InvalidBinTreeError, lambda x: BT(2, "i'm a tree i swear", 1337))
+class TestBinarySearchTree(unittest.TestCase):
+    def testBadCreation(self):
+        self.assertRaises(UnorderedBSTError, tryBadBST)
