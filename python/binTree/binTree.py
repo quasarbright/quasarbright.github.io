@@ -3,7 +3,7 @@ A BT is one of
 BT(Number, BT, BT)
 None
 '''
-class InvalidTreeError(Exception):
+class InvalidBinTreeError(Exception):
     pass
 
 
@@ -12,9 +12,9 @@ class BT:
         #input validation
         if not (isis)
         if not (isinstance(left, BT) or left == None):
-            raise InvalidTreeError("left tree is not a valid BT: {0}".format(left))
+            raise InvalidBinTreeError("left tree is not a valid BT: {0}".format(left))
         if not (isinstance(right, BT) or right == None):
-            raise InvalidTreeError("right tree is not a valid BT: {0}".format(right))
+            raise InvalidBinTreeError("right tree is not a valid BT: {0}".format(right))
 
         self.left = left
         self.right = right
