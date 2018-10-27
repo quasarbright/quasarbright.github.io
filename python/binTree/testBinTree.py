@@ -1,5 +1,6 @@
 import unittest
 from binTree import *
+
 bst = BST(5,
     BST(3,
         BST(2),
@@ -35,7 +36,7 @@ def tryBadBST():
     badbst = BST(5,
         BST(3,
             BST(2),
-            BST(6))
+            BST(6)),
         BST(8,
             BST(7),
             None))
@@ -51,6 +52,8 @@ class TestBinTree(unittest.TestCase):
         self.assertEqual(bst2.flatten(), [1, 2, 3, 4, 5, 10, 11])
     def testBadCreation(self):
         self.assertRaises(InvalidBinTreeError, lambda x: BT(2, "i'm a tree i swear", 1337))
+    def testSTR(self):
+        self.assertEqual(str(bst), "(5, (3, (2, (), (),), (4, (), ())), (8, (6, (), (7, (), ())), ()))")
 class TestBinarySearchTree(unittest.TestCase):
     def testBadCreation(self):
         self.assertRaises(UnorderedBSTError, tryBadBST)
