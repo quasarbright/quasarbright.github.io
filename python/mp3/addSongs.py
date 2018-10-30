@@ -4,7 +4,7 @@ import DBhandling as db
 
 bangericities = [87.0, 83.0, 85.0, 87.0, 92.0, 90.0, 88.0, 89.0, 88.0, 90.0, 90.0, 85.0, 87.0, 90.0, 90.0, 90.0, 87.0, 89.0, 90.0, 94.0, 94.0, 95.0, 86.0, 90.0, 95.0, 90.0, 90.0, 93.0, 92.0, 94.0]
 
-songDir = '/Users/mdelmonaco/OneDrive/Music/7-7-18 additions'
+songDir = 'D:\\OneDrive\\Music\\7-7-18 additions'
 songNames = os.listdir(songDir)
 def songPath(name):
     return os.path.join(songDir, name)
