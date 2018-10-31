@@ -65,13 +65,13 @@ class BooleanTests(unittest.TestCase):
 
 
 # natural numbers
-zero = lambda f : (lambda x : x)
-one = lambda f : (lambda x : f(x))
-two = lambda f : (lambda x : f(f(x)))
-three = lambda f : (lambda x : f(f(f(x))))# three(f)(x)
+zero = lambda f, x: x
+one = lambda f, x: f(x)
+two = lambda f, x: f(f(x))
+three = lambda f, x: f(f(f(x)))# three(f,x)
 
 def add1(nat):
-    return lambda f: lambda x: f(nat(f)(x))
+    return lambda f, x: nat(f, f(x))
 
 def sub1(nat):# needs testing
     '(λgh.h (g f)) (λu.x) (λu.u)'
@@ -87,7 +87,7 @@ def natToLambda(num):
         return add1(natToLambda(num - 1))
 
 def lambdaToNat(nat):
-    return nat(lambda x:x+1)(0)
+    return nat(lambda x:x+1, 0)
 
 class testNat(unittest.TestCase):
     def testLambdaToNat(self):
@@ -102,7 +102,10 @@ class testNat(unittest.TestCase):
         self.assertEqual(lambdaToNat(add1(one)), 2)
 
     def testNatToLambda(self):
-        self.assertEqual(natToLambda(3)(lambda x : x+1)(0), 3)
+        self.assertEqual(lambdaToNat(natToLambda(0)), 0)
+        self.assertEqual(lambdaToNat(natToLambda(1)), 1)
+        self.assertEqual(lambdaToNat(natToLambda(2)), 2)
+        self.assertEqual(lambdaToNat(natToLambda(3)), 3)
 
 
 
