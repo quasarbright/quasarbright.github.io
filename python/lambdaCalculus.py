@@ -65,6 +65,9 @@ class BooleanTests(unittest.TestCase):
 
 
 # natural numbers
+# f is a successor function and x is 0
+# zero = lambda succ, og: og
+# one = lambda succ, og: succ(og)
 zero = lambda f, x: x
 one = lambda f, x: f(x)
 two = lambda f, x: f(f(x))
@@ -73,12 +76,25 @@ three = lambda f, x: f(f(f(x)))# three(f,x)
 def add1(nat):
     return lambda f, x: nat(f, f(x))
 
-def sub1(nat):# needs testing
-    '(λgh.h (g f)) (λu.x) (λu.u)'
-    pass
+'''def sub1(nat):# needs testing
+    'λnfx.n (λgh.h (g f)) (λu.x) (λu.u)'
 
-def add(nat1, nat2):# needs testing
-    return lambda f: lambda x: nat1(f)(x)
+    lambda nat, f, x: nat(lambda g,h:h(g(f)), (lambda u:x))(lambda u:u)
+
+    pred one
+    one(lambda g: lambda h: h(g(f)), lambda u:x)(lambda u:u)
+    (lambda h: h([lambda u:x](f)))(lambda u:u)
+    (lambda h: h(x))(lambda u:u)
+    (lambda u:u)(x)
+    x'''
+
+def add(nat1, nat2):
+    return lambda f, x: nat1(f, nat2( f, x))
+
+def mult(nat1, nat2):# needs testing
+    nested1 = lambda f: lambda x: nat1(f, x)
+    nested2 = lambda f: lambda x: nat2(f, x)
+    return lambda f, x: nat1(nested2(f), x)
 
 def natToLambda(num):
     if num == 0:
@@ -106,6 +122,16 @@ class testNat(unittest.TestCase):
         self.assertEqual(lambdaToNat(natToLambda(1)), 1)
         self.assertEqual(lambdaToNat(natToLambda(2)), 2)
         self.assertEqual(lambdaToNat(natToLambda(3)), 3)
+
+    def testAdd(self):
+        self.assertEqual(lambdaToNat(add(one, two)), 3)
+        self.assertEqual(lambdaToNat(add(two, three)), 5)
+        self.assertEqual(lambdaToNat(add(zero, three)), 3)
+
+    def testMult(self):
+        self.assertEqual(lambdaToNat(mult(two, three)), 6)
+        self.assertEqual(lambdaToNat(mult(two, two)), 4)
+        self.assertEqual(lambdaToNat(mult(zero, three)), 0)
 
 
 
