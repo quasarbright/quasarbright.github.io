@@ -41,6 +41,7 @@ def testTruthTable(assertEqual, func, outs):
 # boolean logic
 true = lambda x, y : x
 false = lambda x, y : y
+
 myand = lambda a, b : a(b(true, false), false)
 myor = lambda a, b : a(true, b(true, false))
 mynot = lambda a : a(false, true)
@@ -68,33 +69,65 @@ class BooleanTests(unittest.TestCase):
 # f is a successor function and x is 0
 # zero = lambda succ, og: og
 # one = lambda succ, og: succ(og)
-zero = lambda f, x: x
-one = lambda f, x: f(x)
-two = lambda f, x: f(f(x))
-three = lambda f, x: f(f(f(x)))# three(f,x)
+zero = lambda f: lambda x: x
+one = lambda f: lambda x: f(x)
+two = lambda f: lambda x: f(f(x))
+three = lambda f: lambda x: f(f(f(x)))# three(f,x)
 
 def add1(nat):
-    return lambda f, x: nat(f, f(x))
+    return lambda f: lambda x: f(nat(f)(x))
 
-'''def sub1(nat):# needs testing
+def sub1(nat):# needs testing
     'λnfx.n (λgh.h (g f)) (λu.x) (λu.u)'
+    return lambda f: lambda x: nat(lambda g: lambda h: h(g(f)))(lambda u: x)(lambda u: u)
 
-    lambda nat, f, x: nat(lambda g,h:h(g(f)), (lambda u:x))(lambda u:u)
+    '''
+    it's like g(f) is zero and h is succ
+    but g is actually succ so you're calling zero(succ)?
 
-    pred one
-    one(lambda g: lambda h: h(g(f)), lambda u:x)(lambda u:u)
-    (lambda h: h([lambda u:x](f)))(lambda u:u)
-    (lambda h: h(x))(lambda u:u)
-    (lambda u:u)(x)
-    x'''
+    sub1(one)
+    lambda f: lambda x: one(lambda g: lambda h: h(g(f)))(lambda u:x)(lambda u:u)
+    lambda f: lambda x: (lambda h: (h(u->x(f)))(lambda u:u)
+    lambda f: lambda x: (lambda h: (h(x))(lambda u:u)
+    lambda f: lambda x: (u->u(x))
+    lambda f: lambda x: x
+    zero
+
+    sub1(zero)
+    lambda f: lambda x: zero(lambda g: lambda h: h(g(f)))(lambda u:x)(lambda u:u)
+    lambda f: lambda x: u->x(lambda u:u)
+    lambda f: lambda x: x
+
+    sub1(two)
+    lambda f: lambda x: two(lambda g: lambda h: h(g(f)))(lambda u:x)(lambda u:u)
+    def k(g):
+        return lambda h: h(g(f))
+    k(k(ux)) = lambda h: h(k(ux)(f))
+        k(ux) = lambda i: i(ux(f))
+        k(ux) = lambda i: i(x)
+    k(lambda i: i(x)) = lambda h: h([lambda i: i(x)](f))
+    k(lambda i: i(x)) = lambda h: f(x)
+    k(k(ux)) = lambda h: f(x)
+    k(k(ux))(uu) = f(x) = one
+    N I C E
+
+    basically does nat(f)(x) = f(f(f...(x)))
+    but replaces the innermost f(x) with x
+
+
+    '''
 
 def add(nat1, nat2):
-    return lambda f, x: nat1(f, nat2( f, x))
+    return lambda f: lambda x: nat2(f)(nat1(f)(x))
 
-def mult(nat1, nat2):# needs testing
-    nested1 = lambda f: lambda x: nat1(f, x)
-    nested2 = lambda f: lambda x: nat2(f, x)
-    return lambda f, x: nat1(nested2(f), x)
+def sub(nat1, nat2):
+    return nat2(sub1)(nat1)
+
+def mult(nat1, nat2):
+    return lambda f: nat2(nat1(f))
+
+def exp(nat1, nat2):
+    return nat2(nat1)
 
 def natToLambda(num):
     if num == 0:
@@ -103,7 +136,18 @@ def natToLambda(num):
         return add1(natToLambda(num - 1))
 
 def lambdaToNat(nat):
-    return nat(lambda x:x+1, 0)
+    return nat(lambda x:x+1)(0)
+
+def isZero(nat):
+    return nat(lambda x: false)(true)
+
+def isEqual(nat1, nat2):
+    return myand(isLTE(nat1, nat2), isLTE(nat2, nat1))
+
+
+def isLTE(nat1, nat2):
+    return isZero(sub(nat1, nat2))
+
 
 class testNat(unittest.TestCase):
     def testLambdaToNat(self):
@@ -117,6 +161,12 @@ class testNat(unittest.TestCase):
         self.assertEqual(lambdaToNat(add1(add1(zero))), 2)
         self.assertEqual(lambdaToNat(add1(one)), 2)
 
+    def testSub1(self):
+        self.assertEqual(lambdaToNat(sub1(one)), 0)
+        self.assertEqual(lambdaToNat(sub1(two)), 1)
+        self.assertEqual(lambdaToNat(sub1(sub1(three))), 1)
+        self.assertEqual(lambdaToNat(sub1(zero)), 0)
+
     def testNatToLambda(self):
         self.assertEqual(lambdaToNat(natToLambda(0)), 0)
         self.assertEqual(lambdaToNat(natToLambda(1)), 1)
@@ -128,13 +178,63 @@ class testNat(unittest.TestCase):
         self.assertEqual(lambdaToNat(add(two, three)), 5)
         self.assertEqual(lambdaToNat(add(zero, three)), 3)
 
+    def testSub(self):
+        self.assertEqual(lambdaToNat(sub(one, two)), 0)
+        self.assertEqual(lambdaToNat(sub(two, one)), 1)
+        self.assertEqual(lambdaToNat(sub(three, one)), 2)
+        self.assertEqual(lambdaToNat(sub(one, one)), 0)
+        self.assertEqual(lambdaToNat(sub(zero, zero)), 0)
+        self.assertEqual(lambdaToNat(sub(zero, one)), 0)
+
     def testMult(self):
         self.assertEqual(lambdaToNat(mult(two, three)), 6)
         self.assertEqual(lambdaToNat(mult(two, two)), 4)
         self.assertEqual(lambdaToNat(mult(zero, three)), 0)
+        self.assertEqual(lambdaToNat(mult(three, zero)), 0)
+
+    def testExp(self):
+        self.assertEqual(lambdaToNat(exp(two, three)), 8)
+        self.assertEqual(lambdaToNat(exp(zero, three)), 0)
+        self.assertEqual(lambdaToNat(exp(two, zero)), 1)
+        self.assertEqual(lambdaToNat(exp(three, two)), 9)
+
+    def testIsZero(self):
+        self.assertEqual(isZero(zero), true)
+        self.assertEqual(isZero(one), false)
+        self.assertEqual(isZero(two), false)
+
+    def testIsEqual(self):
+        self.assertEqual(isEqual(one, two), false)
+        self.assertEqual(isEqual(one, one), true)
+        self.assertEqual(isEqual(one, add1(zero)), true)
+
+    def testIsLTE(self):
+        self.assertEqual(isLTE(zero, zero), true)
+        self.assertEqual(isLTE(one, zero), false)
+        self.assertEqual(isLTE(zero, one), true)
+        self.assertEqual(isLTE(zero, two), true)
+        self.assertEqual(isLTE(one, three), true)
+
+
+pair = lambda x, y: lambda z: z(x, y)
+# z is cons i guess
+first = lambda p: p(true)
+rest = lambda p: p(false)
 
 
 
+class TestPair(unittest.TestCase):
+    def testFirst(self):
+        self.assertTrue(first(pair(true, false))(True, False))
+        self.assertEqual(lambdaToNat(first(pair(one, two))), 1)
+
+    def testRest(self):
+        self.assertTrue(rest(pair(true, false))(False, True))
+        self.assertEqual(lambdaToNat(rest(pair(one, two))), 2)
+        self.assertEqual(lambdaToNat(rest(rest(pair(one, pair(two, three))))), 3)
+
+
+# TODO reimplement recursions with y combinator
 
 if __name__ == '__main__':
     unittest.main()
