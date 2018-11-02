@@ -217,23 +217,61 @@ class testNat(unittest.TestCase):
 
 
 pair = lambda x, y: lambda z: z(x, y)
-empty = false
-# pair is cons, z is a function applied to both elements
 first = lambda p: p(true)
-rest = lambda p: p(false)
-
-isNil = lambda p: 
+second = lambda p: p(false)
 
 
 class TestPair(unittest.TestCase):
     def testFirst(self):
-        self.assertTrue(first(pair(true, false))(True, False))
         self.assertEqual(lambdaToNat(first(pair(one, two))), 1)
 
-    def testRest(self):
-        self.assertTrue(rest(pair(true, false))(False, True))
-        self.assertEqual(lambdaToNat(rest(pair(one, two))), 2)
-        self.assertEqual(lambdaToNat(rest(rest(pair(one, pair(two, three))))), 3)
+    def testsecond(self):
+        self.assertEqual(lambdaToNat(second(pair(one, two))), 2)
+        self.assertEqual(lambdaToNat(second(second(pair(one, pair(two, three))))), 3)
+
+# lists
+# [1, 2, 3] is pair(empty, pair(1, pair(empty, pair(2, pair(empty, pair(3, empty))))))
+#              pair(pair(true, true), pair(1, pair(pair(true, true), pair(2, pair(pair(true, true), pair(3, empty))))))
+# instead of pair(1, pair(2, pair(3, empty)))
+# this is definitely right since it's exactly two pairs per item and head works
+
+empty = pair(true, true)
+head = lambda l: first(second(l))
+tail = lambda l: second(second(l))
+isEmpty = first
+# works since the first element of a pair is always empty and calling first(not empty) gives you lambda z: z(true, true), not true
+cons = lambda e, l: pair(empty, pair(e, l))
+
+#examples
+list1 = pair(empty, pair(one, pair(empty, pair(two, pair(empty, pair(3, empty))))))
+list2 = pair(empty, pair(one, empty))
+
+def encodeList(pythonList):
+    #
+
+def decodeList(churchList):
+    #
+
+class TestList(unittest.TestCase):
+    def testEncodeList(self):
+        #
+
+    def testDecodeList(self):
+        #
+
+    def testHead(self):
+        self.assertEqual(head(list1), one)
+        self.assertEqual(head(list2), one)
+
+    def testTail(self):
+        self.assertEqual(decodeList(head(list1)), [2, 3])
+        self.assertEqual(head(list2), empty)
+
+    def testIsEmpty(self):
+        #
+
+    def testCons(self):
+        #
 
 # danger #loop = (lambda x: x(x))(lambda y: y(y))
 # recursion
@@ -244,7 +282,7 @@ factorial = Y(H)
 '''
 # runtime error for infinite recursion
 
-sum = lambda p:
+# sum = lambda p:
 
 
 
