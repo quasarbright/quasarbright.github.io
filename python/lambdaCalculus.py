@@ -238,40 +238,56 @@ class TestPair(unittest.TestCase):
 empty = pair(true, true)
 head = lambda l: first(second(l))
 tail = lambda l: second(second(l))
-isEmpty = first
+isEmpty = lambda l: first(l)# incomplete
 # works since the first element of a pair is always empty and calling first(not empty) gives you lambda z: z(true, true), not true
 cons = lambda e, l: pair(empty, pair(e, l))
 
 #examples
-list1 = pair(empty, pair(one, pair(empty, pair(two, pair(empty, pair(3, empty))))))
+list1 = pair(empty, pair(one, pair(empty, pair(two, pair(empty, pair(three, empty))))))
 list2 = pair(empty, pair(one, empty))
 
 def encodeList(pythonList):
-    #
+    l = pythonList
+    if l == []:
+        return empty
+    else:
+        return pair(empty, pair(l[0], encodeList(l[1:])))
 
 def decodeList(churchList):
-    #
+    l = churchList
+    if l == empty:
+        return []
+    else:
+        return [head(l)] + decodeList(tail(l))
 
 class TestList(unittest.TestCase):
-    def testEncodeList(self):
-        #
-
-    def testDecodeList(self):
-        #
-
     def testHead(self):
         self.assertEqual(head(list1), one)
         self.assertEqual(head(list2), one)
 
     def testTail(self):
-        self.assertEqual(decodeList(head(list1)), [2, 3])
-        self.assertEqual(head(list2), empty)
+        self.assertEqual(decodeList(tail(list1)), [two, three])
+        self.assertEqual(tail(list2), empty)
+
+    def testEncodeList(self):
+        l = [1, 2, 3]
+        self.assertEqual(head(encodeList(l)), 1)
+        self.assertEqual(head(tail(encodeList(l))), 2)
+        self.assertEqual(head(tail(tail(encodeList(l)))), 3)
+        self.assertEqual(encodeList([]), empty)
+
+    def testDecodeList(self):
+        self.assertEqual(decodeList(list1), [one, two, three])
+        self.assertEqual(decodeList(list2), [one])
+        self.assertEqual(decodeList(empty), [])
 
     def testIsEmpty(self):
-        #
+        self.assertEqual(isEmpty(empty), true)
+        self.assertEqual(isEmpty(list1), false)
+        self.assertEqual(isEmpty(list2), false)
 
     def testCons(self):
-        #
+        pass
 
 # danger #loop = (lambda x: x(x))(lambda y: y(y))
 # recursion
@@ -287,7 +303,7 @@ factorial = Y(H)
 
 
 
-# TODO reimplement recursions with y combinator
+# :( never mind # TODO reimplement recursions with y combinator
 
 if __name__ == '__main__':
     unittest.main()
