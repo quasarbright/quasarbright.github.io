@@ -217,10 +217,12 @@ class testNat(unittest.TestCase):
 
 
 pair = lambda x, y: lambda z: z(x, y)
-# z is cons i guess
+empty = false
+# pair is cons, z is a function applied to both elements
 first = lambda p: p(true)
 rest = lambda p: p(false)
 
+isNil = lambda p: 
 
 
 class TestPair(unittest.TestCase):
@@ -232,6 +234,19 @@ class TestPair(unittest.TestCase):
         self.assertTrue(rest(pair(true, false))(False, True))
         self.assertEqual(lambdaToNat(rest(pair(one, two))), 2)
         self.assertEqual(lambdaToNat(rest(rest(pair(one, pair(two, three))))), 3)
+
+# danger #loop = (lambda x: x(x))(lambda y: y(y))
+# recursion
+'''
+Y = lambda f: (lambda x: f(x(x)))(lambda x: f(x(x)))
+H = lambda f: lambda n: isZero(n)(1, mult(n, f(sub1(n))))
+factorial = Y(H)
+'''
+# runtime error for infinite recursion
+
+sum = lambda p:
+
+
 
 
 # TODO reimplement recursions with y combinator
