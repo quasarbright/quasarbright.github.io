@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Taxon</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+  <script src="shared.js" charset="utf-8"></script>
+  <script src="script.js" charset="utf-8"></script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="input-field">
+      <!-- <li><a href="add_profile/add.html" target="_blank"><button type="button" class="btn waves-effect" name="add">add profile</button></a></li>
+          <li><a href="train_profile/train.html" target="_blank"><button class="btn waves-effect">train</button></li> -->
+      <button id="add-btn" class="btn" onclick="openurl('add_profile/add.html')">add profile</button>
+      <button id="train-btn" class="btn disabled" onclick="openurl('train_profile/train.html')">train profile</button>
+      <button id="use-btn" class="btn disabled" onclick="openurl('use_profile/use.html')">use profile</button>
+      <br><br>
+      <button class="btn" onclick="update()">refresh</button>
+  </div>
+</body>
+
+</html>

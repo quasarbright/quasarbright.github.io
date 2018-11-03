@@ -1,0 +1,17 @@
+{
+  "name": "command-line-gui",
+  "version": "1.0.0",
+  "description": "gui for command line scripts",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "mdelmonaco",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^1.7.11",
+    "jquery": "^3.3.1",
+    "node-cmd": "^3.0.0"
+  }
+}

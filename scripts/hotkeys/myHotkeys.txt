@@ -1,0 +1,1 @@
+ctrl+shift+right => python3 /Users/mdelmonaco/OneDrive/scripts/hitRight18Times.py

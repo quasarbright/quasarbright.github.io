@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script type="text/javascript">
+    require('hammerjs');
+    require('jquery');
+    require('materialize-css');
+  </script>
+  <!-- <script type="text/javascript">
+    window.$ = window.jQuery = require('jquery');
+    window.Hammer = require('hammer.min.js');
+  </script> -->
+  <!-- <script src="hammer.min.js" onload="Hammer = module.exports;"></script>
+  <script src="materialize.js"></script>
+  <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
+  <script type="text/javascript" src="node_modules/hammerjs/hammer.min.js"></script>
+  <script type="text/javascript" src="node_modules/materialize-css/dist/js/materialize.js"></script> -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+  <!-- <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script> -->
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script> -->
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+  <script src="generator.js"></script>
+  <div class="container">
+    <div class="row">
+      <!-- class selection -->
+      <div class="input-field col">
+        <select class="col" id="class_select">
+        </select>
+        <label for="class_select">class</label>
+        <button class="btn col" onclick="create_new_class">create new</button>
+      </div>
+    </div>
+    <!-- json loading icon -->
+    <div id="json_loading"></div>
+    <hr>
+    <div class="row">
+      <!-- mode selection -->
+      <div class="input-field col">
+        <select id="mode_select" class="col">
+          <option selected="selected" value="merge">merge</option>
+          <option value="new" >new</option>
+        </select>
+        <label for="mode_select">what to do with extras</label>
+      </div>
+      <!-- group size input -->
+      <div class="input-field col">
+        <input type="text" id="group_size_text" value="3">
+        <label for="group_size_text">group size</label>
+      </div>
+    </div>
+    <!-- generate groups -->
+    <button type="submit" class="btn" onclick="generate()">
+  			generate
+  	</button>
+  </div>
+  <br>
+  <!-- output -->
+  <div class="container">
+    <div class="row" id="out"></div>
+    <p>TODO: user made groups and write to JSON</p>
+  </div>
+</body>
+
+</html>

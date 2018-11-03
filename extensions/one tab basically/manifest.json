@@ -1,0 +1,17 @@
+{
+    "manifest_version": 2,
+    "name": "onetab",
+    "description":"copy of onetab, but worse",
+    "version": "0.0.1",
+    "background":{
+      "scripts":["background.js"]
+    },
+    "permissions":[
+      "tabs"
+    ],
+    "browser_action":{
+      "default_icon":"images/not the onetab logo.PNG",
+      "default_title":"copy of onetab basically",
+      "default_popup":"popup.html"
+    }
+}

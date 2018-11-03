@@ -1,0 +1,25 @@
+{
+  "classes": [{
+      "name": "period 1",
+      "students": [
+        "mike",
+        "steve",
+        "kevin",
+        "john",
+        "christian",
+        "austin",
+        "jim"
+      ]
+    },
+    {
+      "name": "period 2",
+      "students": [
+        "edward elric",
+        "alphonse elric",
+        "michael scott",
+        "spongebob squarepants",
+        "rick sanchez"
+      ]
+    }
+  ]
+}

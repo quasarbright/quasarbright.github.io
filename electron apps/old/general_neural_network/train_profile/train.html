@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>train</title>
+  <script src="../shared.js" charset="utf-8"></script>
+  <script src="train.js" charset="utf-8"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+</head>
+
+<body>
+  <div class="container">
+    <div class="input-field">
+      <select>
+        <option value="">Choose profile</option>
+
+      </select><button class="btn inline col s1" onclick="updateProfileSelect()">refresh</button>
+    </div>
+    <div class="input-field">
+      <button type="button" id="choose" class="btn waves-effect disabled" onclick="getDir()">choose image folder</button><br>
+      <p id="dirname-out"></p>
+    </div>
+    <div class="input-field">
+      <button type="button" id="begin" class="btn waves-effect disabled" onclick="begin()">begin</button><br>
+    </div>
+    <div class="" id="loading_bar_container">
+      <div class="" id="loading_bar"></div>
+    </div><br><p id="loading-msg"></p>
+    <div id="err"></div>
+    <div id="out"></div>
+  </div>
+</body>
+
+</html>

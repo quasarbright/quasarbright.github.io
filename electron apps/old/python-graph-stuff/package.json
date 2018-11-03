@@ -1,0 +1,15 @@
+{
+  "name": "python-graph-stuff",
+  "version": "1.0.0",
+  "description": "python computes some graph stuff and it gets displayed in p5js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "author": "mdelmonaco",
+  "license": "MIT",
+  "dependencies": {
+    "child_process": "^1.0.2"
+  }
+}

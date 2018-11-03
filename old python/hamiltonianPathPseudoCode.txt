@@ -1,0 +1,18 @@
+memo = {} //(S,v) => T or F
+does path exist (S,v): assume v in S
+  if memo[(S,v)] exists:
+    return memo[(S,v)]
+  if length(S) == 2:
+    if connected:
+      memo[(S,v)] = true
+      return true
+    else:
+      return false
+  for neighbor w of v in S:
+    if memo[(S-v,w)] exists:
+      return memo[(S-v,w)]
+    else://if we don't know about this (S-v,w) yet
+      memo[(S-v,w)] = does path exist(S-v,w)
+      return does path exist(s-v,w)
+  memo[(S-v,w)] = false
+  return false //if it got here there were no good ws

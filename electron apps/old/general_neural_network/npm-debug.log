@@ -1,0 +1,47 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'C:\\Program Files\\nodejs\\node.exe',
+1 verbose cli   'C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
+1 verbose cli   'start' ]
+2 info using npm@3.10.10
+3 info using node@v6.11.1
+4 verbose run-script [ 'prestart', 'start', 'poststart' ]
+5 info lifecycle general_neural_network@1.0.0~prestart: general_neural_network@1.0.0
+6 silly lifecycle general_neural_network@1.0.0~prestart: no script for prestart, continuing
+7 info lifecycle general_neural_network@1.0.0~start: general_neural_network@1.0.0
+8 verbose lifecycle general_neural_network@1.0.0~start: unsafe-perm in lifecycle true
+9 verbose lifecycle general_neural_network@1.0.0~start: PATH: C:\Program Files\nodejs\node_modules\npm\bin\node-gyp-bin;C:\Users\mdelm\other onedrive\OneDrive\Documents\atom\electron apps\general_neural_network\node_modules\.bin;C:\Users\mdelm\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\mdelm\bin;C:\Python35\Scripts;C:\Python35;C:\ProgramData\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\Program Files\nodejs;C:\Program Files\Git\cmd;C:\Python27;C:\Python27\Scripts;C:\Users\mdelm\AppData\Local\atom\bin;C:\Users\mdelm\AppData\Local\Microsoft\WindowsApps;C:\Users\mdelm\AppData\Roaming\npm;C:\Users\mdelm\AppData\Roaming\npm\node_modules\http-server;C:\Users\mdelm\OneDrive\Documents\Processing\processing-3.3.6-windows64\processing-3.3.6;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl
+10 verbose lifecycle general_neural_network@1.0.0~start: CWD: C:\Users\mdelm\other onedrive\OneDrive\Documents\atom\electron apps\general_neural_network
+11 silly lifecycle general_neural_network@1.0.0~start: Args: [ '/d /s /c', 'eelctron .' ]
+12 silly lifecycle general_neural_network@1.0.0~start: Returned: code: 1  signal: null
+13 info lifecycle general_neural_network@1.0.0~start: Failed to exec start script
+14 verbose stack Error: general_neural_network@1.0.0 start: `eelctron .`
+14 verbose stack Exit status 1
+14 verbose stack     at EventEmitter.<anonymous> (C:\Program Files\nodejs\node_modules\npm\lib\utils\lifecycle.js:255:16)
+14 verbose stack     at emitTwo (events.js:106:13)
+14 verbose stack     at EventEmitter.emit (events.js:191:7)
+14 verbose stack     at ChildProcess.<anonymous> (C:\Program Files\nodejs\node_modules\npm\lib\utils\spawn.js:40:14)
+14 verbose stack     at emitTwo (events.js:106:13)
+14 verbose stack     at ChildProcess.emit (events.js:191:7)
+14 verbose stack     at maybeClose (internal/child_process.js:891:16)
+14 verbose stack     at Process.ChildProcess._handle.onexit (internal/child_process.js:226:5)
+15 verbose pkgid general_neural_network@1.0.0
+16 verbose cwd C:\Users\mdelm\other onedrive\OneDrive\Documents\atom\electron apps\general_neural_network
+17 error Windows_NT 10.0.16299
+18 error argv "C:\\Program Files\\nodejs\\node.exe" "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js" "start"
+19 error node v6.11.1
+20 error npm  v3.10.10
+21 error code ELIFECYCLE
+22 error general_neural_network@1.0.0 start: `eelctron .`
+22 error Exit status 1
+23 error Failed at the general_neural_network@1.0.0 start script 'eelctron .'.
+23 error Make sure you have the latest version of node.js and npm installed.
+23 error If you do, this is most likely a problem with the general_neural_network package,
+23 error not with npm itself.
+23 error Tell the author that this fails on your system:
+23 error     eelctron .
+23 error You can get information on how to open an issue for this project with:
+23 error     npm bugs general_neural_network
+23 error Or if that isn't available, you can get their info via:
+23 error     npm owner ls general_neural_network
+23 error There is likely additional logging output above.
+24 verbose exit [ 1, true ]

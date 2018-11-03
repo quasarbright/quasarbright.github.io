@@ -1,0 +1,12 @@
+{
+  "name": "general_neural_network",
+  "version": "1.0.0",
+  "description": "create a general trainable neural network using tensorflow and inception V3 via a GUI",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start":"elctron ."
+  },
+  "author": "mdelmonaco",
+  "license": "MIT"
+}
