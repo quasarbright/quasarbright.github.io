@@ -32,37 +32,39 @@ class testMakeIns(unittest.TestCase):
         ])
 
 
-def testTruthTable(assertEqual, func, outs):
-    numArgs = len(signature(func).parameters)
+def testTruthTable(assertEqual, func, numArgs, outs):
     ins = makeIns(numArgs)
     for inputRow, output in zip(ins, outs):
-        assertEqual(func(*inputRow), output)
+        ans = func
+        for x in inputRow:
+            ans = ans(x)
+        assertEqual(output, ans)
 
 # boolean logic
-true = lambda tx, ty : tx
-false = lambda fx, fy : fy
+true = lambda tx: lambda ty: tx
+false = lambda fx: lambda fy: fy
 
-myand = lambda a, b : a(b(true, false), false)
-myor = lambda a, b : a(true, b(true, false))
-mynot = lambda a : a(false, true)
-myxor = lambda a, b: a(b(false, true), b(true, false))
-myimplies = lambda a, b: a(b(true, false), true)
+myand = lambda a: lambda b: a(b(true)(false))(false)
+myor = lambda a: lambda b: a(true)(b(true)(false))
+mynot = lambda a : a(false)(true)
+myxor = lambda a: lambda b: a(b(false)(true))(b(true)(false))
+myimplies = lambda a: lambda b: a(b(true)(false))(true)
 # test
 class BooleanTests(unittest.TestCase):
     def testMyAnd(self):
-        testTruthTable(self.assertEqual, myand, [false, false, false, true])
+        testTruthTable(self.assertEqual, myand, 2, [false, false, false, true])
 
     def testMyOr(self):
-        testTruthTable(self.assertEqual, myor, [false, true, true, true])
+        testTruthTable(self.assertEqual, myor, 2, [false, true, true, true])
 
     def testMyNot(self):
-        testTruthTable(self.assertEqual, mynot, [true, false])
+        testTruthTable(self.assertEqual, mynot, 1, [true, false])
 
     def testMyXor(self):
-        testTruthTable(self.assertEqual, myxor, [false, true, true, false])
+        testTruthTable(self.assertEqual, myxor, 2, [false, true, true, false])
 
     def testMyImplies(self):
-        testTruthTable(self.assertEqual, myimplies, [true, true, false, true])
+        testTruthTable(self.assertEqual, myimplies, 2, [true, true, false, true])
 
 
 # natural numbers
@@ -116,18 +118,11 @@ def sub1(nat):# needs testing
 
 
     '''
-
-def add(nat1, nat2):
-    return lambda f: lambda x: nat2(f)(nat1(f)(x))
-
-def sub(nat1, nat2):
-    return nat2(sub1)(nat1)
-
-def mult(nat1, nat2):
-    return lambda f: nat2(nat1(f))
-
-def exp(nat1, nat2):
-    return nat2(nat1)
+# add = lambda nat1: lambda nat2: (lambda f: lambda x: nat2(f)(nat1(f)(x))
+add = lambda nat1: lambda nat2: nat2(add1)(nat1)
+sub = lambda nat1: lambda nat2: nat2(sub1)(nat1)
+mult = lambda nat1: lambda nat2: lambda f: nat2(nat1(f))
+exp = lambda nat1: lambda nat2: nat2(nat1)
 
 def natToLambda(num):
     if num == 0:
@@ -138,15 +133,9 @@ def natToLambda(num):
 def lambdaToNat(nat):
     return nat(lambda x:x+1)(0)
 
-def isZero(nat):
-    return nat(lambda x: false)(true)
-
-def isEqual(nat1, nat2):
-    return myand(isLTE(nat1, nat2), isLTE(nat2, nat1))
-
-
-def isLTE(nat1, nat2):
-    return isZero(sub(nat1, nat2))
+isZero = lambda nat: nat(lambda x: false)(true)
+isEqual = lambda nat1: lambda nat2: myand(isLTE(nat1)(nat2))(isLTE(nat2)(nat1))
+isLTE = lambda nat1: lambda nat2: isZero(sub(nat1)(nat2))
 
 
 class testNat(unittest.TestCase):
@@ -174,29 +163,29 @@ class testNat(unittest.TestCase):
         self.assertEqual(lambdaToNat(natToLambda(3)), 3)
 
     def testAdd(self):
-        self.assertEqual(lambdaToNat(add(one, two)), 3)
-        self.assertEqual(lambdaToNat(add(two, three)), 5)
-        self.assertEqual(lambdaToNat(add(zero, three)), 3)
+        self.assertEqual(lambdaToNat(add(one)(two)), 3)
+        self.assertEqual(lambdaToNat(add(two)(three)), 5)
+        self.assertEqual(lambdaToNat(add(zero)(three)), 3)
 
     def testSub(self):
-        self.assertEqual(lambdaToNat(sub(one, two)), 0)
-        self.assertEqual(lambdaToNat(sub(two, one)), 1)
-        self.assertEqual(lambdaToNat(sub(three, one)), 2)
-        self.assertEqual(lambdaToNat(sub(one, one)), 0)
-        self.assertEqual(lambdaToNat(sub(zero, zero)), 0)
-        self.assertEqual(lambdaToNat(sub(zero, one)), 0)
+        self.assertEqual(lambdaToNat(sub(one)(two)), 0)
+        self.assertEqual(lambdaToNat(sub(two)(one)), 1)
+        self.assertEqual(lambdaToNat(sub(three)(one)), 2)
+        self.assertEqual(lambdaToNat(sub(one)(one)), 0)
+        self.assertEqual(lambdaToNat(sub(zero)(zero)), 0)
+        self.assertEqual(lambdaToNat(sub(zero)(one)), 0)
 
     def testMult(self):
-        self.assertEqual(lambdaToNat(mult(two, three)), 6)
-        self.assertEqual(lambdaToNat(mult(two, two)), 4)
-        self.assertEqual(lambdaToNat(mult(zero, three)), 0)
-        self.assertEqual(lambdaToNat(mult(three, zero)), 0)
+        self.assertEqual(lambdaToNat(mult(two)(three)), 6)
+        self.assertEqual(lambdaToNat(mult(two)(two)), 4)
+        self.assertEqual(lambdaToNat(mult(zero)(three)), 0)
+        self.assertEqual(lambdaToNat(mult(three)(zero)), 0)
 
     def testExp(self):
-        self.assertEqual(lambdaToNat(exp(two, three)), 8)
-        self.assertEqual(lambdaToNat(exp(zero, three)), 0)
-        self.assertEqual(lambdaToNat(exp(two, zero)), 1)
-        self.assertEqual(lambdaToNat(exp(three, two)), 9)
+        self.assertEqual(lambdaToNat(exp(two)(three)), 8)
+        self.assertEqual(lambdaToNat(exp(zero)(three)), 0)
+        self.assertEqual(lambdaToNat(exp(two)(zero)), 1)
+        self.assertEqual(lambdaToNat(exp(three)(two)), 9)
 
     def testIsZero(self):
         self.assertEqual(isZero(zero), true)
@@ -204,31 +193,31 @@ class testNat(unittest.TestCase):
         self.assertEqual(isZero(two), false)
 
     def testIsEqual(self):
-        self.assertEqual(isEqual(one, two), false)
-        self.assertEqual(isEqual(one, one), true)
-        self.assertEqual(isEqual(one, add1(zero)), true)
+        self.assertEqual(isEqual(one)(two), false)
+        self.assertEqual(isEqual(one)(one), true)
+        self.assertEqual(isEqual(one)(add1(zero)), true)
 
     def testIsLTE(self):
-        self.assertEqual(isLTE(zero, zero), true)
-        self.assertEqual(isLTE(one, zero), false)
-        self.assertEqual(isLTE(zero, one), true)
-        self.assertEqual(isLTE(zero, two), true)
-        self.assertEqual(isLTE(one, three), true)
+        self.assertEqual(isLTE(zero)(zero), true)
+        self.assertEqual(isLTE(one)(zero), false)
+        self.assertEqual(isLTE(zero)(one), true)
+        self.assertEqual(isLTE(zero)(two), true)
+        self.assertEqual(isLTE(one)(three), true)
 
 # pairs
 
-pair = lambda x, y: lambda z: z(x, y)
+pair = lambda x: lambda y: lambda z: z(x)(y)
 first = lambda p: p(true)
 second = lambda p: p(false)
 
 
 class TestPair(unittest.TestCase):
     def testFirst(self):
-        self.assertEqual(lambdaToNat(first(pair(one, two))), 1)
+        self.assertEqual(lambdaToNat(first(pair(one)(two))), 1)
 
     def testsecond(self):
-        self.assertEqual(lambdaToNat(second(pair(one, two))), 2)
-        self.assertEqual(lambdaToNat(second(second(pair(one, pair(two, three))))), 3)
+        self.assertEqual(lambdaToNat(second(pair(one)(two))), 2)
+        self.assertEqual(lambdaToNat(second(second(pair(one)(pair(two)(three))))), 3)
 
 # lists
 
@@ -293,10 +282,10 @@ U = lambda f: f(f)
 Y = U(lambda h: lambda f: f(lambda x: U(h)(f)(x)))
 Y = ((lambda h: lambda f: f(lambda x:h(h)(f)(x)))
      (lambda h: lambda f: f(lambda x:h(h)(f)(x))))
-factorial = Y(lambda f: lambda n: one if isLTE(n, zero) == true else mult(n, f(sub1(n))))
+factorial = Y(lambda f: lambda n: one if isLTE(n)(zero) == true else mult(n)(f(sub1(n))))
 # need to use builtin ifs because f(n) = isZero(n, n*f(n-1)) infinitely recurses because right side is evaluated
 # unless
-factorial = Y(lambda f: lambda n: isZero(n)(lambda _: one, lambda _: mult(n, f(sub1(n))))(VOID))
+factorial = Y(lambda f: lambda n: isZero(n)(lambda _: one)(lambda _: mult(n)(f(sub1(n))))(VOID))
 '''
 by making the clauses of the boolean-if zero-argument functions and then executing the whole thing,
     you end up choosing an expression to evaluate, then evaluate it
@@ -306,8 +295,8 @@ the reason this happens is because python doesn't evaluate function bodies until
 '''
 
 # foldr
-sumList = Y(lambda f: lambda l: isEmpty(l)(lambda _:zero, lambda _:add(head(l), f(tail(l))))(VOID))
-foldr = lambda reducer: lambda base: lambda l: Y(lambda f: lambda l: isEmpty(l)(lambda _: base, lambda _: reducer(head(l))(f(tail(l))))(VOID))(l)
+sumList = Y(lambda f: lambda l: isEmpty(l)(lambda _:zero)(lambda _:add(head(l))(f(tail(l))))(VOID))
+foldr = lambda reducer: lambda base: lambda l: Y(lambda f: lambda l: isEmpty(l)(lambda _: base)(lambda _: reducer(head(l))(f(tail(l))))(VOID))(l)
 '''
 has 2 "l"s because f must be a function of l and foldr must be a function of l
 so using Y, it makes a function that does the stuff to a list. Then it calls that recursive function on the foldr's list
@@ -323,12 +312,11 @@ class TestRecursion(unittest.TestCase):
         self.assertEqual(lambdaToNat(sumList(cons(one)(cons(one)(cons(one)(empty))))), 3)
 
     def testFoldr(self):
-        sumList_ = lambda l: foldr(lambda x: lambda total: add(x, total))(zero)(l)
-        # need to wrap add to desugar the multi-argument
+        sumList_ = lambda l: foldr(add)(zero)(l)
         self.assertEqual(lambdaToNat(sumList_(empty)), 0)
         self.assertEqual(lambdaToNat(sumList_(cons(one)(cons(two)(cons(three)(empty))))), 6)
         self.assertEqual(lambdaToNat(sumList_(cons(one)(cons(one)(cons(one)(empty))))), 3)
-        productList = lambda l: foldr(lambda x: lambda product: mult(x, product))(one)(l)
+        productList = lambda l: foldr(mult)(one)(l)
         self.assertEqual(lambdaToNat(productList(empty)), 1)
         self.assertEqual(lambdaToNat(productList(cons(one)(cons(two)(cons(three)(empty))))), 6)
         self.assertEqual(lambdaToNat(productList(cons(one)(cons(one)(cons(one)(empty))))), 1)
