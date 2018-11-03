@@ -23,26 +23,12 @@ class Ship{
     position.add(velocity);
     velocity.add(acceleration);
     acceleration.mult(0);
-    checkBounds();
+    checkBounds(position);
   }
   
   // returns a shot from where the ship is, in the direction the ship is facing
   Shot shoot(){
     return new Shot(position, direction);
-  }
-  
-  // puts the ship in bounds if it is out of bounds
-  void checkBounds(){
-    if(position.x < -CWIDTH / 2.0){
-      position.x = CWIDTH / 2.0;
-    } else if(position.x > CWIDTH / 2.0){
-      position.x = -CWIDTH / 2.0;
-    } 
-    if(position.y < -CHEIGHT / 2.0){
-      position.y = CHEIGHT / 2.0;
-    } else if(position.y > CHEIGHT / 2.0){
-      position.y = -CHEIGHT / 2.0;
-    }
   }
   
   // pushes the ship in the direction of f
