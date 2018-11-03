@@ -1,6 +1,15 @@
 /////////////////////////// general ///////////////////////
 void testToPixel(){}
 void testToCoord(){}
+void testCheckBounds(){
+  PVector position = new PVector(CWIDTH/2.0 + 1, -CHEIGHT/2.0 - 1);
+  checkBounds(position);
+  assert position.equals(new PVector(-CWIDTH/2.0, CHEIGHT/2.0));
+  
+  position = new PVector(-CWIDTH/2.0 - 1, CHEIGHT/2.0 + 1);
+  checkBounds(position);
+  assert position.equals(new PVector(CWIDTH/2.0, -CHEIGHT/2.0));
+}
 /////////////////////////// ship //////////////////////////
 void testShipVelocity(){
   Ship ship = new Ship();
@@ -46,17 +55,6 @@ void testShoot(){
 
 void testShipHitAsteroid(){}
 
-void testShipOffscreen(){
-  Ship ship = new Ship();
-  ship.position = new PVector(CWIDTH/2.0 + 1, -CHEIGHT/2.0 - 1);
-  ship.checkBounds();
-  assert ship.position.equals(new PVector(-CWIDTH/2.0, CHEIGHT/2.0));
-  
-  ship.position = new PVector(-CWIDTH/2.0 - 1, CHEIGHT/2.0 + 1);
-  ship.checkBounds();
-  assert ship.position.equals(new PVector(CWIDTH/2.0, -CHEIGHT/2.0));
-}
-
 void testKeyHandler(){
   Ship ship = new Ship();
   ship.keyHandler('w');
@@ -86,18 +84,28 @@ void testSetDirection(){
 }
 
 ////////////////////////////// shot /////////////////////////
-void testShotVelocity(){}
+void testShotVelocity(){
+  Shot shot = new Shot(new PVector(0,0),new PVector(1,0));
+  shot.update();
+  shot.update();
+  assert shot.position.equals(new PVector(2*SHOT_SPEED, 0));
+}
 
-void testShotOffscreen(){}
-
-void testShotDisappears(){}// check isAlive
+void testShotDisappears(){
+  Shot shot = new Shot(new PVector(0,0),new PVector(1,0));
+  for(int i = 0; i < SHOT_LIFE_SPAN; i++){
+    shot.update();
+  }
+  assert shot.isAlive;
+  shot.update();
+  assert !shot.isAlive: shot.age;
+}
 
 // asteroid
 void testAsteroidVelocity(){}
 
-void testAsteroidOffscreen(){}
-
 void testSplit(){}//split should just return two small asteroids
+
 void testAsteroidOffScreen(){}
 
 void testAsteroidDisappears(){}// check isAlive
@@ -119,20 +127,22 @@ void testShotCreation(){}
 void testAsteroidSplitting(){}
 
 void runTests(){
+  // general
+  testToCoord();
+  testToPixel();
+  testCheckBounds();
+  // ship
   testShipVelocity();
   testShipAcceleration();
   testShoot();
   testShipHitAsteroid();
-  testShipOffscreen();
   testKeyHandler();
   testSetDirection();
   // shot
   testShotVelocity();
-  testShotOffscreen();
   testShotDisappears();
   // asteroid
   testAsteroidVelocity();
-  testAsteroidOffscreen();
   testSplit();
   testAsteroidOffScreen();
   testAsteroidDisappears();
