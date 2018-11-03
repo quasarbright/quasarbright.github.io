@@ -1,0 +1,3 @@
+hats:
+shoes:
+shirts:
