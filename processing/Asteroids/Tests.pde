@@ -27,3 +27,31 @@ void testMouseClickInput(){}
 void testGameOver(){}
 void testShotCreation(){}
 void testAsteroidSplitting(){}
+
+void runTests(){
+  testShipVelocity();
+  testShipAcceleration();
+  testShoot();
+  testShipHitAsteroid();
+  testShipOffscreen();
+  testKeyHandler();
+  testSetDirection();
+  // shot
+  testShotVelocity();
+  testShotOffscreen();
+  testShotDisappears();
+  // asteroid
+  testAsteroidVelocity();
+  testAsteroidOffscreen();
+  testSplit();
+  testAsteroidOffScreen();
+  testAsteroidDisappears();
+  // world
+  testPause();
+  testKeyInput();
+  testMousePositionInput();
+  testMouseClickInput();
+  testGameOver();
+  testShotCreation();
+  testAsteroidSplitting();
+}
