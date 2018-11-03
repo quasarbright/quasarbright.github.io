@@ -28,7 +28,6 @@ app.on('ready', () => {
 });
 ```
 7. Create an index.html file that displays your app
-# now the materialize and jquery stuff
 8. run this stuff
 ```bash
 npm install --save jquery
