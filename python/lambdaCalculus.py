@@ -49,7 +49,7 @@ myor = lambda a: lambda b: a(true)(b(true)(false))
 mynot = lambda a : a(false)(true)
 myxor = lambda a: lambda b: a(b(false)(true))(b(true)(false))
 myimplies = lambda a: lambda b: a(b(true)(false))(true)
-# test
+
 class BooleanTests(unittest.TestCase):
     def testMyAnd(self):
         testTruthTable(self.assertEqual, myand, 2, [false, false, false, true])
@@ -74,12 +74,12 @@ class BooleanTests(unittest.TestCase):
 zero = lambda f: lambda x: x
 one = lambda f: lambda x: f(x)
 two = lambda f: lambda x: f(f(x))
-three = lambda f: lambda x: f(f(f(x)))# three(f,x)
+three = lambda f: lambda x: f(f(f(x)))
 
 def add1(nat):
     return lambda f: lambda x: f(nat(f)(x))
 
-def sub1(nat):# needs testing
+def sub1(nat):
     'λnfx.n (λgh.h (g f)) (λu.x) (λu.u)'
     return lambda f: lambda x: nat(lambda g: lambda h: h(g(f)))(lambda u: x)(lambda u: u)
 
@@ -118,7 +118,7 @@ def sub1(nat):# needs testing
 
 
     '''
-# add = lambda nat1: lambda nat2: (lambda f: lambda x: nat2(f)(nat1(f)(x))
+
 add = lambda nat1: lambda nat2: nat2(add1)(nat1)
 sub = lambda nat1: lambda nat2: nat2(sub1)(nat1)
 mult = lambda nat1: lambda nat2: lambda f: nat2(nat1(f))
@@ -275,16 +275,12 @@ class TestList(unittest.TestCase):
         self.assertEqual(decodeList(list1), [one, two, three])
 
 
-#maybe do recursion via
 U = lambda f: f(f)
 # factorial = U(lambda f: lambda n: one if isLTE(n, zero) == true else mult(n, (U(f))(sub1(n))))
 # Y = lambda f: f(Y(f))
 Y = U(lambda h: lambda f: f(lambda x: U(h)(f)(x)))
 Y = ((lambda h: lambda f: f(lambda x:h(h)(f)(x)))
      (lambda h: lambda f: f(lambda x:h(h)(f)(x))))
-factorial = Y(lambda f: lambda n: one if isLTE(n)(zero) == true else mult(n)(f(sub1(n))))
-# need to use builtin ifs because f(n) = isZero(n, n*f(n-1)) infinitely recurses because right side is evaluated
-# unless
 factorial = Y(lambda f: lambda n: isZero(n)(lambda _: one)(lambda _: mult(n)(f(sub1(n))))(VOID))
 '''
 by making the clauses of the boolean-if zero-argument functions and then executing the whole thing,
@@ -322,12 +318,6 @@ class TestRecursion(unittest.TestCase):
         self.assertEqual(lambdaToNat(productList(cons(one)(cons(one)(cons(one)(empty))))), 1)
 
 
-# sum = lambda p:
-
-
-
-
-# :( never mind # TODO reimplement recursions with y combinator
 
 if __name__ == '__main__':
     unittest.main()
