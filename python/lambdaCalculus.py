@@ -1,6 +1,7 @@
 import unittest
 from inspect import signature
 
+VOID = lambda void: void
 
 def makeIns(n):
     '''returns all n-bit binary numbers as lists'''
@@ -37,10 +38,9 @@ def testTruthTable(assertEqual, func, outs):
     for inputRow, output in zip(ins, outs):
         assertEqual(func(*inputRow), output)
 
-
 # boolean logic
-true = lambda x, y : x
-false = lambda x, y : y
+true = lambda tx, ty : tx
+false = lambda fx, fy : fy
 
 myand = lambda a, b : a(b(true, false), false)
 myor = lambda a, b : a(true, b(true, false))
@@ -215,6 +215,7 @@ class testNat(unittest.TestCase):
         self.assertEqual(isLTE(zero, two), true)
         self.assertEqual(isLTE(one, three), true)
 
+# pairs
 
 pair = lambda x, y: lambda z: z(x, y)
 first = lambda p: p(true)
@@ -230,28 +231,23 @@ class TestPair(unittest.TestCase):
         self.assertEqual(lambdaToNat(second(second(pair(one, pair(two, three))))), 3)
 
 # lists
-# [1, 2, 3] is pair(empty, pair(1, pair(empty, pair(2, pair(empty, pair(3, empty))))))
-#              pair(pair(true, true), pair(1, pair(pair(true, true), pair(2, pair(pair(true, true), pair(3, empty))))))
-# instead of pair(1, pair(2, pair(3, empty)))
-# this is definitely right since it's exactly two pairs per item and head works
 
-empty = pair(true, true)
-head = lambda l: first(second(l))
-tail = lambda l: second(second(l))
-isEmpty = lambda l: first(l)# incomplete
-# works since the first element of a pair is always empty and calling first(not empty) gives you lambda z: z(true, true), not true
-cons = lambda e, l: pair(empty, pair(e, l))
+empty = lambda onempty: lambda onlist: onempty()
+isEmpty = lambda l: l(lambda : true)(lambda h: lambda t: false)
+cons = lambda h: lambda t: (lambda onempty: lambda onlist: onlist(h)(t))
+head = lambda l: l(VOID)(lambda h: lambda t: h)
+tail = lambda l: l(VOID)(lambda h: lambda t: t)
 
-#examples
-list1 = pair(empty, pair(one, pair(empty, pair(two, pair(empty, pair(three, empty))))))
-list2 = pair(empty, pair(one, empty))
+# examples
+list1 = cons(one)(cons(two)(cons(three)(empty)))
+list2 = cons(one)(empty)
 
 def encodeList(pythonList):
     l = pythonList
     if l == []:
         return empty
     else:
-        return pair(empty, pair(l[0], encodeList(l[1:])))
+        return cons(l[0])(encodeList(l[1:]))
 
 def decodeList(churchList):
     l = churchList
@@ -287,16 +283,56 @@ class TestList(unittest.TestCase):
         self.assertEqual(isEmpty(list2), false)
 
     def testCons(self):
-        pass
+        self.assertEqual(decodeList(list1), [one, two, three])
 
-# danger #loop = (lambda x: x(x))(lambda y: y(y))
-# recursion
+
+#maybe do recursion via
+U = lambda f: f(f)
+# factorial = U(lambda f: lambda n: one if isLTE(n, zero) == true else mult(n, (U(f))(sub1(n))))
+# Y = lambda f: f(Y(f))
+Y = U(lambda h: lambda f: f(lambda x: U(h)(f)(x)))
+Y = ((lambda h: lambda f: f(lambda x:h(h)(f)(x)))
+     (lambda h: lambda f: f(lambda x:h(h)(f)(x))))
+factorial = Y(lambda f: lambda n: one if isLTE(n, zero) == true else mult(n, f(sub1(n))))
+# need to use builtin ifs because f(n) = isZero(n, n*f(n-1)) infinitely recurses because right side is evaluated
+# unless
+factorial = Y(lambda f: lambda n: isZero(n)(lambda _: one, lambda _: mult(n, f(sub1(n))))(VOID))
 '''
-Y = lambda f: (lambda x: f(x(x)))(lambda x: f(x(x)))
-H = lambda f: lambda n: isZero(n)(1, mult(n, f(sub1(n))))
-factorial = Y(H)
+by making the clauses of the boolean-if zero-argument functions and then executing the whole thing,
+    you end up choosing an expression to evaluate, then evaluate it
+    doing it the normal way would mean evaluating both clauses, then chosing which one to return
+the reason this happens is because python doesn't evaluate function bodies until the function is called
+    and you're putting the expression in a "fake" function body
 '''
-# runtime error for infinite recursion
+
+# foldr
+sumList = Y(lambda f: lambda l: isEmpty(l)(lambda _:zero, lambda _:add(head(l), f(tail(l))))(VOID))
+foldr = lambda reducer: lambda base: lambda l: Y(lambda f: lambda l: isEmpty(l)(lambda _: base, lambda _: reducer(head(l))(f(tail(l))))(VOID))(l)
+'''
+has 2 "l"s because f must be a function of l and foldr must be a function of l
+so using Y, it makes a function that does the stuff to a list. Then it calls that recursive function on the foldr's list
+'''
+class TestRecursion(unittest.TestCase):
+    def testFactorial(self):
+        self.assertEqual(factorial(zero), one)
+        self.assertEqual(lambdaToNat(factorial(three)), 6)
+
+    def testSumList(self):
+        self.assertEqual(lambdaToNat(sumList(empty)), 0)
+        self.assertEqual(lambdaToNat(sumList(cons(one)(cons(two)(cons(three)(empty))))), 6)
+        self.assertEqual(lambdaToNat(sumList(cons(one)(cons(one)(cons(one)(empty))))), 3)
+
+    def testFoldr(self):
+        sumList_ = lambda l: foldr(lambda x: lambda total: add(x, total))(zero)(l)
+        # need to wrap add to desugar the multi-argument
+        self.assertEqual(lambdaToNat(sumList_(empty)), 0)
+        self.assertEqual(lambdaToNat(sumList_(cons(one)(cons(two)(cons(three)(empty))))), 6)
+        self.assertEqual(lambdaToNat(sumList_(cons(one)(cons(one)(cons(one)(empty))))), 3)
+        productList = lambda l: foldr(lambda x: lambda product: mult(x, product))(one)(l)
+        self.assertEqual(lambdaToNat(productList(empty)), 1)
+        self.assertEqual(lambdaToNat(productList(cons(one)(cons(two)(cons(three)(empty))))), 6)
+        self.assertEqual(lambdaToNat(productList(cons(one)(cons(one)(cons(one)(empty))))), 1)
+
 
 # sum = lambda p:
 
