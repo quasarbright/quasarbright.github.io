@@ -35,10 +35,8 @@ npm install --save jquery
 npm install --save hammerjs
 npm install --save materialize-css
 ```
-9. in your index.html add a link to materialize.css (or download and link):
-```html
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
-```
+9. in your index.html add a link to materialize.css (or download and link):  
+`<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">`
 10. in your renderer script (the one that operates from index.html) add this code to the beginning:
 ```js
 require('jquery')
