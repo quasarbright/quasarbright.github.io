@@ -1,4 +1,4 @@
-final float SHOT_SPEED = 10;
+final float SHOT_SPEED = 1;
 final int SHOT_LIFE_SPAN = 300;
 class Shot{
   PVector position;

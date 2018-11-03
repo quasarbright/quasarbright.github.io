@@ -1,6 +1,18 @@
 /////////////////////////// general ///////////////////////
-void testToPixel(){}
-void testToCoord(){}
+void testToPixel(){
+  assert toPixel(new PVector(0,0)).equals(new PVector(width/2, height/2));
+  assert toPixel(new PVector(-CWIDTH/2.0,-CHEIGHT/2.0)).equals(new PVector(0,0));
+  assert toPixel(new PVector(CWIDTH/2.0,CHEIGHT/2.0)).equals(new PVector(width,height));
+  assert toPixel(new PVector(CWIDTH/2.0, 0)).equals(new PVector(width, height/2.0));
+}
+
+void testToCoord(){
+  assert toCoord(new PVector(0,0)).equals(new PVector(-CWIDTH/2.0, CHEIGHT/2.0));
+  assert toCoord(new PVector(width, height)).equals(new PVector(CWIDTH/2.0, -CHEIGHT/2.0));
+  assert toCoord(new PVector(width/2.0, height/2.0)).equals(new PVector(0, 0));
+  assert toCoord(new PVector(width/2.0, height)).equals(new PVector(0, -CHEIGHT/2.0));
+}
+
 void testCheckBounds(){
   PVector position = new PVector(CWIDTH/2.0 + 1, -CHEIGHT/2.0 - 1);
   checkBounds(position);
@@ -53,8 +65,6 @@ void testShoot(){
   assert shot.velocity.equals(new PVector(SHOT_SPEED, 0)) : ship.shoot().velocity;
 }
 
-void testShipHitAsteroid(){}
-
 void testKeyHandler(){
   Ship ship = new Ship();
   ship.keyHandler('w');
@@ -102,13 +112,39 @@ void testShotDisappears(){
 }
 
 // asteroid
-void testAsteroidVelocity(){}
+void testAsteroidVelocity(){
+  Asteroid asteroid = new Asteroid(new PVector(),new PVector(1, 0),0);
+  asteroid.update();
+  asteroid.update();
+  assert asteroid.position.equals(new PVector(2*ASTEROID_SPEED, 0));
+}
 
-void testSplit(){}//split should just return two small asteroids
-
-void testAsteroidOffScreen(){}
-
-void testAsteroidDisappears(){}// check isAlive
+void testSplit(){
+  Asteroid asteroid = new Asteroid(new PVector(),new PVector(),0);
+  Asteroid[] children = asteroid.split();
+  Asteroid a = children[0];
+  Asteroid b = children[1];
+  assert !asteroid.isAlive;
+  assert a.sizeIndex == 1 && b.sizeIndex == 1;
+  assert a.isAlive && b.isAlive;
+  
+  asteroid = a;
+  children = asteroid.split();
+  a = children[0];
+  b = children[1];
+  assert !asteroid.isAlive;
+  assert a.sizeIndex == 2 && b.sizeIndex == 2;
+  assert a.isAlive && b.isAlive;
+  
+  asteroid = a;
+  children = asteroid.split();
+  a = children[0];
+  b = children[1];
+  assert !asteroid.isAlive;
+  assert a.sizeIndex == 3 && b.sizeIndex == 3;
+  assert !a.isAlive && !b.isAlive;
+  
+}
 
 ///////////////////////////// world ///////////////////////
 void testPause(){}
@@ -126,6 +162,10 @@ void testShotCreation(){}
 
 void testAsteroidSplitting(){}
 
+void testShotHitAsteroid(){}
+
+void testShipHitAsteroid(){}
+
 void runTests(){
   // general
   testToCoord();
@@ -135,7 +175,7 @@ void runTests(){
   testShipVelocity();
   testShipAcceleration();
   testShoot();
-  testShipHitAsteroid();
+  
   testKeyHandler();
   testSetDirection();
   // shot
@@ -144,8 +184,6 @@ void runTests(){
   // asteroid
   testAsteroidVelocity();
   testSplit();
-  testAsteroidOffScreen();
-  testAsteroidDisappears();
   // world
   testPause();
   testKeyInput();
@@ -154,5 +192,7 @@ void runTests(){
   testGameOver();
   testShotCreation();
   testAsteroidSplitting();
+  testShotHitAsteroid();
+  testShipHitAsteroid();
   println("all tests passed");
 }

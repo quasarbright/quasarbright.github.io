@@ -1,5 +1,5 @@
 final PVector INITIAL_POSITION = new PVector(0, 0);
-final float FORCE = 10;
+final float FORCE = 1;
 class Ship{
   PVector position, velocity, acceleration, direction;
   Ship(){

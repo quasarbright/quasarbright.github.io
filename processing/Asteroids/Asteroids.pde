@@ -20,3 +20,15 @@ void checkBounds(PVector position) {
     position.y = -CHEIGHT / 2.0;
   }
 }
+
+PVector toPixel(PVector p){
+  float x = map(p.x, -CWIDTH/2, CWIDTH/2, 0, width);
+  float y = map(p.y, -CHEIGHT/2, CHEIGHT/2, height, 0);
+  return new PVector(x, y);
+}
+
+PVector toCoord(PVector p){
+  float x = map(p.x, 0, width, -CWIDTH/2, CWIDTH/2);
+  float y = map(p.y, 0, height, CHEIGHT/2, -CHEIGHT/2);
+  return new PVector(x, y);
+}
