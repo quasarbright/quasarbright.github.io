@@ -1,5 +1,6 @@
 final float ASTEROID_SPEED = .5;
-final float[] ASTEROID_SIZES = {20, 10, 5, 0}; 
+//float[] ASTEROID_SIZES = {.2*width, .1*width, .05*width, 0};//px
+// in setup
 // store size and isAlive
 class Asteroid{
   PVector position;
@@ -64,5 +65,11 @@ class Asteroid{
   void update(){
     position.add(velocity);
     checkBounds(position);
+  }
+  
+  void show(){
+    PVector pposition = toPixel(position);
+    float radius = ASTEROID_SIZES[sizeIndex];
+    circle(pposition, radius);
   }
 }

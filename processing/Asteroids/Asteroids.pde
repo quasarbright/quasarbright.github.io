@@ -1,11 +1,24 @@
 final int CWIDTH = 100;
 final int CHEIGHT = 100;
+float SHIP_RADIUS;
+float[] ASTEROID_SIZES = new float[4];
 /*
 will be a grid where (0,0) is the center and up is positive y
  */
-
 void setup() {
+  size(800,800);
   runTests();
+  SHIP_RADIUS = .04*width;//px
+  ASTEROID_SIZES[0] = .1*width;
+  ASTEROID_SIZES[1] = .05*width;
+  ASTEROID_SIZES[2] = .025*width;
+  ASTEROID_SIZES[3] = 0;
+  noFill();
+  stroke(255);
+  strokeWeight(3);
+}
+void draw(){
+  background(0);
 }
 
 void checkBounds(PVector position) {
@@ -21,6 +34,11 @@ void checkBounds(PVector position) {
   }
 }
 
+void loopPixelBounds(PVector pp){
+  pp.x = (pp.x+width) % width;
+  pp.y = (pp.y+width) % height;
+}
+
 PVector toPixel(PVector p){
   float x = map(p.x, -CWIDTH/2, CWIDTH/2, 0, width);
   float y = map(p.y, -CHEIGHT/2, CHEIGHT/2, height, 0);
@@ -31,4 +49,12 @@ PVector toCoord(PVector p){
   float x = map(p.x, 0, width, -CWIDTH/2, CWIDTH/2);
   float y = map(p.y, 0, height, CHEIGHT/2, -CHEIGHT/2);
   return new PVector(x, y);
+}
+
+void circle(PVector pp, float r){
+  for(float theta = 0; theta < TWO_PI; theta += .1){
+    PVector pterm = pp.copy().add(PVector.fromAngle(theta).mult(r));
+    loopPixelBounds(pterm);
+    point(pterm.x, pterm.y);
+  }
 }

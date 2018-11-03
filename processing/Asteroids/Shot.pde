@@ -1,5 +1,6 @@
 final float SHOT_SPEED = 1;
 final int SHOT_LIFE_SPAN = 300;
+final float SHOT_RADIUS = 5;
 class Shot{
   PVector position;
   PVector velocity;
@@ -25,5 +26,10 @@ class Shot{
       checkBounds(position);
       age++;
     }
+  }
+  
+  void show(){
+    PVector pposition = toPixel(position);
+    circle(pposition, SHOT_RADIUS);
   }
 }

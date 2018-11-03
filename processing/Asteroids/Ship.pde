@@ -1,5 +1,7 @@
 final PVector INITIAL_POSITION = new PVector(0, 0);
 final float FORCE = 1;
+//float SHIP_RADIUS = .1*width;//px
+// in setup
 class Ship{
   PVector position, velocity, acceleration, direction;
   Ship(){
@@ -43,6 +45,13 @@ class Ship{
       case 's': push(new PVector(0, -1)); break;
       case 'd': push(new PVector(1, 0)); break;
     }
+  }
+  
+  void show(){
+    PVector pposition = toPixel(position);
+    circle(pposition, SHIP_RADIUS);
+    PVector pendpoint = pposition.copy().add(direction.copy().setMag(SHIP_RADIUS));
+    line(pposition.x, pposition.y, pendpoint.x, pendpoint.y);
   }
   
 }
