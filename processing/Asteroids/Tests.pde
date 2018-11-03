@@ -1,31 +1,121 @@
-// general
+/////////////////////////// general ///////////////////////
 void testToPixel(){}
 void testToCoord(){}
-// ship
-void testShipVelocity(){}
-void testShipAcceleration(){}
-void testShoot(){}
+/////////////////////////// ship //////////////////////////
+void testShipVelocity(){
+  Ship ship = new Ship();
+  ship.velocity = new PVector(1, 0);
+  ship.update();
+  assert ship.position.equals(PVector.add(INITIAL_POSITION, new PVector(1, 0))) : ship.position;
+  
+  ship.update();
+  assert ship.position.equals(PVector.add(INITIAL_POSITION, new PVector(2, 0))) : ship.position;
+}
+
+void testShipAcceleration(){
+  Ship ship = new Ship();
+  ship.acceleration = new PVector(1, 0);
+  assert ship.velocity.equals(new PVector(0,0)) : ship.velocity;
+  ship.update();
+  assert ship.acceleration.equals(new PVector(0,0)) : ship.acceleration;
+  assert ship.position.equals(new PVector(0,0)) : ship.position;
+  assert ship.velocity.equals(new PVector(1,0)) : ship.velocity;
+  
+  ship.acceleration = new PVector(1, 0);
+  ship.update();
+  assert ship.acceleration.equals(new PVector(0,0)) : ship.acceleration;
+  assert ship.position.equals(new PVector(1,0)) : ship.position;
+  assert ship.velocity.equals(new PVector(2,0)) : ship.velocity;
+  
+  ship.acceleration = new PVector(1, 0);
+  ship.update();
+  assert ship.acceleration.equals(new PVector(0,0)) : ship.acceleration;
+  assert ship.position.equals(new PVector(3,0)) : ship.position;
+  assert ship.velocity.equals(new PVector(3,0)) : ship.velocity;
+}
+
+void testShoot(){
+  Ship ship = new Ship();
+  ship.position = new PVector(0, 0);
+  ship.velocity = new PVector(0, 1);
+  ship.pointTo(new PVector(1, 0));
+  Shot shot = ship.shoot();
+  assert shot.position.equals(ship.position) : ship.shoot().position;
+  assert shot.velocity.equals(new PVector(SHOT_SPEED, 0)) : ship.shoot().velocity;
+}
+
 void testShipHitAsteroid(){}
-void testShipOffscreen(){}
-void testKeyHandler(){}
-void testSetDirection(){}
-// shot
+
+void testShipOffscreen(){
+  Ship ship = new Ship();
+  ship.position = new PVector(CWIDTH/2.0 + 1, -CHEIGHT/2.0 - 1);
+  ship.checkBounds();
+  assert ship.position.equals(new PVector(-CWIDTH/2.0, CHEIGHT/2.0));
+  
+  ship.position = new PVector(-CWIDTH/2.0 - 1, CHEIGHT/2.0 + 1);
+  ship.checkBounds();
+  assert ship.position.equals(new PVector(CWIDTH/2.0, -CHEIGHT/2.0));
+}
+
+void testKeyHandler(){
+  Ship ship = new Ship();
+  ship.keyHandler('w');
+  assert ship.acceleration.equals(new PVector(0, FORCE));
+  
+  ship.keyHandler('a');
+  assert ship.acceleration.equals(new PVector(-FORCE, 0));
+  
+  ship.keyHandler('s');
+  assert ship.acceleration.equals(new PVector(0, -FORCE));
+  
+  ship.keyHandler('d');
+  assert ship.acceleration.equals(new PVector(FORCE, 0));
+  
+  ship = new Ship();
+  ship.keyHandler('j');
+  assert ship.acceleration.equals(new PVector(0, 0));
+}
+
+void testSetDirection(){
+  Ship ship = new Ship();
+  ship.setDirection(new PVector(-1, 0));
+  assert ship.direction.equals(new PVector(-1, 0));
+  ship.position = new PVector(-1, -1);
+  ship.pointTo(new PVector(10, 10));
+  assert .01 > PVector.sub(ship.direction, new PVector(1.0/sqrt(2), 1.0/sqrt(2))).mag() : ship.direction;
+}
+
+////////////////////////////// shot /////////////////////////
 void testShotVelocity(){}
+
 void testShotOffscreen(){}
+
 void testShotDisappears(){}// check isAlive
+
 // asteroid
 void testAsteroidVelocity(){}
+
 void testAsteroidOffscreen(){}
+
 void testSplit(){}//split should just return two small asteroids
 void testAsteroidOffScreen(){}
+
 void testAsteroidDisappears(){}// check isAlive
-// world
+
+///////////////////////////// world ///////////////////////
 void testPause(){}
+
 void testKeyInput(){}
+
 void testMousePositionInput(){}
+
+
 void testMouseClickInput(){}
+
 void testGameOver(){}
+
 void testShotCreation(){}
+
 void testAsteroidSplitting(){}
 
 void runTests(){
@@ -54,4 +144,5 @@ void runTests(){
   testGameOver();
   testShotCreation();
   testAsteroidSplitting();
+  println("all tests passed");
 }
