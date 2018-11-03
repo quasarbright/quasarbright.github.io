@@ -1,8 +1,8 @@
 /////////////////////////// general ///////////////////////
 void testToPixel(){
   assert toPixel(new PVector(0,0)).equals(new PVector(width/2, height/2));
-  assert toPixel(new PVector(-CWIDTH/2.0,-CHEIGHT/2.0)).equals(new PVector(0,0));
-  assert toPixel(new PVector(CWIDTH/2.0,CHEIGHT/2.0)).equals(new PVector(width,height));
+  assert toPixel(new PVector(-CWIDTH/2.0,-CHEIGHT/2.0)).equals(new PVector(0,height));
+  assert toPixel(new PVector(CWIDTH/2.0,CHEIGHT/2.0)).equals(new PVector(width,0));
   assert toPixel(new PVector(CWIDTH/2.0, 0)).equals(new PVector(width, height/2.0));
 }
 
