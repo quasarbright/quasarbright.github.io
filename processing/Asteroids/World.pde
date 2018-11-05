@@ -60,6 +60,16 @@ class World{
     }
   }
   
+  void keyHandler(char ke){
+    switch(ke){
+      case 'w': ship.keyHandler(ke); break;
+      case 'a': ship.keyHandler(ke); break;
+      case 's': ship.keyHandler(ke); break;
+      case 'd': ship.keyHandler(ke); break;
+      case 'p': togglePause(); break;
+    }
+  }
+  
   boolean isGameOver(){
     return isShipHittingAsteroid();
   }

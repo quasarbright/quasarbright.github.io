@@ -162,7 +162,31 @@ void testPause(){
   assert world.ship.position.equals(oldPosition);
 }
 
-void testKeyInput(){}
+void testKeyInput(){
+  World world = new World();
+  
+  world.keyHandler('w');
+  assert world.ship.acceleration.equals(new PVector(0, FORCE));
+  
+  world.keyHandler('a');
+  assert world.ship.acceleration.equals(new PVector(-FORCE, 0));
+  
+  world.keyHandler('s');
+  assert world.ship.acceleration.equals(new PVector(0, -FORCE));
+  
+  world.keyHandler('d');
+  assert world.ship.acceleration.equals(new PVector(FORCE, 0));
+  
+  world.ship = new Ship();
+  world.keyHandler('j');
+  assert world.ship.acceleration.equals(new PVector(0, 0));
+  
+  assert !world.isPaused;
+  world.keyHandler('p');
+  assert world.isPaused;
+  world.keyHandler('p');
+  assert !world.isPaused;
+}
 
 void testMousePositionInput(){}
 

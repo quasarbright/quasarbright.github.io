@@ -1,5 +1,6 @@
 final PVector INITIAL_POSITION = new PVector(0, 0);
-final float FORCE = 1;
+final float FORCE = .51;
+final float FRICTION = .99;
 //float SHIP_RADIUS = .1*width;//px
 // in setup
 class Ship{
@@ -24,6 +25,7 @@ class Ship{
   void update(){
     position.add(velocity);
     velocity.add(acceleration);
+    velocity.mult(FRICTION);
     acceleration.mult(0);
     checkBounds(position);
   }
