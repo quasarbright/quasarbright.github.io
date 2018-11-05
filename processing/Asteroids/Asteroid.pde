@@ -44,6 +44,10 @@ class Asteroid{
     }
   }
   
+  float getRadius(){
+    return ASTEROID_SIZES[sizeIndex];
+  }
+  
   Asteroid[] split(){
     if(isAlive){
       isAlive = false;

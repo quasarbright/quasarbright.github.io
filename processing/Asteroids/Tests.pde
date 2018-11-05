@@ -168,9 +168,29 @@ void testShotCreation(){}
 
 void testAsteroidSplitting(){}
 
-void testShotHitAsteroid(){}
+void testCleanup(){}
 
-void testShipHitAsteroid(){}
+void testShotHitAsteroid(){
+  World world = new World();
+  Shot shot = new Shot(new PVector(0,0), new PVector(10,0));
+  Asteroid asteroid = new Asteroid(toCoord(new PVector(width/2.0+ ASTEROID_SIZES[0]+SHOT_RADIUS+1,height/2.0)), new PVector(0,0), 0);
+  world.addShot(shot);
+  world.addAsteroid(asteroid);
+  assert !circlesTouching(toPixel(shot.position), SHOT_RADIUS, toPixel(asteroid.position), ASTEROID_SIZES[0]);
+  world.update();
+  assert circlesTouching(toPixel(shot.position), SHOT_RADIUS, toPixel(asteroid.position), ASTEROID_SIZES[0]);
+}
+
+void testShipHitAsteroid(){
+  World world = new World();
+  Asteroid asteroid = new Asteroid(toCoord(new PVector(width/2.0+ ASTEROID_SIZES[0]+SHIP_RADIUS+1,height/2.0)), new PVector(-.1,0), 0);
+  world.addAsteroid(asteroid);
+  assert !world.isShipHittingAsteroid();
+  println(asteroid.position, world.ship.position);
+  world.update();
+  println(asteroid.position, world.ship.position);
+  assert world.isShipHittingAsteroid();
+}
 
 void runTests(){
   // general
@@ -199,6 +219,7 @@ void runTests(){
   testGameOver();
   testShotCreation();
   testAsteroidSplitting();
+  testCleanup();
   testShotHitAsteroid();
   testShipHitAsteroid();
   println("all tests passed");

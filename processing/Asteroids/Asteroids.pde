@@ -19,7 +19,14 @@ void setup() {
 }
 void draw(){
   background(0);
-  
+  World world = new World();
+  Asteroid asteroid = new Asteroid(toCoord(new PVector(width/2.0+ ASTEROID_SIZES[0]+SHIP_RADIUS+1,height/2.0)), new PVector(-.1,0), 0);
+  world.addAsteroid(asteroid);
+  assert !world.isShipHittingAsteroid();
+  println(asteroid.position, world.ship.position);
+  world.update();
+  println(asteroid.position, world.ship.position);
+  world.show();
 }
 
 void checkBounds(PVector position) {
@@ -64,6 +71,5 @@ void circle(PVector pp, float r){
 boolean circlesTouching(PVector pp1, float pr1, PVector pp2, float pr2){
   float distsq = PVector.sub(pp1, pp2).magSq();
   float minDistsq = pow(pr1+pr2, 2);
-  println(distsq, minDistsq);
   return distsq <= minDistsq;
 }

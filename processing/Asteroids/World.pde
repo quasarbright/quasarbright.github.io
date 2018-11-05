@@ -24,11 +24,35 @@ class World{
     ship.update();
   }
   
+  void addShot(Shot shot){
+    shots.add(shot);
+  }
+  
+  void addAsteroid(Asteroid asteroid){
+    asteroids.add(asteroid);
+  }
+  
+  void checkShotHitAsteroid(){
+    
+  }
+  
+  // is the ship currently hitting an asteroid
+  boolean isShipHittingAsteroid(){
+    PVector shippp = toPixel(ship.position);
+    for(Asteroid asteroid:asteroids){
+      PVector asteroidpp = toPixel(asteroid.position);
+      if(circlesTouching(shippp, SHIP_RADIUS, asteroidpp, asteroid.getRadius())){
+        return true;
+      }
+    }
+    return false;
+  }
+  
   void show(){
+    ship.show();
     for(Shot shot:shots)
       shot.show();
     for(Asteroid asteroid:asteroids)
       asteroid.show();
-    ship.show();
   }
 }
