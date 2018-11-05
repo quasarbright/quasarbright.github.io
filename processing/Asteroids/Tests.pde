@@ -95,8 +95,8 @@ void testSetDirection(){
   ship.setDirection(new PVector(-1, 0));
   assert ship.direction.equals(new PVector(-1, 0));
   ship.position = new PVector(-1, -1);
-  ship.pointTo(new PVector(10, 10));
-  assert .01 > PVector.sub(ship.direction, new PVector(1.0/sqrt(2), 1.0/sqrt(2))).mag() : ship.direction;
+  ship.pointTo(new PVector(0, 1));
+  assert ship.direction.equals(new PVector(1, 2).normalize());
 }
 
 ////////////////////////////// shot /////////////////////////

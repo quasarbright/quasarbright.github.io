@@ -46,9 +46,11 @@ class World{
   
   void update(){
     if(!isPaused && !isGameOver()){
+      if(frameCount % 180 == 0) addAsteroid(new Asteroid());
       checkShotHitAsteroid();
       //checkShipHitAsteroid();
       cleanup();
+      ship.pointTo(toCoord(new PVector(mouseX, mouseY)));
       for(Shot shot:shots)
         shot.update();
       for(Asteroid asteroid:asteroids)
@@ -58,6 +60,10 @@ class World{
     if(isGameOver()){
       background(255,0,0);
     }
+  }
+  
+  void mouseHandler(){
+    shoot();
   }
   
   void keyHandler(char ke){

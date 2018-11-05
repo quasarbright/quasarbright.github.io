@@ -52,7 +52,8 @@ class Ship{
   void show(){
     PVector pposition = toPixel(position);
     circle(pposition, SHIP_RADIUS);
-    PVector pendpoint = pposition.copy().add(direction.copy().setMag(SHIP_RADIUS));
+    PVector newDirection = new PVector(direction.x, -direction.y);
+    PVector pendpoint = pposition.copy().add(newDirection.copy().setMag(SHIP_RADIUS));
     line(pposition.x, pposition.y, pendpoint.x, pendpoint.y);
   }
   
