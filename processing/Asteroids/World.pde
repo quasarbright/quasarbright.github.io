@@ -45,7 +45,7 @@ class World{
   }
   
   void update(){
-    if(!isPaused){
+    if(!isPaused && !isGameOver()){
       checkShotHitAsteroid();
       //checkShipHitAsteroid();
       cleanup();
@@ -55,6 +55,13 @@ class World{
         asteroid.update();
       ship.update();
     }
+    if(isGameOver()){
+      background(255,0,0);
+    }
+  }
+  
+  boolean isGameOver(){
+    return isShipHittingAsteroid();
   }
   
   void addShot(Shot shot){

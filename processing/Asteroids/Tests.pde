@@ -169,7 +169,16 @@ void testMousePositionInput(){}
 
 void testMouseClickInput(){}
 
-void testGameOver(){}
+void testGameOver(){
+  World world = new World();
+  world.ship.velocity = new PVector(1,0);
+  PVector oldPosition = world.ship.position;
+  world.addAsteroid(new Asteroid(new PVector(), new PVector(), 0));
+  assert world.isGameOver();
+  world.update();
+  assert world.isGameOver();
+  assert world.ship.position.equals(oldPosition);
+}
 
 void testShotCreation(){}
 
@@ -186,7 +195,6 @@ void testAsteroidSplitting(){
   assert world.asteroids.size() == 1;
   world.update();
   assert world.asteroids.size() == 2;
-  
   
   
   //test small asteroid death
