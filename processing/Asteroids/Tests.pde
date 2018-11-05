@@ -153,7 +153,14 @@ void testSplit(){
 }
 
 ///////////////////////////// world ///////////////////////
-void testPause(){}
+void testPause(){
+  World world = new World();
+  world.ship.velocity = new PVector(1, 0);
+  PVector oldPosition = world.ship.position.copy();
+  world.pause();
+  world.update();
+  assert world.ship.position.equals(oldPosition);
+}
 
 void testKeyInput(){}
 

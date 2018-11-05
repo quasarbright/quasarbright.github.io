@@ -2,10 +2,12 @@ class World{
   Ship ship;
   ArrayList<Shot> shots;
   ArrayList<Asteroid> asteroids;
+  boolean isPaused;
   World(){
     ship = new Ship();
     shots = new ArrayList<Shot>();
     asteroids = new ArrayList<Asteroid>();
+    isPaused = false;
   }
   World(int numAsteroids){
     ship = new Ship();
@@ -14,6 +16,7 @@ class World{
     for(int i = 0; i < numAsteroids; i++){
       asteroids.add(new Asteroid());
     }
+    isPaused = false;
   }
   
   void cleanup(){
@@ -29,15 +32,29 @@ class World{
     shots.add(ship.shoot());
   }
   
+  void togglePause(){
+    isPaused = !isPaused;
+  }
+  
+  void pause(){
+    isPaused = true;
+  }
+  
+  void unpause(){
+    isPaused = false;
+  }
+  
   void update(){
-    checkShotHitAsteroid();
-    //checkShipHitAsteroid();
-    cleanup();
-    for(Shot shot:shots)
-      shot.update();
-    for(Asteroid asteroid:asteroids)
-      asteroid.update();
-    ship.update();
+    if(!isPaused){
+      checkShotHitAsteroid();
+      //checkShipHitAsteroid();
+      cleanup();
+      for(Shot shot:shots)
+        shot.update();
+      for(Asteroid asteroid:asteroids)
+        asteroid.update();
+      ship.update();
+    }
   }
   
   void addShot(Shot shot){
