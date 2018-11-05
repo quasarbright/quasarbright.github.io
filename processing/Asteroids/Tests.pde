@@ -166,7 +166,20 @@ void testGameOver(){}
 
 void testShotCreation(){}
 
-void testAsteroidSplitting(){}
+void testAsteroidSplitting(){
+  World world = new World();
+  Shot shot = new Shot(new PVector(), new PVector(1, 0));
+  //want the asteroid to be just to the right of the shot hitbox
+  PVector asteroidPosition = toCoord(new PVector(width/2.0,height/2.0).add(new PVector(ASTEROID_SIZES[0]+SHOT_RADIUS+1, 0)));
+  Asteroid asteroid = new Asteroid(asteroidPosition, new PVector(), 0);
+  world.addShot(shot);
+  world.addAsteroid(asteroid);
+  world.update();
+  assert world.isShotHittingAsteroid(shot, asteroid);
+  println(world.asteroids.size());
+  assert world.asteroids.size() == 2;
+  
+}
 
 void testCleanup(){
   //build test objects
@@ -184,7 +197,7 @@ void testCleanup(){
   assert world.shots.size() == 2;
   assert world.asteroids.size() == 2;
   //shouldn't change anything
-  world.cleanup();
+  world.update();
   
   assert world.shots.size() == 2;
   assert world.asteroids.size() == 2;
@@ -192,7 +205,7 @@ void testCleanup(){
   shot.isAlive = false;
   asteroid.isAlive = false;
   //should get rid of the dead ones
-  world.cleanup();
+  world.update();
   
   assert world.shots.size() == 1;
   assert world.asteroids.size() == 1;
@@ -218,6 +231,15 @@ void testShipHitAsteroid(){
   world.update();
   println(asteroid.position, world.ship.position);
   assert world.isShipHittingAsteroid();
+}
+
+void testWorldShoot(){
+  World world = new World();
+  world.shoot();
+  assert world.shots.size() == 1;
+  assert world.shots.get(0).position.equals(world.ship.position);
+  world.update();
+  assert !world.shots.get(0).position.equals(world.ship.position);
 }
 
 void runTests(){
@@ -250,5 +272,6 @@ void runTests(){
   testCleanup();
   testShotHitAsteroid();
   testShipHitAsteroid();
+  testWorldShoot();
   println("all tests passed");
 }

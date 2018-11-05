@@ -25,7 +25,14 @@ class World{
     }
   }
   
+  void shoot(){
+    shots.add(ship.shoot());
+  }
+  
   void update(){
+    checkShotHitAsteroid();
+    //checkShipHitAsteroid();
+    cleanup();
     for(Shot shot:shots)
       shot.update();
     for(Asteroid asteroid:asteroids)
@@ -42,7 +49,21 @@ class World{
   }
   
   void checkShotHitAsteroid(){
-    
+    for(Shot shot:shots){
+      for(int i = 0; i < asteroids.size(); i++){
+        println('k');
+        Asteroid asteroid = asteroids.get(i);
+        println(asteroid);
+        println(shot.position, toPixel(asteroid.position));
+        if(isShotHittingAsteroid(shot, asteroid)){//shot.isAlive && asteroid.isAlive && isShotHittingAsteroid(shot, asteroid)){
+          
+          shot.isAlive = false;
+          Asteroid[] children = asteroid.split();
+          asteroids.add(children[0]);
+          asteroids.add(children[1]);
+        }
+      }
+    }
   }
   
   // is the ship currently hitting an asteroid
@@ -55,6 +76,12 @@ class World{
       }
     }
     return false;
+  }
+  
+  boolean isShotHittingAsteroid(Shot shot, Asteroid asteroid){
+    PVector shotpp = toPixel(shot.position);
+    PVector asteroidpp = toPixel(asteroid.position);
+    return circlesTouching(shotpp, SHOT_RADIUS, asteroidpp, asteroid.getRadius());
   }
   
   void show(){
