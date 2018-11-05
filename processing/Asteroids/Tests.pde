@@ -176,9 +176,24 @@ void testAsteroidSplitting(){
   world.addAsteroid(asteroid);
   world.update();
   assert world.isShotHittingAsteroid(shot, asteroid);
-  println(world.asteroids.size());
+  assert world.asteroids.size() == 1;
+  world.update();
   assert world.asteroids.size() == 2;
   
+  
+  
+  //test small asteroid death
+  world = new World();
+  shot = new Shot(new PVector(), new PVector(1, 0)); 
+  asteroidPosition = toCoord(new PVector(width/2.0,height/2.0).add(new PVector(ASTEROID_SIZES[2]+SHOT_RADIUS+1, 0)));
+  asteroid = new Asteroid(asteroidPosition, new PVector(), 2);
+  world.addShot(shot);
+  world.addAsteroid(asteroid);
+  world.update();
+  assert world.isShotHittingAsteroid(shot, asteroid);
+  assert world.asteroids.size() == 1;
+  world.update();
+  assert world.asteroids.size() == 0 : world.asteroids.size();
 }
 
 void testCleanup(){
@@ -197,7 +212,7 @@ void testCleanup(){
   assert world.shots.size() == 2;
   assert world.asteroids.size() == 2;
   //shouldn't change anything
-  world.update();
+  world.cleanup();
   
   assert world.shots.size() == 2;
   assert world.asteroids.size() == 2;
@@ -205,7 +220,7 @@ void testCleanup(){
   shot.isAlive = false;
   asteroid.isAlive = false;
   //should get rid of the dead ones
-  world.update();
+  world.cleanup();
   
   assert world.shots.size() == 1;
   assert world.asteroids.size() == 1;

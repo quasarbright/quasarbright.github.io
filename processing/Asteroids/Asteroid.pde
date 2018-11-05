@@ -54,15 +54,15 @@ class Asteroid{
       if(sizeIndex == 3){
         float _ = ASTEROID_SIZES[4];
       } else {
-        PVector aVelocity = velocity.copy().rotate(PI/10.0);
-        PVector bVelocity = velocity.copy().rotate(PI/10.0);
+        PVector aVelocity = velocity.copy().rotate(random(PI/10.0));
+        PVector bVelocity = velocity.copy().rotate(-random(PI/10.0));
         Asteroid a = new Asteroid(position.copy(), aVelocity, sizeIndex+1);
         Asteroid b = new Asteroid(position.copy(), bVelocity, sizeIndex+1);
         Asteroid[] ans = {a, b};
         return ans;
       }
     }
-    Asteroid[] ans = {new Asteroid(0), new Asteroid(0)};
+    Asteroid[] ans = {new Asteroid(3), new Asteroid(3)};
     return ans;
   }
   
