@@ -19,6 +19,7 @@ void setup() {
 }
 void draw(){
   background(0);
+  
 }
 
 void checkBounds(PVector position) {
@@ -57,4 +58,12 @@ void circle(PVector pp, float r){
     loopPixelBounds(pterm);
     point(pterm.x, pterm.y);
   }
+}
+
+//expects inputs in pixel space
+boolean circlesTouching(PVector pp1, float pr1, PVector pp2, float pr2){
+  float distsq = PVector.sub(pp1, pp2).magSq();
+  float minDistsq = pow(pr1+pr2, 2);
+  println(distsq, minDistsq);
+  return distsq <= minDistsq;
 }

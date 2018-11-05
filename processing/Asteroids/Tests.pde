@@ -22,6 +22,12 @@ void testCheckBounds(){
   checkBounds(position);
   assert position.equals(new PVector(CWIDTH/2.0, -CHEIGHT/2.0));
 }
+
+void testCirclesTouching(){
+  assert circlesTouching(new PVector(), 10, new PVector(), 1);
+  assert circlesTouching(new PVector(0,0), 10, new PVector(20, 0), 10);
+  assert !circlesTouching(new PVector(0,0), 10, new PVector(21, 0), 10);
+}
 /////////////////////////// ship //////////////////////////
 void testShipVelocity(){
   Ship ship = new Ship();
@@ -171,6 +177,7 @@ void runTests(){
   testToCoord();
   testToPixel();
   testCheckBounds();
+  testCirclesTouching();
   // ship
   testShipVelocity();
   testShipAcceleration();
