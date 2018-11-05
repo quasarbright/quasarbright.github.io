@@ -7,26 +7,18 @@ will be a grid where (0,0) is the center and up is positive y
  */
 void setup() {
   size(800,800);
-  runTests();
   SHIP_RADIUS = .04*width;//px
   ASTEROID_SIZES[0] = .1*width;
   ASTEROID_SIZES[1] = .05*width;
   ASTEROID_SIZES[2] = .025*width;
   ASTEROID_SIZES[3] = 0;
+  runTests();
   noFill();
   stroke(255);
   strokeWeight(3);
 }
 void draw(){
   background(0);
-  World world = new World();
-  Asteroid asteroid = new Asteroid(toCoord(new PVector(width/2.0+ ASTEROID_SIZES[0]+SHIP_RADIUS+1,height/2.0)), new PVector(-.1,0), 0);
-  world.addAsteroid(asteroid);
-  assert !world.isShipHittingAsteroid();
-  println(asteroid.position, world.ship.position);
-  world.update();
-  println(asteroid.position, world.ship.position);
-  world.show();
 }
 
 void checkBounds(PVector position) {

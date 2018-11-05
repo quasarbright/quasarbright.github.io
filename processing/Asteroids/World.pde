@@ -16,6 +16,15 @@ class World{
     }
   }
   
+  void cleanup(){
+    for(int i = shots.size() - 1; i >= 0; i--){
+      if(!shots.get(i).isAlive) shots.remove(i);
+    }
+    for(int i = asteroids.size() - 1; i >= 0; i--){
+      if(!asteroids.get(i).isAlive) asteroids.remove(i);
+    }
+  }
+  
   void update(){
     for(Shot shot:shots)
       shot.update();

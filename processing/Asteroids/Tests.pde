@@ -168,7 +168,35 @@ void testShotCreation(){}
 
 void testAsteroidSplitting(){}
 
-void testCleanup(){}
+void testCleanup(){
+  //build test objects
+  World world = new World();
+  Shot shot = new Shot(new PVector(0,0), new PVector(1,0));
+  Shot shot2 = new Shot(new PVector(0,0), new PVector(1,0));
+  Asteroid asteroid = new Asteroid();
+  Asteroid asteroid2 = new Asteroid();
+  //add objects to world
+  world.addAsteroid(asteroid);
+  world.addAsteroid(asteroid2);
+  world.addShot(shot);
+  world.addShot(shot2);
+  
+  assert world.shots.size() == 2;
+  assert world.asteroids.size() == 2;
+  //shouldn't change anything
+  world.cleanup();
+  
+  assert world.shots.size() == 2;
+  assert world.asteroids.size() == 2;
+  
+  shot.isAlive = false;
+  asteroid.isAlive = false;
+  //should get rid of the dead ones
+  world.cleanup();
+  
+  assert world.shots.size() == 1;
+  assert world.asteroids.size() == 1;
+}
 
 void testShotHitAsteroid(){
   World world = new World();
