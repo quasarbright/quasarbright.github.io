@@ -38,6 +38,12 @@ class Beatmap{
   
   // time in milliseconds
   Circle nextCircle(int t){
+    // assumes the list is sorted by time
+    for(Circle circle:circles){
+      if(circle.time >= t){
+        return circle;
+      }
+    }
     return null;
   }
 }
