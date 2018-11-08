@@ -15,7 +15,7 @@ void runGeneralTests(){
 }
 
 void runBeatmapTests(){
-  
+  testNextCircle();
 }
 
 void runWorldTests(){
