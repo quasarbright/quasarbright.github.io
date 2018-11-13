@@ -17,6 +17,7 @@ data structure design:
 }
 '''
 import json
+import copy
 class NodeAlreadyExistsError(Exception):
     pass
 class DiGraph(dict):
@@ -87,7 +88,8 @@ class DiGraph(dict):
                 ans.add((a,b))
         return ans
     def copy(self):
-        return DiGraph(dict(self))
+        ans = DiGraph()
+        return DiGraph(copy.deepcopy(dict(self)))
 class Graph(DiGraph):
     def set_edge(self,a,b,obj={}):
         super().set_edge(a,b,obj)
