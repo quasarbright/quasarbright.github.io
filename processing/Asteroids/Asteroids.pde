@@ -5,20 +5,34 @@ float[] ASTEROID_SIZES = new float[4];
 /*
 will be a grid where (0,0) is the center and up is positive y
  */
+World w;
 void setup() {
   size(800,800);
-  runTests();
   SHIP_RADIUS = .04*width;//px
   ASTEROID_SIZES[0] = .1*width;
   ASTEROID_SIZES[1] = .05*width;
   ASTEROID_SIZES[2] = .025*width;
   ASTEROID_SIZES[3] = 0;
+  //runTests();
   noFill();
   stroke(255);
   strokeWeight(3);
+  w = new World(4);
+  //w.shoot();
+  //w.update();
+  //w.update();
+  //w.update();
+  //w.update();
+  //w.update();
+  //w.update();
+  //w.update();
+  //w.shoot();
 }
 void draw(){
   background(0);
+  //world.shoot();
+  w.update();
+  w.show();
 }
 
 void checkBounds(PVector position) {
@@ -57,4 +71,20 @@ void circle(PVector pp, float r){
     loopPixelBounds(pterm);
     point(pterm.x, pterm.y);
   }
+}
+
+//expects inputs in pixel space
+boolean circlesTouching(PVector pp1, float pr1, PVector pp2, float pr2){
+  float distsq = PVector.sub(pp1, pp2).magSq();
+  float minDistsq = pow(pr1+pr2, 2);
+  return distsq <= minDistsq;
+}
+
+
+void keyPressed(){
+  w.keyHandler(key);
+}
+
+void mousePressed(){
+  w.mouseHandler();
 }
