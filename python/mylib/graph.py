@@ -82,6 +82,7 @@ class DiGraph(dict):
         '''returns json string with indentation'''
         return json.dumps(self, sort_keys=True, indent=2)
     def get_edges(self):
+        '''returns all edges as tuples'''
         ans = set([])
         for a in self:
             for b in self[a]['to']:
@@ -90,6 +91,21 @@ class DiGraph(dict):
     def copy(self):
         ans = DiGraph()
         return DiGraph(copy.deepcopy(dict(self)))
+    def get_in_degree(self, node):
+        return len(self.get_parents(node))
+    def get_out_degree(self, node):
+        return len(self.get_children(node))
+    def get_total_in_degree(self):
+        sum = 0
+        for node in self.get_nodes():
+            sum += self.get_in_degree(node)
+        return sum
+    def get_total_out_degree(self):
+        sum = 0
+        for node in self.get_nodes():
+            sum += self.get_out_degree(node)
+        return sum
+
 class Graph(DiGraph):
     def set_edge(self,a,b,obj={}):
         super().set_edge(a,b,obj)
@@ -115,6 +131,10 @@ class Graph(DiGraph):
                 if (b,a) not in ans:
                     ans.add((a,b))
         return ans
+    def get_degree(self, node):
+        return self.get_in_degree(node)
+    def get_total_degree(self):
+        return self.get_total_in_degree()
 if __name__ == "__main__":
     G = Graph()
     G.add_node(1,2,3,4)
