@@ -1,0 +1,12 @@
+ {
+     "manifest_version": 2,
+     "name": "masteranime extension",
+     "description": "extra features for masterani.me such as hotkeys",
+     "version": "0.001",
+     "author":"Mike Delmonaco",
+     "content_scripts": [{
+         "matches": ["*://www.masterani.me/anime/watch/*"],
+         "permissions": ["activeTab"],
+         "js": ["watch.js"]
+     }]
+ }
