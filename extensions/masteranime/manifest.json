@@ -5,8 +5,19 @@
      "version": "0.001",
      "author":"Mike Delmonaco",
      "content_scripts": [{
+       "matches": ["<all_urls>"],
+       "js": ["jquery-3.2.1.js"],
+       "permissions": ["activeTab"]
+     },
+       {
          "matches": ["*://www.masterani.me/anime/watch/*"],
          "permissions": ["activeTab"],
          "js": ["watch.js"]
-     }]
+     },
+     {
+       "matches": ["*://www.masterani.me/anime/info/*"],
+       "permissions": ["activeTab"],
+       "js": ["info.js"]
+     }
+   ]
  }
