@@ -47,3 +47,18 @@ class Beatmap{
     return null;
   }
 }
+
+Circle[] sortCirclesByTime(Circle[] circles){
+    //merge sort
+    //assume no equal times
+    if(circles.length <= 1){
+      return circles;
+    }
+    Circle[] ans = new Circle[circles.length];
+    int midInd = circles.length / 2;
+    Circle[] left = new Circle[midInd];// wont include midind'th ele
+    Circle[] right = new Circle[circles.length - midInd];
+    
+    
+    
+}
