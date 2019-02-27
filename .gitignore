@@ -12,3 +12,16 @@ python/mp3/test.db
 python/mp3/old_database.db
 python/mp3/.media.db
 python/mp3/test.py
+/AES/AES/nbproject/private/
+/AES/AES/build/
+
+**/nbproject/private/
+**/nbproject/Makefile-*.mk
+**/nbproject/Package-*.bash
+*/build/*
+*/nbbuild/*
+*/dist/*
+*/nbdist/*
+*/.nb-gradle/*
+
+*/libraries/*
