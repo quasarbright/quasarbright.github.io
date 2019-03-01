@@ -9,10 +9,10 @@ class BigInt:
         positive is an optional parameter only used when a list is passed in
         '''
         self.digits = []
-        if isinstance(val, list):
+        if isinstance(val, list) or isinstance(val, tuple):
             # empty case
             if val == []:
-                raise ValueError("[]")
+                raise ValueError(val)
             # validate contents
             for digit in val:
                 if not isinstance(digit, int):
@@ -68,11 +68,13 @@ class BigInt:
 
 
     def __str__(self):
-        digit_str = ''.join(self.digits)
+        digit_str = ''
+        for digit in self.digits:
+            digit_str += str(digit)
         if self.positive:
-            return 'BigInt ' + digit_str
+            return 'BigInt({0})'.format(digit_str)
         else:
-            return 'BigInt -' + digit_str
+            return 'BigInt(-{0})'.format(digit_str)
 
 
     def __repr__(self):
@@ -121,7 +123,18 @@ class BigInt:
     def __add__(self, other):
         if type(self) is not type(other):
             raise TypeError('{0} {1}'.format(type(self), type(other)))
-        ## left off here, maybe you want a padding function to make the lengths equal
+        if self == BigInt(0):
+            return other
+        elif other == BigInt(0):
+            return self
+        if self.positive == other.positive:
+            counter = BigInt(0)
+            self_abs = self.abs()
+            other_abs = other.abs()
+            while counter != self_abs:
+                counter = counter.add1()
+                other_abs = other_abs.add1()
+            return BigInt(other_abs.digits, self.positive)
 
 
     def x10(self):
@@ -137,11 +150,23 @@ class BigInt:
         '''
         return BigInt(self.digits, True)
 
+
     def length(self):
         '''
         length of integer representation
         '''
         ans = BigInt(0)
         for digit in self.digits:
-            ans += BigInt(1)
+            ans = ans.add1()
         return ans
+
+
+    def add1(self):
+        if self.positive:
+            if self.digits[-1] < 9:
+                return BigInt(self.digits[:-1] + (self.digits[-1] + 1,), True)
+            else:
+                if self.digits[:-1] == (): # tuple length 1 => self == BigInt(9)
+                    return BigInt(10)
+                else:
+                    return BigInt(self.digits[:-1], True).add1().x10()
