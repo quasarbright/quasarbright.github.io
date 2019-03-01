@@ -137,23 +137,33 @@ class BigInt:
     def __add__(self, other):
         if type(self) is not type(other):
             raise TypeError('{0} {1}'.format(type(self), type(other)))
-        if self == BigInt(0):
-            return other
-        elif other == BigInt(0):
+        if other == BigInt(0):
             return self
-        if self.positive == other.positive:
+        elif self == BigInt(0):
+            return other
+        elif other.positive:
             counter = BigInt(0)
-            self_abs = self.abs()
-            other_abs = other.abs()
-            while counter != self_abs:
+            ans = self
+            while counter < other:
+                ans = ans.add1()
                 counter = counter.add1()
-                other_abs = other_abs.add1()
-            return BigInt(other_abs.digits, self.positive)
+            return ans
+        else:
+            counter = BigInt(0)
+            print(self, other)
+            ans = self
+            while counter > other:
+                print(counter, other)
+                ans = ans.sub1()
+                counter = counter.sub1()
+            return ans## left off here debugging add
 
 
     def __sub__(self, other):
-        if self.positive and other.positive:
-            pass
+        if other == BigInt(0):
+            return self
+        else:
+            return self + BigInt(other.digits, not other.positive)
 
 
     def x10(self):
