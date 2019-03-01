@@ -95,6 +95,7 @@ class BigInt:
         else:
             return False
 
+
     def __hash__(self):
         return hash((self.digits, self.positive))
 
@@ -105,6 +106,11 @@ class BigInt:
         # need to work with lengths as BigInts to avoid integer overflow
         selflen = self.length()
         otherlen = other.length()
+        if self.positive and not other.positive:
+            return False
+        if other.positive and not self.positive:
+            return True
+        ans = None
         if selflen == otherlen:
             for pair in zip(self.digits, other.digits):
                 sd, od = pair
@@ -113,11 +119,19 @@ class BigInt:
                 if sd > od:
                     return False
             # getting here means equal
-            return False
+            ans =  False
         elif selflen < otherlen:
-            return True
+            ans =  True
         else:
-            return False
+            ans =  False
+        if self.positive:
+            return ans
+        else:
+            return not ans
+
+
+    def __le__(self, other):
+        return self == other or self < other
 
 
     def __add__(self, other):
@@ -135,6 +149,11 @@ class BigInt:
                 counter = counter.add1()
                 other_abs = other_abs.add1()
             return BigInt(other_abs.digits, self.positive)
+
+
+    def __sub__(self, other):
+        if self.positive and other.positive:
+            pass
 
 
     def x10(self):
@@ -164,9 +183,39 @@ class BigInt:
     def add1(self):
         if self.positive:
             if self.digits[-1] < 9:
-                return BigInt(self.digits[:-1] + (self.digits[-1] + 1,), True)
+                digits = self.digits[:-1] + (self.digits[-1] + 1,)
+                return BigInt(digits, True)
             else:
-                if self.digits[:-1] == (): # tuple length 1 => self == BigInt(9)
+                if self == BigInt(9):
                     return BigInt(10)
                 else:
                     return BigInt(self.digits[:-1], True).add1().x10()
+        else:
+            ans = self.abs()
+            ans = ans.sub1()
+            if ans != BigInt(0):
+                ans.positive = False
+            return ans
+
+
+    def sub1(self):
+        if self.positive:
+            if self.digits[-1] > 0:
+                digits = self.digits[:-1] + (self.digits[-1] - 1,)
+                return BigInt(digits, True)
+            else:
+                if self == BigInt(0):
+                    return BigInt(-1)
+                else:
+                    digits = self.digits[:-1]
+                    ans = BigInt(digits, True)
+                    ans = ans.sub1()
+                    ans = ans.x10()
+                    digits = ans.digits[:-1] + (9,)
+                    return BigInt(digits, True)
+        else:
+            # we're negative
+            ans = self.abs()
+            ans = ans.add1()
+            ans.positive = False
+            return ans

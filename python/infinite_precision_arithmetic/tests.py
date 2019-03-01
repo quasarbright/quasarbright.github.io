@@ -120,8 +120,8 @@ class TestBigInt(unittest.TestCase):
         self.assertTrue(d < f)
         self.assertTrue(a > g)
         self.assertTrue(g < a)
-        self.assertTrue(f > g)
-        self.assertTrue(g < f)
+        self.assertTrue(g > f)
+        self.assertTrue(f < g)
 
         with self.assertRaises(TypeError):
             BigInt(123) < 124
@@ -190,17 +190,45 @@ class TestBigInt(unittest.TestCase):
         i = BigInt(-9)
         j = BigInt(-99)
         k = BigInt(-1230)
+
         self.assertEqual(a.add1(), b)
         self.assertEqual(b.add1(), BigInt(2))
         self.assertEqual(c.add1(), BigInt(1231))
         self.assertEqual(d.add1(), e)
         self.assertEqual(e.add1(), BigInt(11))
         self.assertEqual(f.add1(), BigInt(1000))
+
         self.assertEqual(g.add1(), a)
         self.assertEqual(h.add1(), i)
         self.assertEqual(i.add1(), BigInt(-8))
         self.assertEqual(j.add1(), BigInt(-98))
         self.assertEqual(k.add1(), BigInt(-1229))
+
+
+    def test_sub1(self):
+        a = BigInt(0)
+        b = BigInt(1)
+        c = BigInt(1230)
+        d = BigInt(9)
+        e = BigInt(1000)
+        f = BigInt(999)
+        g = BigInt(-1)
+        h = BigInt(-10)
+        i = BigInt(-9)
+        j = BigInt(-99)
+        k = BigInt(-1230)
+
+        self.assertEqual(a.sub1(), BigInt(-1))
+        self.assertEqual(b.sub1(), BigInt(0))
+        self.assertEqual(c.sub1(), BigInt(1229))
+        self.assertEqual(d.sub1(), BigInt(8))
+        self.assertEqual(e.sub1(), BigInt(999))
+        self.assertEqual(f.sub1(), BigInt(998))
+        self.assertEqual(g.sub1(), BigInt(-2))
+        self.assertEqual(h.sub1(), BigInt(-11))
+        self.assertEqual(i.sub1(), BigInt(-10))
+        self.assertEqual(j.sub1(), BigInt(-100))
+        self.assertEqual(k.sub1(), BigInt(-1231))
 
 
     def test_add(self):
@@ -212,7 +240,7 @@ class TestBigInt(unittest.TestCase):
         f = BigInt(-9)
         g = BigInt(-123)
         h = BigInt(-1000)
-        
+
         self.assertEqual(a + b, b + a)
         self.assertEqual(a + b, b)
         self.assertEqual(c + b, b + c)
@@ -233,6 +261,19 @@ class TestBigInt(unittest.TestCase):
         self.assertEqual(f + c, BigInt(114))
         self.assertEqual(g + d, d + g)
         self.assertEqual(g + d, BigInt(24))
+
+
+    def test_sub(self):
+        self.assertEqual(BigInt(1) - BigInt(0), BigInt(0))
+        self.assertEqual(BigInt(0) - BigInt(1), BigInt(-1))
+        self.assertEqual(BigInt(10) - BigInt(1), BigInt(9))
+        self.assertEqual(BigInt(100) - BigInt(1), BigInt(99))
+        self.assertEqual(BigInt(87) - BigInt(12), BigInt(75))
+        self.assertEqual(BigInt(12) - BigInt(87), BigInt(-75))
+        self.assertEqual(BigInt(1234) - BigInt(1234), BigInt(0))
+        self.assertEqual(BigInt(0) - BigInt(0), BigInt(0))
+        self.assertEqual(BigInt(123) - BigInt(0), BigInt(123))
+        self.assertEqual(BigInt(0) - BigInt(123), BigInt(-123))
 
 
 if __name__ == '__main__':
