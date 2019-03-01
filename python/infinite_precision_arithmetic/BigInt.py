@@ -20,7 +20,7 @@ class BigInt:
                 elif digit < 0:
                     raise ValueError("digits must be non-negative: {0}".format(repr(digit)))
             # handle leading zeroes
-            for i in range(len(val)):
+            for i in range(len(val)): # int dependence
                 cur = val[i]
                 if cur > 0:
                     self.digits = val[i:]
@@ -32,14 +32,16 @@ class BigInt:
             else:
                 self.positive = positive
         elif isinstance(val, str):
+            if val == '':
+                raise ValueError(val)
             self.positive = True
             if val[0] == '-':
                 self.positive = False
-                if len(val) == 1:
+                if len(val) == 1: # int dependence
                     raise ValueError(val)
                 else:
                     val = val[1:]
-            for i in range(len(val)):
+            for i in range(len(val)): # int dependence
                 cur = int(val[i])
                 if cur > 0:
                     self.digits = [int(digit) for digit in val[i:]]
@@ -53,6 +55,8 @@ class BigInt:
             if val < 0:
                 self.positive = False
                 val = -val
+            if val == 0:
+                self.digits = (0,)
             while val > 0:
                 self.digits.insert(0, val % 10)
                 val = val // 10
@@ -63,18 +67,20 @@ class BigInt:
         self.digits = tuple(self.digits)
 
 
-    def x10(self):
-        '''
-        returns the number multiplied by 10
-        '''
-        return BigInt(self.digits + [0], self.positive)
+    def __str__(self):
+        digit_str = ''.join(self.digits)
+        if self.positive:
+            return 'BigInt ' + digit_str
+        else:
+            return 'BigInt -' + digit_str
 
 
-    def abs(self):
-        '''
-        absolute value
-        '''
-        return BigInt(self.digits, True)
+    def __repr__(self):
+        return str(self)
+
+
+    def __format__(self):
+        return str(self)
 
 
     def __eq__(self, other):
@@ -89,3 +95,53 @@ class BigInt:
 
     def __hash__(self):
         return hash((self.digits, self.positive))
+
+
+    def __lt__(self, other):
+        if type(self) is not type(other):
+            raise TypeError('{0} and {1} are not comparable'.format(type(self), type(other)))
+        # need to work with lengths as BigInts to avoid integer overflow
+        selflen = self.length()
+        otherlen = other.length()
+        if selflen == otherlen:
+            for pair in zip(self.digits, other.digits):
+                sd, od = pair
+                if sd < od:
+                    return True
+                if sd > od:
+                    return False
+            # getting here means equal
+            return False
+        elif selflen < otherlen:
+            return True
+        else:
+            return False
+
+
+    def __add__(self, other):
+        if type(self) is not type(other):
+            raise TypeError('{0} {1}'.format(type(self), type(other)))
+        ## left off here, maybe you want a padding function to make the lengths equal
+
+
+    def x10(self):
+        '''
+        returns the number multiplied by 10
+        '''
+        return BigInt(list(self.digits) + [0], self.positive)
+
+
+    def abs(self):
+        '''
+        absolute value
+        '''
+        return BigInt(self.digits, True)
+
+    def length(self):
+        '''
+        length of integer representation
+        '''
+        ans = BigInt(0)
+        for digit in self.digits:
+            ans += BigInt(1)
+        return ans
