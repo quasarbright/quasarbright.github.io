@@ -155,7 +155,7 @@ class BigInt:
                 # print('c, o', counter, other)
                 ans = ans.sub1()
                 counter = counter.sub1()
-            return ans## left off here debugging add
+            return ans
 
 
     def __sub__(self, other):
@@ -165,11 +165,60 @@ class BigInt:
             return self + BigInt(other.digits, not other.positive)
 
 
-    def x10(self):
+    def __mul__(self, other):
+        if type(self) is not type(other):
+            raise TypeError('{0} {1}'.format(type(self), type(other)))
+        if self == BigInt(1):
+            return other
+        elif other == BigInt(1):
+            return self
+        if self == BigInt(0) or other == BigInt(0):
+            return BigInt(0)
+
+        ans = BigInt(0)
+        counter = BigInt(0)
+        for digit in other.digits[::-1]:
+            prod = self.mul_digit(digit)
+            prod = prod.x10(counter)
+            ans = ans + prod
+            counter = counter.add1()
+        if self.positive == other.positive:
+            return ans
+        else:
+            ans.positive = False
+            return ans
+
+
+    def mul_digit(self, digit):
         '''
-        returns the number multiplied by 10
+        multiplies self by the given digit, treats all as positive
+        digit int
+        return BigInt
         '''
-        return BigInt(list(self.digits) + [0], self.positive)
+        carry = 0
+        reverse_digits = [] # answer digits in reverse order
+        for sd in self.digits[::-1]:
+            prod = digit * sd + carry
+            assert prod < 100
+            reverse_digits.append(prod % 10)
+            carry = prod // 10
+        reverse_digits.append(carry)
+        return BigInt(reverse_digits[::-1], True)
+
+
+    def x10(self, n=None):
+        '''
+        returns the number multiplied by 10 n times
+        '''
+        if n is None:
+            n = BigInt(1)
+        digits = []
+        counter = BigInt(0)
+        while counter < n:
+            digits.append(0)
+            counter = counter.add1()
+        digits = tuple(digits)
+        return BigInt(self.digits + digits, self.positive)
 
 
     def abs(self):

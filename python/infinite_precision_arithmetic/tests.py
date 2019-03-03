@@ -6,16 +6,15 @@ class TestBigInt(unittest.TestCase):
         if func == None:
             return None # this is necessary because unittest thinks this is a test
         for x in range(min, max):
-            if not func(x, msg=str(x)):
-                pass#return None
+            func(x, msg=str(x))
 
     def test_2(self, func=None, xmin=-100, xmax=100, ymin=-100, ymax=100):
         if func == None:
             return None
         for x in range(xmin, xmax):
             for y in range(ymin, ymax):
-                if not func(x, y, msg='x={0}, y={1}'.format(x, y)):
-                    pass#return None
+                func(x, y, msg='x={0}, y={1}'.format(x, y))
+
 
     def test_list_init(self):
         n = BigInt([1,2,3,4])
@@ -108,10 +107,15 @@ class TestBigInt(unittest.TestCase):
 
 
     def test_x10(self):
-        def func(x, msg):
-            self.assertEqual(BigInt(x).x10(), BigInt(x*10),msg=msg)
-            return BigInt(x).x10() == BigInt(x*10)
-        self.test_1(func)
+        def func(x, y, msg):
+            self.assertEqual(BigInt(x).x10(BigInt(y)), BigInt(x*(10**y)),msg=msg)
+        self.test_2(func, ymin=0, ymax=10)
+
+
+    def test_mul_digit(self):
+        def func(x, y, msg):
+            self.assertEqual(BigInt(x).mul_digit(y), BigInt(x*y), msg=msg)
+        self.test_2(func, xmin=0, ymin=0, ymax=10)
 
 
     def test_compare(self):
@@ -168,16 +172,23 @@ class TestBigInt(unittest.TestCase):
 
     def test_add(self):
         def func(x, y, msg):
-                self.assertEqual(BigInt(x)+BigInt(y), BigInt(x+y), msg=msg)
-                return BigInt(x)+BigInt(y) == BigInt(x+y)
+            self.assertEqual(BigInt(x)+BigInt(y), BigInt(x+y), msg=msg)
+            return BigInt(x)+BigInt(y) == BigInt(x+y)
         self.test_2(func)
 
 
     def test_sub(self):
         def func(x, y, msg):
-                self.assertEqual(BigInt(x)-BigInt(y), BigInt(x-y), msg=msg)
-                return BigInt(x)-BigInt(y) == BigInt(x-y)
+            self.assertEqual(BigInt(x)-BigInt(y), BigInt(x-y), msg=msg)
+            return BigInt(x)-BigInt(y) == BigInt(x-y)
         self.test_2(func)
+
+
+    def test_mul(self):
+        def func(x, y, msg):
+            self.assertEqual(BigInt(x)*BigInt(y), BigInt(x*y), msg=msg)
+        self.test_2(func, xmin=-40, xmax=40, ymin=-40, ymax=40)
+        self.test_2(func, xmin=-40, xmax=40, ymin=99, ymax=105)
 
 
 if __name__ == '__main__':
