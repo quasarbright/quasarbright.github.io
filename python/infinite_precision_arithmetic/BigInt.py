@@ -81,10 +81,6 @@ class BigInt:
         return str(self)
 
 
-    def __format__(self):
-        return str(self)
-
-
     def __eq__(self, other):
         '''
         false for equivalent ints
@@ -114,18 +110,19 @@ class BigInt:
             return True
         ans = None
         if selflen == otherlen:
+            assert self != other and len(self.digits) == len(other.digits)
             for pair in zip(self.digits, other.digits):
                 sd, od = pair
                 if sd < od:
-                    return True
+                    ans = True
+                    break
                 if sd > od:
-                    return False
-            # getting here means equal
-            ans =  False
+                    ans = False
+                    break
         elif selflen < otherlen:
             ans =  True
         else:
-            ans =  False
+            ans = False
         if self.positive:
             return ans
         else:
@@ -146,16 +143,16 @@ class BigInt:
         elif other.positive:
             counter = BigInt(0)
             ans = self
-            while counter < other:
+            while counter != other:
                 ans = ans.add1()
                 counter = counter.add1()
             return ans
         else:
             counter = BigInt(0)
-            print('s, o', self, other)
+            # print('s, o', self, other)
             ans = self
-            while counter > other:
-                print('c, o', counter, other)
+            while counter != other:
+                # print('c, o', counter, other)
                 ans = ans.sub1()
                 counter = counter.sub1()
             return ans## left off here debugging add

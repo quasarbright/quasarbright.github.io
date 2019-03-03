@@ -2,6 +2,21 @@ import unittest
 from BigInt import BigInt
 
 class TestBigInt(unittest.TestCase):
+    def test_1(self, func=None, min=-1000, max=1000):
+        if func == None:
+            return None # this is necessary because unittest thinks this is a test
+        for x in range(min, max):
+            if not func(x, msg=str(x)):
+                pass#return None
+
+    def test_2(self, func=None, xmin=-100, xmax=100, ymin=-100, ymax=100):
+        if func == None:
+            return None
+        for x in range(xmin, xmax):
+            for y in range(ymin, ymax):
+                if not func(x, y, msg='x={0}, y={1}'.format(x, y)):
+                    pass#return None
+
     def test_list_init(self):
         n = BigInt([1,2,3,4])
         self.assertEqual(n.digits, (1,2,3,4))
@@ -93,26 +108,30 @@ class TestBigInt(unittest.TestCase):
 
 
     def test_x10(self):
-        for x in range(-10000, 10000):
-            self.assertEqual(BigInt(x).x10(), BigInt(x*10))
+        def func(x, msg):
+            self.assertEqual(BigInt(x).x10(), BigInt(x*10),msg=msg)
+            return BigInt(x).x10() == BigInt(x*10)
+        self.test_1(func)
 
 
     def test_compare(self):
-        for x in range(-10000, 10000):
-            for y in range(-10000, 10000):
-                self.assertEqual(x > y, BigInt(x) > BigInt(y), msg='{0}, {1}'.format(x, y))
-                self.assertEqual(x >= y, BigInt(x) >= BigInt(y), msg='{0}, {1}'.format(x, y))
-                self.assertEqual(x < y, BigInt(x) < BigInt(y), msg='{0}, {1}'.format(x, y))
-                self.assertEqual(x <= y, BigInt(x) <= BigInt(y), msg='{0}, {1}'.format(x, y))
+        def func(x,y,msg):
+            self.assertEqual(x > y, BigInt(x) > BigInt(y), msg=msg)
+            self.assertEqual(x >= y, BigInt(x) >= BigInt(y), msg=msg)
+            self.assertEqual(x < y, BigInt(x) < BigInt(y), msg=msg)
+            self.assertEqual(x <= y, BigInt(x) <= BigInt(y), msg=msg)
+            return x > y == BigInt(x) < BigInt(y) and x >= y == BigInt(x) >= BigInt(y) and x < y == BigInt(x) < BigInt(y) and x <= y == BigInt(x) <= BigInt(y)
+        self.test_2(func)
 
         with self.assertRaises(TypeError):
             BigInt(123) < 124
 
 
     def test_eq(self):
-        for x in range(-10000, 10000):
-            for y in range(-10000, 10000):
-                self.assertEqual(x == y, BigInt(x) == BigInt(y), msg='{0}, {1}'.format(x, y))
+        def func(x, y, msg):
+                self.assertEqual(x == y, BigInt(x) == BigInt(y), msg=msg)
+                return (x == y) == (BigInt(x) == BigInt(y))
+        self.test_2(func)
 
 
     def test_hash(self):
@@ -125,32 +144,40 @@ class TestBigInt(unittest.TestCase):
         b = BigInt(-123300)
         c = BigInt(0)
         d = BigInt(1)
+        e = BigInt(-12)
         self.assertEqual(a.length(), BigInt(3))
         self.assertEqual(b.length(), BigInt(6))
         self.assertEqual(c.length(), BigInt(1))
         self.assertEqual(d.length(), BigInt(1))
+        self.assertEqual(e.length(), BigInt(2))
 
 
     def test_add1(self):
-        for x in range(-10000, 10000):
-            self.assertEqual(BigInt(x).add1(), BigInt(x+1))
+        def func(x,msg):
+            self.assertEqual(BigInt(x).add1(), BigInt(x+1), msg=msg)
+            return BigInt(x).add1() == BigInt(x+1)
+        self.test_1(func)
 
 
     def test_sub1(self):
-        for x in range(-10000, 10000):
-            self.assertEqual(BigInt(x).sub1(), BigInt(x-1))
+        def func(x, msg):
+            self.assertEqual(BigInt(x).sub1(), BigInt(x-1), msg=msg)
+            return BigInt(x).sub1() == BigInt(x-1)
+        self.test_1(func)
 
 
     def test_add(self):
-        for x in range(-10000, 10000):
-            for y in range(-10000, 10000):
-                self.assertEqual(BigInt(x)+BigInt(y), BigInt(x+y), msg='{0}, {1}'.format(x, y))
+        def func(x, y, msg):
+                self.assertEqual(BigInt(x)+BigInt(y), BigInt(x+y), msg=msg)
+                return BigInt(x)+BigInt(y) == BigInt(x+y)
+        self.test_2(func)
 
 
     def test_sub(self):
-        for x in range(-10000, 10000):
-            for y in range(-10000, 10000):
-                self.assertEqual(BigInt(x)-BigInt(y), BigInt(x-y), msg='{0}, {1}'.format(x, y))
+        def func(x, y, msg):
+                self.assertEqual(BigInt(x)-BigInt(y), BigInt(x-y), msg=msg)
+                return BigInt(x)-BigInt(y) == BigInt(x-y)
+        self.test_2(func)
 
 
 if __name__ == '__main__':
