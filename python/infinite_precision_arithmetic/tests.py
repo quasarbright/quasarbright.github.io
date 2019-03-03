@@ -93,73 +93,26 @@ class TestBigInt(unittest.TestCase):
 
 
     def test_x10(self):
-        n = BigInt(123)
-        self.assertEqual(n.x10(), BigInt(1230))
+        for x in range(-10000, 10000):
+            self.assertEqual(BigInt(x).x10(), BigInt(x*10))
 
 
     def test_compare(self):
-        a = BigInt(123)
-        b = BigInt(123)
-        c = BigInt(124)
-        d = BigInt(-123)
-        e = BigInt(-124)
-        f = BigInt(0)
-        g = BigInt(1)
-        self.assertFalse(a > b)
-        self.assertTrue(a >= b)
-        self.assertFalse(a < b)
-        self.assertTrue(a <= b)
-        self.assertTrue(c > a)
-        self.assertTrue(a < c)
-        self.assertTrue(a <= c)
-        self.assertTrue(a > d)
-        self.assertTrue(d < a)
-        self.assertTrue(a > f)
-        self.assertTrue(f < a)
-        self.assertTrue(f > d)
-        self.assertTrue(d < f)
-        self.assertTrue(a > g)
-        self.assertTrue(g < a)
-        self.assertTrue(g > f)
-        self.assertTrue(f < g)
+        for x in range(-10000, 10000):
+            for y in range(-10000, 10000):
+                self.assertEqual(x > y, BigInt(x) > BigInt(y), msg='{0}, {1}'.format(x, y))
+                self.assertEqual(x >= y, BigInt(x) >= BigInt(y), msg='{0}, {1}'.format(x, y))
+                self.assertEqual(x < y, BigInt(x) < BigInt(y), msg='{0}, {1}'.format(x, y))
+                self.assertEqual(x <= y, BigInt(x) <= BigInt(y), msg='{0}, {1}'.format(x, y))
 
         with self.assertRaises(TypeError):
             BigInt(123) < 124
 
 
     def test_eq(self):
-        # normal
-        n = BigInt(123)
-        m = BigInt(123)
-        self.assertTrue(n == m)
-        self.assertEqual(n,m)
-        self.assertTrue(n == n)
-        self.assertTrue(m == n)
-
-        # -0 == 0
-        n = BigInt('-0')
-        m = BigInt('0')
-        self.assertTrue(n == m)
-        self.assertTrue(n == n)
-        self.assertTrue(m == n)
-
-        n = BigInt([0], True)
-        m = BigInt([0], False)
-        self.assertTrue(n == m)
-        self.assertTrue(n == n)
-        self.assertTrue(m == n)
-
-        # different constructions are equal
-        a = BigInt([1,2,3,4], False)
-        b = BigInt(-1234)
-        c = BigInt('-1234')
-        self.assertTrue(a == b)
-        self.assertTrue(a == c)
-        self.assertTrue(b == a)
-        self.assertTrue(b == c)
-
-        # negatives aren't equal to positives
-        self.assertFalse(BigInt(1) == BigInt(-1))
+        for x in range(-10000, 10000):
+            for y in range(-10000, 10000):
+                self.assertEqual(x == y, BigInt(x) == BigInt(y), msg='{0}, {1}'.format(x, y))
 
 
     def test_hash(self):
@@ -179,101 +132,25 @@ class TestBigInt(unittest.TestCase):
 
 
     def test_add1(self):
-        a = BigInt(0)
-        b = BigInt(1)
-        c = BigInt(1230)
-        d = BigInt(9)
-        e = BigInt(10)
-        f = BigInt(999)
-        g = BigInt(-1)
-        h = BigInt(-10)
-        i = BigInt(-9)
-        j = BigInt(-99)
-        k = BigInt(-1230)
-
-        self.assertEqual(a.add1(), b)
-        self.assertEqual(b.add1(), BigInt(2))
-        self.assertEqual(c.add1(), BigInt(1231))
-        self.assertEqual(d.add1(), e)
-        self.assertEqual(e.add1(), BigInt(11))
-        self.assertEqual(f.add1(), BigInt(1000))
-
-        self.assertEqual(g.add1(), a)
-        self.assertEqual(h.add1(), i)
-        self.assertEqual(i.add1(), BigInt(-8))
-        self.assertEqual(j.add1(), BigInt(-98))
-        self.assertEqual(k.add1(), BigInt(-1229))
+        for x in range(-10000, 10000):
+            self.assertEqual(BigInt(x).add1(), BigInt(x+1))
 
 
     def test_sub1(self):
-        a = BigInt(0)
-        b = BigInt(1)
-        c = BigInt(1230)
-        d = BigInt(9)
-        e = BigInt(1000)
-        f = BigInt(999)
-        g = BigInt(-1)
-        h = BigInt(-10)
-        i = BigInt(-9)
-        j = BigInt(-99)
-        k = BigInt(-1230)
-
-        self.assertEqual(a.sub1(), BigInt(-1))
-        self.assertEqual(b.sub1(), BigInt(0))
-        self.assertEqual(c.sub1(), BigInt(1229))
-        self.assertEqual(d.sub1(), BigInt(8))
-        self.assertEqual(e.sub1(), BigInt(999))
-        self.assertEqual(f.sub1(), BigInt(998))
-        self.assertEqual(g.sub1(), BigInt(-2))
-        self.assertEqual(h.sub1(), BigInt(-11))
-        self.assertEqual(i.sub1(), BigInt(-10))
-        self.assertEqual(j.sub1(), BigInt(-100))
-        self.assertEqual(k.sub1(), BigInt(-1231))
+        for x in range(-10000, 10000):
+            self.assertEqual(BigInt(x).sub1(), BigInt(x-1))
 
 
     def test_add(self):
-        a = BigInt(0)
-        b = BigInt(1)
-        c = BigInt(123)
-        d = BigInt(99)
-        e = BigInt(-1)
-        f = BigInt(-9)
-        g = BigInt(-123)
-        h = BigInt(-1000)
-
-        self.assertEqual(a + b, b + a)
-        self.assertEqual(a + b, b)
-        self.assertEqual(c + b, b + c)
-        self.assertEqual(c + b, BigInt(124))
-        self.assertEqual(d + b, BigInt(100))
-        self.assertEqual(c + d, BigInt(222))
-        self.assertEqual(e + f, f + e)
-        self.assertEqual(e + f, BigInt(-10))
-        self.assertEqual(f + g, BigInt(-132))
-        self.assertEqual(a + g, g + a)
-        self.assertEqual(a + g, g)
-        self.assertEqual(g + h, BigInt(-1123))
-
-        self.assertEqual(b + e, e + b)
-        self.assertEqual(b + e, a)
-        self.assertEqual(f + d, BigInt(90))
-        self.assertEqual(f + d, d + f)
-        self.assertEqual(f + c, BigInt(114))
-        self.assertEqual(g + d, d + g)
-        self.assertEqual(g + d, BigInt(24))
+        for x in range(-10000, 10000):
+            for y in range(-10000, 10000):
+                self.assertEqual(BigInt(x)+BigInt(y), BigInt(x+y), msg='{0}, {1}'.format(x, y))
 
 
     def test_sub(self):
-        self.assertEqual(BigInt(1) - BigInt(0), BigInt(0))
-        self.assertEqual(BigInt(0) - BigInt(1), BigInt(-1))
-        self.assertEqual(BigInt(10) - BigInt(1), BigInt(9))
-        self.assertEqual(BigInt(100) - BigInt(1), BigInt(99))
-        self.assertEqual(BigInt(87) - BigInt(12), BigInt(75))
-        self.assertEqual(BigInt(12) - BigInt(87), BigInt(-75))
-        self.assertEqual(BigInt(1234) - BigInt(1234), BigInt(0))
-        self.assertEqual(BigInt(0) - BigInt(0), BigInt(0))
-        self.assertEqual(BigInt(123) - BigInt(0), BigInt(123))
-        self.assertEqual(BigInt(0) - BigInt(123), BigInt(-123))
+        for x in range(-10000, 10000):
+            for y in range(-10000, 10000):
+                self.assertEqual(BigInt(x)-BigInt(y), BigInt(x-y), msg='{0}, {1}'.format(x, y))
 
 
 if __name__ == '__main__':

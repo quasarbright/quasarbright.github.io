@@ -106,6 +106,8 @@ class BigInt:
         # need to work with lengths as BigInts to avoid integer overflow
         selflen = self.length()
         otherlen = other.length()
+        if self == other:
+            return False
         if self.positive and not other.positive:
             return False
         if other.positive and not self.positive:
@@ -150,10 +152,10 @@ class BigInt:
             return ans
         else:
             counter = BigInt(0)
-            print(self, other)
+            print('s, o', self, other)
             ans = self
             while counter > other:
-                print(counter, other)
+                print('c, o', counter, other)
                 ans = ans.sub1()
                 counter = counter.sub1()
             return ans## left off here debugging add
