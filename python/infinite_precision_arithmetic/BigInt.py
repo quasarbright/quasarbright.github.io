@@ -199,22 +199,34 @@ class BigInt:
             return -other
         elif self.positive != other.positive:
             return self + -other
-        elif other.positive:
-            counter = BigInt(0)
-            ans = self
-            while counter != other:
-                ans = ans.sub1()
-                counter = counter.add1()
-            return ans
         else:
-            counter = BigInt(0)
-            # print('s, o', self, other)
-            ans = self
-            while counter != other:
-                # print('c, o', counter, other)
-                ans = ans.add1()
-                counter = counter.sub1()
-            return ans
+            # signs same
+            max = None
+            min = None
+            negate = None
+            if abs(self) > abs(other):
+                max = abs(self)
+                min = abs(other)
+                negate = False
+            else:
+                max = abs(other)
+                min = abs(self)
+                negate = True
+            decrement = 0
+            reverse_digits = []
+            # hand-written subtraction
+            for pair in myzip(max.digits[::-1], min.digits[::-1]):
+                maxd, mind = pair
+                if maxd - decrement >= mind:
+                    reverse_digits.append(maxd-decrement-mind)
+                    decrement = 0
+                else:
+                    reverse_digits.append(10+maxd-decrement-mind)
+                    decrement = 1
+            if negate:
+                return BigInt(reverse_digits[::-1], not self.positive)
+            else:
+                return BigInt(reverse_digits[::-1], self.positive)
 
 
     def __mul__(self, other):
