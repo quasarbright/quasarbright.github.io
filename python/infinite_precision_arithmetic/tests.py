@@ -196,6 +196,28 @@ class TestBigInt(unittest.TestCase):
         def func(x, y, msg):
             self.assertEqual(BigInt(x)**BigInt(y), BigInt(x**y), msg=msg)
         self.test_2(func, xmin=-10,xmax=10,ymin=0,ymax=16)
+
+
+    def test_floor_div(self):
+        def func(x, y, msg):
+            if y == 0:
+                with self.assertRaises(ZeroDivisionError):
+                    BigInt(x) // BigInt(y)
+            else:
+                self.assertEqual(BigInt(x) // BigInt(y), BigInt(x // y), msg=msg)
+        self.test_2(func, xmin=0, xmax=51, ymin=0, ymax=51)
+
+
+    def test_mod(self):
+        def func(x, y, msg):
+            if y == 0:
+                with self.assertRaises(ZeroDivisionError):
+                    BigInt(x) % BigInt(y)
+            else:
+                self.assertEqual(BigInt(x) % BigInt(y), BigInt(x % y), msg=msg)
+        self.test_2(func, xmin=0, xmax=51, ymin=0, ymax=51)
+
+
 class TestUtils(unittest.TestCase):
     def test_myzip(self):
         a = [1,2,3,4,5,6]

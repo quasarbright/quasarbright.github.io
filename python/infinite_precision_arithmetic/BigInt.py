@@ -267,9 +267,13 @@ class BigInt:
 
 
     def __floordiv__(self, other):
-        if type(self) is not type(other):
-            raise TypeError('{0} {1}'.format(type(self), type(other)))
-        a = 2
+        quotient, remainder = self.divide(other)
+        return quotient
+
+
+    def __mod__(self, other):
+        quotient, remainder = self.divide(other)
+        return remainder
 
 
     def mul_digit(self, digit):
@@ -287,6 +291,41 @@ class BigInt:
             carry = prod // 10
         reverse_digits.append(carry)
         return BigInt(reverse_digits[::-1], True)
+
+
+    def divide(self, other):
+        '''
+        returns (quotient, remainder)
+        a bit wacky with negatives
+        '''
+        if type(self) is not type(other):
+            raise TypeError('{0} {1}'.format(type(self), type(other)))
+        if other == BigInt(0):
+            raise ZeroDivisionError('division by zero')
+        if other == BigInt(1):
+            return self, BigInt(0)
+        if other == BigInt(-1):
+            return -self, BigInt(0)
+        if self == BigInt(0):
+            return BigInt(0), BigInt(0)
+        abss = abs(self)
+        abso = abs(other)
+        n = abso
+        counter = BigInt(0)
+        while n <= abss:
+            n += abso
+            counter = counter.add1()
+        quotient = counter
+        remainder = abss - abso * quotient
+        if self.positive == other.positive:
+            if remainder != BigInt(0):
+                remainder.positive = other.positive
+        else:
+            quotient.positive = False
+            if remainder != BigInt(0):
+                remainder = abs(other) - remainder
+                remainder.positive = other.positive
+        return quotient, remainder
 
 
     def x10(self, n=None):
