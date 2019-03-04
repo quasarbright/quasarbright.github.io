@@ -262,6 +262,8 @@ class BigInt:
             return BigInt(1)
         elif self == BigInt(0) or self == BigInt(1):
             return self
+        elif self == BigInt(10):
+            return self.x10(other)
         elif other <= BigInt(10):
             ans = self
             counter = BigInt(1)
