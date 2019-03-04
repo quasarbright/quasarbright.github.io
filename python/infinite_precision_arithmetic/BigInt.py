@@ -1,3 +1,5 @@
+from utils import *
+
 class BigInt:
     '''
     immutable (unless you mess with digits externally)
@@ -140,6 +142,27 @@ class BigInt:
             return self
         elif self == BigInt(0):
             return other
+        if self.positive == other.positive:
+            sdigits = self.digits
+            odigits = other.digits
+            # int dependency for now. maybe make your own zip function which replaces empty with 0
+            # pad with preceeding 0s to get equal length
+            carry = 0
+            reverse_digits = []
+            for pair in myzip(self.digits[::-1], other.digits[::-1]):
+                sd, od = pair
+                sum = sd + od + carry
+                reverse_digits.append(sum % 10)
+                carry = sum // 10
+            reverse_digits.append(carry)
+            return BigInt(reverse_digits[::-1], self.positive)
+        else:
+            if self.positive:# other is negative
+                return self - other.abs()
+            else:# self is negative and other is positive
+                return other - self.abs()
+
+        '''
         elif other.positive:
             counter = BigInt(0)
             ans = self
@@ -156,13 +179,34 @@ class BigInt:
                 ans = ans.sub1()
                 counter = counter.sub1()
             return ans
+            '''
 
 
     def __sub__(self, other):
+        if type(self) is not type(other):
+            raise TypeError('{0} {1}'.format(type(self), type(other)))
         if other == BigInt(0):
             return self
+        elif self == BigInt(0):
+            return other.negate()
+        elif self.positive != other.positive:
+            return self + other.negate()
+        elif other.positive:
+            counter = BigInt(0)
+            ans = self
+            while counter != other:
+                ans = ans.sub1()
+                counter = counter.add1()
+            return ans
         else:
-            return self + BigInt(other.digits, not other.positive)
+            counter = BigInt(0)
+            # print('s, o', self, other)
+            ans = self
+            while counter != other:
+                # print('c, o', counter, other)
+                ans = ans.add1()
+                counter = counter.sub1()
+            return ans
 
 
     def __mul__(self, other):
@@ -226,6 +270,10 @@ class BigInt:
         absolute value
         '''
         return BigInt(self.digits, True)
+
+
+    def negate(self):
+        return BigInt(self.digits, not self.positive)
 
 
     def length(self):

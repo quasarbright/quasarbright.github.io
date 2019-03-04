@@ -1,5 +1,6 @@
 import unittest
-from BigInt import BigInt
+from BigInt import *
+from utils import *
 
 class TestBigInt(unittest.TestCase):
     def test_1(self, func=None, min=-1000, max=1000):
@@ -189,6 +190,16 @@ class TestBigInt(unittest.TestCase):
             self.assertEqual(BigInt(x)*BigInt(y), BigInt(x*y), msg=msg)
         self.test_2(func, xmin=-40, xmax=40, ymin=-40, ymax=40)
         self.test_2(func, xmin=-40, xmax=40, ymin=99, ymax=105)
+
+
+class TestUtils(unittest.TestCase):
+    def test_myzip(self):
+        a = [1,2,3,4,5,6]
+        b = [1,2,3,4]
+        c = [2,3,4,5,6,7]
+        self.assertEqual(list(myzip(a,c)), list(zip(a,c)))
+        self.assertEqual(list(myzip(a,b)), [(1,1),(2,2),(3,3),(4,4),(5,0),(6,0)])
+        self.assertEqual(list(myzip(b,a)), [(1,1),(2,2),(3,3),(4,4),(0,5),(0,6)])
 
 
 if __name__ == '__main__':
