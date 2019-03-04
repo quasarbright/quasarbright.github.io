@@ -192,6 +192,10 @@ class TestBigInt(unittest.TestCase):
         self.test_2(func, xmin=-40, xmax=40, ymin=99, ymax=105)
 
 
+    def test_pow(self):
+        def func(x, y, msg):
+            self.assertEqual(BigInt(x)**BigInt(y), BigInt(x**y), msg=msg)
+        self.test_2(func, xmin=-10,xmax=10,ymin=0,ymax=16)
 class TestUtils(unittest.TestCase):
     def test_myzip(self):
         a = [1,2,3,4,5,6]

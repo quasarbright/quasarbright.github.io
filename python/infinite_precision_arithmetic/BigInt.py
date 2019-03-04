@@ -241,6 +241,31 @@ class BigInt:
             return ans
 
 
+    def __pow__(self, other):
+        if type(self) is not type(other):
+            raise TypeError('{0} {1}'.format(type(self), type(other)))
+        if not other.positive:
+            raise ValueError("exponent must not be negative: {0}".format(other))
+        if other == BigInt(0):
+            return BigInt(1)
+        elif self == BigInt(0) or self == BigInt(1):
+            return self
+        elif other <= BigInt(10):
+            ans = self
+            counter = BigInt(1)
+            while counter < other:
+                ans = ans * self
+                counter = counter.add1()
+            return ans
+        else:
+            ans = BigInt(1)
+            pow = self
+            for digit in other.digits[::-1]:
+                ans = ans * (pow ** BigInt(digit))
+                pow = pow ** BigInt(10)
+            return ans
+
+
     def __floordiv__(self, other):
         if type(self) is not type(other):
             raise TypeError('{0} {1}'.format(type(self), type(other)))
