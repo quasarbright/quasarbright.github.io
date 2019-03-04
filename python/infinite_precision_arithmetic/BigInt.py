@@ -135,6 +135,14 @@ class BigInt:
         return self == other or self < other
 
 
+    def __abs__(self):
+        return self.abs()
+
+
+    def __neg__(self):
+        return self.negate()
+
+
     def __add__(self, other):
         if type(self) is not type(other):
             raise TypeError('{0} {1}'.format(type(self), type(other)))
@@ -158,9 +166,9 @@ class BigInt:
             return BigInt(reverse_digits[::-1], self.positive)
         else:
             if self.positive:# other is negative
-                return self - other.abs()
+                return self - abs(other)
             else:# self is negative and other is positive
-                return other - self.abs()
+                return other - abs(self)
 
         '''
         elif other.positive:
@@ -188,9 +196,9 @@ class BigInt:
         if other == BigInt(0):
             return self
         elif self == BigInt(0):
-            return other.negate()
+            return -other
         elif self.positive != other.positive:
-            return self + other.negate()
+            return self + -other
         elif other.positive:
             counter = BigInt(0)
             ans = self
@@ -231,6 +239,12 @@ class BigInt:
         else:
             ans.positive = False
             return ans
+
+
+    def __floordiv__(self, other):
+        if type(self) is not type(other):
+            raise TypeError('{0} {1}'.format(type(self), type(other)))
+        a = 2
 
 
     def mul_digit(self, digit):
@@ -297,7 +311,7 @@ class BigInt:
                 else:
                     return BigInt(self.digits[:-1], True).add1().x10()
         else:
-            ans = self.abs()
+            ans = abs(self)
             ans = ans.sub1()
             if ans != BigInt(0):
                 ans.positive = False
@@ -321,7 +335,7 @@ class BigInt:
                     return BigInt(digits, True)
         else:
             # we're negative
-            ans = self.abs()
+            ans = abs(self)
             ans = ans.add1()
             ans.positive = False
             return ans
