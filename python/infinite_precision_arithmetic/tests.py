@@ -1,6 +1,7 @@
 import unittest
 from BigInt import *
 from utils import *
+import math
 
 class TestBigInt(unittest.TestCase):
     def test_1(self, func=None, min=-1000, max=1000):
@@ -216,6 +217,12 @@ class TestBigInt(unittest.TestCase):
             else:
                 self.assertEqual(BigInt(x) % BigInt(y), BigInt(x % y), msg=msg)
         self.test_2(func, xmin=0, xmax=51, ymin=0, ymax=51)
+
+
+    def test_gcd(self):
+        def func(x, y, msg):
+            self.assertEqual(BigInt(x).gcd(BigInt(y)), BigInt(math.gcd(x,y)), msg=msg)
+        self.test_2(func, xmin=1, xmax=100, ymin=1, ymax=100)
 
 
 class TestUtils(unittest.TestCase):

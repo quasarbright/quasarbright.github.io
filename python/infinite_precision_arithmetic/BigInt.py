@@ -348,6 +348,8 @@ class BigInt:
         '''
         if n is None:
             n = BigInt(1)
+        if type(self) is not type(n):
+            raise TypeError('{0} {1}'.format(type(self), type(n)))
         digits = []
         counter = BigInt(0)
         while counter < n:
@@ -417,3 +419,15 @@ class BigInt:
             ans = ans.add1()
             ans.positive = False
             return ans
+
+
+    def gcd(self, other):
+        if type(self) is not type(other):
+            raise TypeError('{0} {1}'.format(type(self), type(other)))
+        a = max(abs(self), abs(other))
+        b = min(abs(self), abs(other))
+        while b != BigInt(0):
+            temp = a % b
+            a = b
+            b = temp
+        return a
