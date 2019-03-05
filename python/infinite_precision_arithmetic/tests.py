@@ -318,18 +318,18 @@ class TestRational(unittest.TestCase):
                 fx = Fraction(a, b)
                 y = Rational(BigInt(c), BigInt(d))
                 fy = Fraction(c, d)
-                self.assertEqual(x < y, fx < fy, msg=msg+"|| x={0}, y={1}".format(*x.common_denominator(y)))
+                self.assertEqual(x < y, fx < fy, msg=msg+"|| x={0}, y={1}".format(*x.lcd(y)))
         self.test_4(func, -4, 4, -4, 4, -4, 4, -4, 4)
 
 
-    def test_common_denominator(self):
+    def test_lcd(self):
         def func(a, b, c, d, msg):
             if b == 0 or d == 0:
                 pass
             else:
                 x = Rational(BigInt(a), BigInt(b))
                 y = Rational(BigInt(c), BigInt(d))
-                x2, y2 = x.common_denominator(y)
+                x2, y2 = x.lcd(y)
                 self.assertEqual(x, x2, msg=msg)
                 self.assertEqual(y, y2, msg=msg)
                 self.assertEqual(x2.denominator, y2.denominator, msg=msg)

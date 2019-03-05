@@ -49,7 +49,7 @@ class Rational:
         if self == other:
             return False
         # same sign and unequal
-        s, o = self.common_denominator(other)
+        s, o = self.lcd(other)
         if self.positive:
             return s.numerator < o.numerator
         else:
@@ -68,11 +68,12 @@ class Rational:
             return ans
 
 
-    def common_denominator(self, other):
+    def lcd(self, other):
         '''
-        returns two rationals with the same denominator (simplifies first)
+        returns two rationals with the same, lowest common denominator (simplifies first)
         in order (self, other)
-        maintains signs
+        maintains signs and numerical value
+        1/2.lcd(-3/5) => (5/10, -6/10)
         '''
         s = self.simplify()
         o = other.simplify()
