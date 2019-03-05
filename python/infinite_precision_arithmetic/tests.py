@@ -1,7 +1,9 @@
 import unittest
 from BigInt import *
+from Rational import *
 from utils import *
 import math
+from fractions import Fraction
 
 class TestBigInt(unittest.TestCase):
     def test_1(self, func=None, min=-1000, max=1000):
@@ -9,6 +11,7 @@ class TestBigInt(unittest.TestCase):
             return None # this is necessary because unittest thinks this is a test
         for x in range(min, max):
             func(x, msg=str(x))
+
 
     def test_2(self, func=None, xmin=-100, xmax=100, ymin=-100, ymax=100):
         if func == None:
@@ -233,6 +236,48 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(list(myzip(a,c)), list(zip(a,c)))
         self.assertEqual(list(myzip(a,b)), [(1,1),(2,2),(3,3),(4,4),(5,0),(6,0)])
         self.assertEqual(list(myzip(b,a)), [(1,1),(2,2),(3,3),(4,4),(0,5),(0,6)])
+
+
+class TestRational(unittest.TestCase):
+    def test_2(self, func=None, xmin=-100, xmax=100, ymin=-100, ymax=100):
+        if func == None:
+            return None
+        for x in range(xmin, xmax):
+            for y in range(ymin, ymax):
+                func(x, y, msg='x={0}, y={1}'.format(x, y))
+
+
+    def test_4(self, func=None, amin=-50, amax=50, bmin=-50, bmax=50, cmin=-50, cmax=50, dmin=-50, dmax=50):
+        if func == None:
+            return None
+        for a in range(amin, amax):
+            for b in range(bmin, bmax):
+                for c in range(cmin, cmax):
+                    for d in range(dmin, dmax):
+                        func(a, b, c, d, msg="a={0}, b={1}, c={2}, d={3}".format(a, b, c, d))
+
+
+    def test_constructor(self):
+        def func(x, y, msg):
+            a = Rational(BigInt(x), BigInt(y))
+            self.assertEqual(a.numerator, BigInt(Fraction(x,y).numerator), msg=msg)
+            self.assertEqual(a.denominator, BigInt(Fraction(x,y).denominator), msg=msg)
+        self.test_2(func, 1, 50, 1, 50)
+
+
+    def test_eq(self):
+        def func(a, b, c, d, msg):
+            if b == 0 or d == 0:
+                with self.assertRaises(ZeroDivisionError):
+                    x = Rational(BigInt(a), BigInt(b))
+                    y = Rational(BigInt(c), BigInt(d))
+            else:
+                x = Rational(BigInt(a), BigInt(b))
+                fx = Fraction(a, b)
+                y = Rational(BigInt(c), BigInt(d))
+                fy = Fraction(c, d)
+                self.assertEqual(x == y, fx == fy, msg=msg)
+        self.test_4(func, -5, 5, -5, 5, -5, 5, -5, 5)
 
 
 if __name__ == '__main__':
