@@ -228,6 +228,12 @@ class TestBigInt(unittest.TestCase):
         self.test_2(func, xmin=1, xmax=100, ymin=1, ymax=100)
 
 
+    def test_lcm(self):
+        def func(x, y, msg):
+            self.assertEqual(BigInt(x).lcm(BigInt(y)), BigInt(int(x*y/math.gcd(x,y))), msg=msg)
+        self.test_2(func, xmin=1, xmax=30, ymin=1, ymax=30)
+
+
 class TestUtils(unittest.TestCase):
     def test_myzip(self):
         a = [1,2,3,4,5,6]
@@ -268,7 +274,7 @@ class TestRational(unittest.TestCase):
                 a = Rational(BigInt(x), BigInt(y))
                 if x == 0:
                     self.assertEqual(a.numerator, BigInt(0), msg=msg)
-                    self.assertEqual(a.denominator, BigInt(1), msg=msg)
+                    self.assertEqual(a.denominator, abs(BigInt(y)), msg=msg)
                     self.assertTrue(a.positive, msg=msg)
                 else:
                     self.assertEqual(a.numerator, abs(BigInt(x)), msg=msg)
@@ -301,6 +307,33 @@ class TestRational(unittest.TestCase):
                 fy = Fraction(c, d)
                 self.assertEqual(x == y, fx == fy, msg=msg)
         self.test_4(func, -10, 10, -10, 10, -10, 10, -10, 10)
+
+
+    def test_lt(self):
+        def func(a, b, c, d, msg):
+            if b == 0 or d == 0:
+                pass
+            else:
+                x = Rational(BigInt(a), BigInt(b))
+                fx = Fraction(a, b)
+                y = Rational(BigInt(c), BigInt(d))
+                fy = Fraction(c, d)
+                self.assertEqual(x < y, fx < fy, msg=msg+"|| x={0}, y={1}".format(*x.common_denominator(y)))
+        self.test_4(func, -4, 4, -4, 4, -4, 4, -4, 4)
+
+
+    def test_common_denominator(self):
+        def func(a, b, c, d, msg):
+            if b == 0 or d == 0:
+                pass
+            else:
+                x = Rational(BigInt(a), BigInt(b))
+                y = Rational(BigInt(c), BigInt(d))
+                x2, y2 = x.common_denominator(y)
+                self.assertEqual(x, x2, msg=msg)
+                self.assertEqual(y, y2, msg=msg)
+                self.assertEqual(x2.denominator, y2.denominator, msg=msg)
+        self.test_4(func, -3, 3, -3, 3, -3, 3, -3, 3)
 
 
 if __name__ == '__main__':

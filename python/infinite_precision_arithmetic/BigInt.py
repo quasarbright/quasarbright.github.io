@@ -74,13 +74,20 @@ class BigInt:
         for digit in self.digits:
             digit_str += str(digit)
         if self.positive:
-            return 'BigInt({0})'.format(digit_str)
+            return '{0}B'.format(digit_str)
         else:
-            return 'BigInt(-{0})'.format(digit_str)
+            return '-{0}B)'.format(digit_str)
 
 
     def __repr__(self):
-        return str(self)
+        digit_str = ''
+        for digit in self.digits:
+            digit_str += str(digit)
+        if self.positive:
+            return 'BigInt({0}'.format(digit_str)
+        else:
+            return 'BigInt(-{0})'.format(digit_str)
+
 
 
     def __eq__(self, other):
@@ -431,3 +438,9 @@ class BigInt:
             a = b
             b = temp
         return a
+
+
+    def lcm(self, other):
+        if type(self) is not type(other):
+            raise TypeError('{0} {1}'.format(type(self), type(other)))
+        return self * other // self.gcd(other)
