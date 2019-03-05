@@ -258,8 +258,33 @@ class TestRational(unittest.TestCase):
 
 
     def test_constructor(self):
+        with self.assertRaises(TypeError):
+            Rational(1, 2)
         def func(x, y, msg):
-            a = Rational(BigInt(x), BigInt(y))
+            if y == 0:
+                with self.assertRaises(ZeroDivisionError):
+                    Rational(BigInt(x), BigInt(y))
+            else:
+                a = Rational(BigInt(x), BigInt(y))
+                if x == 0:
+                    self.assertEqual(a.numerator, BigInt(0), msg=msg)
+                    self.assertEqual(a.denominator, BigInt(1), msg=msg)
+                    self.assertTrue(a.positive, msg=msg)
+                else:
+                    self.assertEqual(a.numerator, abs(BigInt(x)), msg=msg)
+                    self.assertEqual(a.denominator, abs(BigInt(y)), msg=msg)
+                    if BigInt(x).positive == BigInt(y).positive:
+                        self.assertTrue(a.positive, msg=msg)
+                    else:
+                        self.assertFalse(a.positive, msg=msg)
+        self.test_2(func)
+
+
+    def test_simplify(self):
+        def func(x, y, msg):
+            old = Rational(BigInt(x), BigInt(y))
+            a = old.simplify()
+            self.assertEqual(old.positive, a.positive)
             self.assertEqual(a.numerator, BigInt(Fraction(x,y).numerator), msg=msg)
             self.assertEqual(a.denominator, BigInt(Fraction(x,y).denominator), msg=msg)
         self.test_2(func, 1, 50, 1, 50)
@@ -268,16 +293,14 @@ class TestRational(unittest.TestCase):
     def test_eq(self):
         def func(a, b, c, d, msg):
             if b == 0 or d == 0:
-                with self.assertRaises(ZeroDivisionError):
-                    x = Rational(BigInt(a), BigInt(b))
-                    y = Rational(BigInt(c), BigInt(d))
+                pass
             else:
                 x = Rational(BigInt(a), BigInt(b))
                 fx = Fraction(a, b)
                 y = Rational(BigInt(c), BigInt(d))
                 fy = Fraction(c, d)
                 self.assertEqual(x == y, fx == fy, msg=msg)
-        self.test_4(func, -5, 5, -5, 5, -5, 5, -5, 5)
+        self.test_4(func, -10, 10, -10, 10, -10, 10, -10, 10)
 
 
 if __name__ == '__main__':
