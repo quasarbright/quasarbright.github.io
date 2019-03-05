@@ -33,7 +33,7 @@ class Rational:
 
     def __eq__(self, other):
         if type(self) is not type(other):
-            raise TypeError('{0} {1}'.format(type(self), type(other)))
+            return False
         if self.numerator == BigInt(0):
             return other.numerator == BigInt(0)
         else:
@@ -42,6 +42,8 @@ class Rational:
 
 
     def __lt__(self, other):
+        if type(self) is not type(other):
+            raise TypeError('{0} {1}'.format(type(self), type(other)))
         if self.positive and not other.positive:
             return False
         if other.positive and not self.positive:
@@ -54,6 +56,38 @@ class Rational:
             return s.numerator < o.numerator
         else:
             return s.numerator > o.numerator
+
+
+    def __le__(self, other):
+        return self < other or self == other
+
+
+    def __hash__(self):
+        pass
+
+
+    def __abs__(self):
+        pass
+
+
+    def __inv__(self):
+        pass
+
+
+    def __add__(self, other):
+        pass
+
+
+    def __sub__(self, other):
+        pass
+
+
+    def __mul__(self, other):
+        pass
+
+
+    def __div__(self, other):
+        pass
 
 
     def simplify(self):
@@ -75,6 +109,8 @@ class Rational:
         maintains signs and numerical value
         1/2.lcd(-3/5) => (5/10, -6/10)
         '''
+        if type(self) is not type(other):
+            raise TypeError('{0} {1}'.format(type(self), type(other)))
         s = self.simplify()
         o = other.simplify()
         denominator = s.denominator.lcm(o.denominator)
