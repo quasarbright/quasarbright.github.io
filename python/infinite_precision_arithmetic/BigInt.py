@@ -100,7 +100,7 @@ class BigInt:
             return True
         ans = None
         if selflen == otherlen:
-            assert self != other and len(self.digits) == len(other.digits)
+            assert self != other and self.length() == other.length()
             for pair in zip(self.digits, other.digits):
                 sd, od = pair
                 if sd < od:
