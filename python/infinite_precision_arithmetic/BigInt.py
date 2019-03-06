@@ -22,36 +22,18 @@ class BigInt:
                 elif digit < 0:
                     raise ValueError("digits must be non-negative: {0}".format(repr(digit)))
             # handle leading zeroes
-            for i in range(len(val)): # int dependence
-                cur = val[i]
+            while not(val == [] or val == ()):
+                cur = val[0]
                 if cur > 0:
-                    self.digits = val[i:]
                     break
-            if self.digits == [] and val[0] == 0:
+                val = val[1:]
+            self.digits = val
+            if self.digits == [] or self.digits == ():
                 self.digits = [0]
-            if self.digits == [0]:
+            if self.digits == [0] or self.digits == (0,):
                 self.positive = True
             else:
                 self.positive = positive
-        elif isinstance(val, str):
-            if val == '':
-                raise ValueError(val)
-            self.positive = True
-            if val[0] == '-':
-                self.positive = False
-                if len(val) == 1: # int dependence
-                    raise ValueError(val)
-                else:
-                    val = val[1:]
-            for i in range(len(val)): # int dependence
-                cur = int(val[i])
-                if cur > 0:
-                    self.digits = [int(digit) for digit in val[i:]]
-                    break
-            if self.digits == []:
-                self.positive = True
-                self.digits = [0]
-            # let python raise the error
         elif(isinstance(val, int)):
             self.positive = True
             if val < 0:
@@ -76,7 +58,7 @@ class BigInt:
         if self.positive:
             return '{0}B'.format(digit_str)
         else:
-            return '-{0}B)'.format(digit_str)
+            return '-{0}B'.format(digit_str)
 
 
     def __repr__(self):
@@ -84,7 +66,7 @@ class BigInt:
         for digit in self.digits:
             digit_str += str(digit)
         if self.positive:
-            return 'BigInt({0}'.format(digit_str)
+            return 'BigInt({0})'.format(digit_str)
         else:
             return 'BigInt(-{0})'.format(digit_str)
 
@@ -159,8 +141,6 @@ class BigInt:
         if self.positive == other.positive:
             sdigits = self.digits
             odigits = other.digits
-            # int dependency for now. maybe make your own zip function which replaces empty with 0
-            # pad with preceeding 0s to get equal length
             carry = 0
             reverse_digits = []
             for pair in myzip(self.digits[::-1], other.digits[::-1]):

@@ -63,42 +63,6 @@ class TestBigInt(unittest.TestCase):
             BigInt([], True)
 
 
-    def test_str_init(self):
-        n = BigInt('1234')
-        self.assertEqual(n.digits, (1,2,3,4))
-        self.assertTrue(n.positive)
-
-        # negative
-        n = BigInt('-1234')
-        self.assertEqual(n.digits, (1,2,3,4))
-        self.assertFalse(n.positive)
-
-        # non int characters
-        with self.assertRaises(ValueError):
-            BigInt('1two34')
-
-        # "-" bad
-        with self.assertRaisesRegex(ValueError, '-'):
-            BigInt('-')
-
-        # leading zeroes
-        n = BigInt('00123400')
-        self.assertEqual(n.digits, (1,2,3,4,0,0))
-        self.assertTrue(n.positive)
-        n = BigInt('-00123400')
-        self.assertEqual(n.digits, (1,2,3,4,0,0))
-        self.assertFalse(n.positive)
-
-        # -0 is 0
-        n = BigInt('-00')
-        self.assertEqual(n.digits, (0,))
-        self.assertTrue(n.positive)
-
-        # empty
-        with self.assertRaisesRegex(ValueError, ""):
-            n = BigInt('')
-
-
     def test_int_init(self):
         n = BigInt(1234)
         self.assertEqual(n.digits, (1,2,3,4))
