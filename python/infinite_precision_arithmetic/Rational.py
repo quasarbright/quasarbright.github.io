@@ -63,31 +63,103 @@ class Rational:
 
 
     def __hash__(self):
-        pass
+        s = self.simplify()
+        return hash((s.numerator, s.denominator, s.positive))
 
 
     def __abs__(self):
-        pass
+        ans = Rational(self.numerator, self.denominator)
+        ans.positive = True
+        return ans
 
 
-    def __inv__(self):
-        pass
+    def __neg__(self):
+        if self.numerator == BigInt(0):
+            return self
+        else:
+            ans = Rational(self.numerator, self.denominator)
+            ans.positive = not self.positive
+            return ans
 
 
     def __add__(self, other):
-        pass
+        if type(self) is not type(other):
+            raise TypeError('{0} {1}'.format(type(self), type(other)))
+        if self.numerator == BigInt(0):
+            return other
+        elif other.numerator == BigInt(0):
+            return self
+        elif self.positive == other.positive:
+            s, o = self.lcd(other)
+            numerator = s.numerator + o.numerator
+            denominator = s.denominator
+            ans = Rational(numerator, denominator)
+            ans.positive = s.positive
+            return ans
+        else:
+            return self - -other
 
 
     def __sub__(self, other):
-        pass
+        if type(self) is not type(other):
+            raise TypeError('{0} {1}'.format(type(self), type(other)))
+        if self.numerator == BigInt(0):
+            return -other
+        elif other.numerator == BigInt(0):
+            return self
+        elif self.positive == other.positive:
+            s, o = self.lcd(other)
+            numerator = s.numerator - o.numerator
+            denominator = s.denominator
+            ans = Rational(numerator, denominator)
+            if numerator.positive:
+                ans.positive = self.positive
+            else:
+                ans.positive = not self.positive
+            return ans
+        else:
+            return self + -other
 
 
     def __mul__(self, other):
-        pass
+        if type(self) is not type(other):
+            raise TypeError('{0} {1}'.format(type(self), type(other)))
+        ans = Rational(self.numerator * other.numerator, self.denominator * other.denominator)
+        ans.positive = self.positive == other.positive
+        if ans.numerator == BigInt(0):
+            ans.positive = True
+        return ans
 
 
-    def __div__(self, other):
-        pass
+    def __truediv__(self, other):
+        if type(self) is not type(other):
+            raise TypeError('{0} {1}'.format(type(self), type(other)))
+        return self * other.inverse()
+
+
+    def __pow__(self, other):
+        if type(other) is not type(BigInt(1)):
+            raise TypeError('exponent must be a BigInt, got {1}'.format(type(other)))
+        if not other.positive:
+            return self.inverse() ** abs(other) # may divide by zero
+        if other == BigInt(0) or self == Rational(BigInt(1)):
+            return Rational(BigInt(1))
+        elif self.numerator == BigInt(0):
+            return Rational(BigInt(0))
+        elif other <= BigInt(10):
+            ans = self
+            counter = BigInt(1)
+            while counter < other:
+                ans = ans * self
+                counter = counter.add1()
+            return ans
+        else:
+            ans = Rational(BigInt(1))
+            pow = self
+            for digit in other.digits[::-1]:
+                ans = ans * (pow ** BigInt(digit))
+                pow = pow ** BigInt(10)
+            return ans
 
 
     def simplify(self):
@@ -122,4 +194,8 @@ class Rational:
         o.positive = other.positive
         return s, o
 
-# left off about to implement hash, le, abs, inv, and arithmetic
+
+    def inverse(self):
+        ans = Rational(self.denominator, self.numerator)
+        ans.positive = self.positive
+        return ans

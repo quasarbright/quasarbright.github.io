@@ -89,7 +89,6 @@ class BigInt:
             return 'BigInt(-{0})'.format(digit_str)
 
 
-
     def __eq__(self, other):
         '''
         false for equivalent ints

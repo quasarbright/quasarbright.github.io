@@ -309,7 +309,7 @@ class TestRational(unittest.TestCase):
         self.test_4(func, -10, 10, -10, 10, -10, 10, -10, 10)
 
 
-    def test_lt(self):
+    def test_compare(self):
         def func(a, b, c, d, msg):
             if b == 0 or d == 0:
                 pass
@@ -319,6 +319,7 @@ class TestRational(unittest.TestCase):
                 y = Rational(BigInt(c), BigInt(d))
                 fy = Fraction(c, d)
                 self.assertEqual(x < y, fx < fy, msg=msg+"|| x={0}, y={1}".format(*x.lcd(y)))
+                self.assertEqual(x <= y, fx <= fy, msg=msg+"|| x={0}, y={1}".format(*x.lcd(y)))
         self.test_4(func, -4, 4, -4, 4, -4, 4, -4, 4)
 
 
@@ -334,6 +335,105 @@ class TestRational(unittest.TestCase):
                 self.assertEqual(y, y2, msg=msg)
                 self.assertEqual(x2.denominator, y2.denominator, msg=msg)
         self.test_4(func, -3, 3, -3, 3, -3, 3, -3, 3)
+
+
+    def test_hash(self):
+        a = Rational(BigInt(2), BigInt(4))
+        b = Rational(BigInt(1), BigInt(2))
+        c = Rational(BigInt(-1), BigInt(2))
+        d = Rational(BigInt(2), BigInt(-4))
+        self.assertEqual(len(set([a, b, c, d])), 2)
+
+
+    def test_sub(self):
+        def func(a, b, c, d, msg):
+            if b == 0 or d == 0:
+                pass
+            else:
+                x = Rational(BigInt(a), BigInt(b))
+                y = Rational(BigInt(c), BigInt(d))
+                diff = x - y
+                f = Fraction(a,b) - Fraction(c,d)
+                self.assertEqual(diff, Rational(BigInt(f.numerator), BigInt(f.denominator)), msg=msg)
+        self.test_4(func, -5,5, -5,5, -5,5, -5,5)
+
+
+    def test_add(self):
+        def func(a, b, c, d, msg):
+            if b == 0 or d == 0:
+                pass
+            else:
+                x = Rational(BigInt(a), BigInt(b))
+                y = Rational(BigInt(c), BigInt(d))
+                diff = x + y
+                f = Fraction(a,b) + Fraction(c,d)
+                self.assertEqual(diff, Rational(BigInt(f.numerator), BigInt(f.denominator)), msg=msg)
+        self.test_4(func, -5,5, -5,5, -5,5, -5,5)
+
+
+    def test_mul(self):
+        def func(a, b, c, d, msg):
+            if b == 0 or d == 0:
+                pass
+            else:
+                x = Rational(BigInt(a), BigInt(b))
+                y = Rational(BigInt(c), BigInt(d))
+                diff = x * y
+                f = Fraction(a,b) * Fraction(c,d)
+                self.assertEqual(diff, Rational(BigInt(f.numerator), BigInt(f.denominator)), msg=msg)
+        self.test_4(func, -5,5, -5,5, -5,5, -5,5)
+
+
+    def test_div(self):
+        def func(a, b, c, d, msg):
+            if b == 0 or d == 0:
+                pass
+            else:
+                x = Rational(BigInt(a), BigInt(b))
+                y = Rational(BigInt(c), BigInt(d))
+                if c == 0:
+                    with self.assertRaises(ZeroDivisionError):
+                        diff = x / y
+                else:
+                    diff = x / y
+                    f = Fraction(a,b) / Fraction(c,d)
+                    self.assertEqual(diff, Rational(BigInt(f.numerator), BigInt(f.denominator)), msg=msg)
+        self.test_4(func, -5,5, -5,5, -5,5, -5,5)
+
+
+    def test_abs(self):
+        def func(x, y, msg):
+            if y == 0:
+                pass
+            else:
+                frac = abs(Fraction(x, y))
+                self.assertEqual(abs(Rational(BigInt(x), BigInt(y))), Rational(BigInt(frac.numerator), BigInt(frac.denominator)), msg=msg)
+        self.test_2(func)
+
+
+    def test_neg(self):
+        def func(x, y, msg):
+            if y == 0:
+                pass
+            else:
+                frac = -Fraction(x, y)
+                self.assertEqual(-Rational(BigInt(x), BigInt(y)), Rational(BigInt(frac.numerator), BigInt(frac.denominator)), msg=msg)
+        self.test_2(func)
+
+
+    def test_pow(self):
+        def func(a, b, c, d, msg):
+            if b == 0 or d != 1:
+                pass
+            elif a == 0 and c < 0:
+                with self.assertRaises(ZeroDivisionError):
+                    ans = Rational(BigInt(a), BigInt(b)) ** BigInt(c)
+            else:
+                ans = Rational(BigInt(a), BigInt(b)) ** BigInt(c)
+                frac = Fraction(a, b) ** c
+                fracans = Rational(BigInt(frac.numerator), BigInt(frac.denominator))
+                self.assertEqual(ans, fracans, msg=msg)
+        self.test_4(func, -5, 15, -5, 15, -5, 15, -5, 15)
 
 
 if __name__ == '__main__':
