@@ -1,4 +1,5 @@
-alphabet = 'abcdefghijklmnopqrstuvwxyz'
+import random
+alphabet = 'abcdefghijklmnopqrstuvwxyz '
 
 
 def remove(s, i):
@@ -47,6 +48,40 @@ def generate_possible_moves(s):
     return moves
 
 
+def get_need_and_remove(word, target):
+    wordlist = list(word)
+    targetlist = list(target)
+    wordset = set(list(word))
+    targetset = set(list(target))
+    intersect = wordset & targetset
+    for letter in intersect:
+        while letter in wordlist and letter in targetlist:
+            wordlist.remove(letter)
+            targetlist.remove(letter)
+    lettersNeeded = targetlist
+    lettersToRemove = wordlist
+    assert set(lettersNeeded) & set(lettersToRemove) == set([])
+    return lettersNeeded, lettersToRemove
+
+def generate_better_moves(word, target):
+    '''
+    only add/remove letters that need to be added/removed
+    then permute once word is a permutation of target.
+    doesn't use replace
+    '''
+    moves = []
+    lettersNeeded, lettersToRemove = get_need_and_remove(word, target)
+    if lettersNeeded != []:
+        moves.append((add, (word, 0, lettersNeeded[0])))
+    elif lettersToRemove != []:
+        moves.append((remove, (word, word.index(lettersToRemove[0]))))
+    else:
+        for i in range(len(word)):
+            for j in range(i+1, len(word)):
+                moves.append((swap, (word, i, j)))
+    return moves
+
+
 def generate_good_moves(word, target):
     s = word
     # eliminates some repetition of equivalent sequences by getting lengths equal first,
@@ -91,12 +126,12 @@ def generate_possible_next_states(s):
 
 
 # breadth first
-def min_path(word, target):
+def min_path(word, target, generator=generate_better_moves):
     if word == target:
         return []
     # list of (word, [move]) pairs
     queue = []
-    nextMoves = generate_good_moves(word, target)
+    nextMoves = generator(word, target)
     for move in nextMoves:
         f, args = move
         nextWord = f(*args)
@@ -106,13 +141,15 @@ def min_path(word, target):
     seenWords = set([])
     last = None
     while len(queue) > 0 and last is None:
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         curr = queue.pop(0)
+
         a, prevMoves = curr
+        print(a, len(queue))
         if a not in seenWords:
             seenWords.add(a)
             prevWord = prevMoves[-1][0]
-            nextMoves = generate_good_moves(a, target)
+            nextMoves = generator(a, target)
             for move in nextMoves:
                 f, args = move
                 nextWord = f(*args)
@@ -122,7 +159,77 @@ def min_path(word, target):
                     else:
                         queue.append((nextWord, prevMoves+[move]))
     return last[1]
-print(min_path('michael','chimelb'))
+
+
+def non_bfs_min_path(word, target):
+    words = [word]
+    moves = []
+    lettersNeeded, lettersToRemove = get_need_and_remove(word, target)
+
+    def add_letter():
+        nonlocal word, words, moves, lettersNeeded, lettersToRemove
+        oldWord = word
+        word = add(word, 0, lettersNeeded[int(random.random()*len(lettersNeeded))])
+        words.append(word)
+        moves.append((add, (oldWord, 0, lettersNeeded[-1])))
+        lettersNeeded, lettersToRemove = get_need_and_remove(word, target)
+    def remove_letter():
+        nonlocal word, words, moves, lettersNeeded, lettersToRemove
+        oldWord = word
+        ind = word.index(lettersToRemove[0])
+        word = remove(word, ind)
+        words.append(word)
+        moves.append((remove, (oldWord, ind)))
+        lettersNeeded, lettersToRemove = get_need_and_remove(word, target)
+    # add letters as necessary
+    while lettersNeeded != [] or lettersToRemove != []:
+        if lettersNeeded != [] and lettersToRemove != []:
+            if random.random() < .5:
+                remove_letter()
+            else:
+                add_letter()
+        elif lettersNeeded != []:
+            add_letter()
+        else:
+            remove_letter()
+    # remove letters
+    while lettersToRemove != []:
+        remove_letter()
+    assert lettersNeeded == [] and lettersToRemove == []
+    assert len(word) == len(target)
+    # basically do selection sort
+    for startIndex in range(len(word)-1):
+        wordLetter = word[startIndex]
+        targetLetter = target[startIndex]
+        if wordLetter != targetLetter:
+            # index of the target letter in the rest of the string
+            offset = word[startIndex:].index(targetLetter)
+            targetLetterIndex = startIndex + offset
+
+            oldWord = word
+            word = swap(word, startIndex, targetLetterIndex)
+            words.append(word)
+            moves.append((swap, (oldWord, startIndex, targetLetterIndex)))
+    assert word == target
+    return words, moves
+
+
+def print_path(path):
+    f2s = {
+        add:'add',
+        remove:'remove',
+        swap: 'swap',
+        replace: 'replace',
+    }
+    for move in path:
+        f, args = move
+        currWord = args[0]
+        nextWord = f(*args)
+        fstr = f2s[f]
+        print(currWord)
+    print(nextWord)
+words, moves = non_bfs_min_path("hey vsauce. michael here!", 'whats jablin jables?')
+print(*words, sep='\n')
 ### left off realizing that you should only replace "bad" characters using set arithmetic
 ## queue explosion due to to many options (bfs too wide) is main problem
 # maybe go letter by letter and remove common letters from each word, and replace the letters that are left
