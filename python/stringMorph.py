@@ -230,8 +230,3 @@ def print_path(path):
     print(nextWord)
 words, moves = non_bfs_min_path("hey vsauce. michael here!", 'whats jablin jables?')
 print(*words, sep='\n')
-### left off realizing that you should only replace "bad" characters using set arithmetic
-## queue explosion due to to many options (bfs too wide) is main problem
-# maybe go letter by letter and remove common letters from each word, and replace the letters that are left
-# maybe give remove, add, and replace less options to avoid queue explosion. Maybe only let them happen at
-# the beginning of the string, and let swap handle the rest?
