@@ -24,3 +24,31 @@ def swap(s, i, j):
         else:
             ans += s[ind]
     return ans
+
+
+def generate_possible_moves(s):
+    moves = []
+    for i in range(len(s)):
+        moves.append((remove, (s, i)))
+        for j in range(i+1, len(s)):
+            if i != j:
+                move = (swap, (s, i, j))
+                if move not in moves:
+                    moves.append(move)
+    for i in range(len(s)+1):
+        for letter in alphabet:
+            moves.append((add, (s, i, letter)))
+    return moves
+
+
+def generate_possible_next_states(s):
+    moves = generate_possible_moves(s)
+    next_states = set([])
+    for move in moves:
+        f, args = move
+        next_states.add(f(*args))
+    return next_states
+
+
+def min_dist(a, b):
+    pass
