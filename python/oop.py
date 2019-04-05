@@ -47,9 +47,19 @@ def dot(obj, attribute_name, args=None):
 #     }
 # }
 
+def make_object():
+	obj = {
+		'super': None
+		'fields':{},
+		'methods':{
+			'toString':
+		}
+	}
+
 
 def make_point(x, y):
     point = {
+		'super': make_object,
         'fields': {
             'x': x,
             'y': y
