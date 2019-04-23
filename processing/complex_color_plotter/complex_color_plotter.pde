@@ -1,13 +1,16 @@
-float xmin = -5;
-float xmax = 5;
-float ymin = -5;
-float ymax = 5;
+float size = 2;
+float xmin = -size;
+float xmax = size;
+float ymin = -size;
+float ymax = size;
 
 void setup(){
-  size(500,500);
+  size(800,800);
   colorMode(HSB);
+  strokeWeight(1);
 }
 
 void draw() {
-  
+  background(0);
+  plot(f);
 }
