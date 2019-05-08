@@ -1,4 +1,4 @@
-ArrayList<Triangle> triangles = new ArrayList<Triangle>();
+ArrayList<Polygon> polygons = new ArrayList<Polygon>();
 void setup(){
   size(1000,1000);
   background(0);
@@ -7,23 +7,25 @@ void setup(){
   noStroke();
   stroke(0, 255, 0);
   noFill();
-  PVector a = new PVector(width/2, 10);
-  PVector b = new PVector(10, height - 10);
-  PVector c = new PVector(height-10, height-10);
-  triangles.add(new Triangle(a, b, c));
+  ArrayList<PVector> vertices = new ArrayList<PVector>();
+  vertices.add(new PVector(0,0));
+  vertices.add(new PVector(width,0));
+  vertices.add(new PVector(width, height));
+  vertices.add(new PVector(0,height));
+  polygons.add(new Polygon(vertices));
 }
 
 void draw(){
   background(0);
-  ArrayList<Triangle> newTriangles = new ArrayList<Triangle>();
-  for(Triangle t: triangles){
+  ArrayList<Polygon> newPolygons = new ArrayList<Polygon>();
+  for(Polygon t: polygons){
     Triangle[] children = t.subTriangles();
     for(Triangle child: children){
-      newTriangles.add(child);
+      newPolygons.add(child);
     }
     t.show();
   }
-  triangles = newTriangles;
+  polygons = newPolygons;
   noLoop();
 }
 
