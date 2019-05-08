@@ -24,3 +24,7 @@ This simulates three magnets on a table with a pendulum hanging a magnetic objec
 This generates a [minimum spanning tree](https://www.wikiwand.com/en/Minimum_spanning_tree) of a random collection of points. You can add points to see how the MST changes
 ## [Travelling salesman problem](https://quasarbright.github.io/p5js/travelling%20salesman)
 This solves the [travelling salesman problem](https://www.wikiwand.com/en/Travelling_salesman_problem) for a random collection of points.
+## [Polygon Fractals](https://quasarbright.github.io/p5js/polygon%20fractal)
+Colorful polygon fractals. Click to iterate the fractal, press a key to switch between the two fractal modes:  
+center mode: draw a dot at the center of a shape and draw the triangles going from the shape's edges to the center  
+prism mode: draw a smaller version of the shape inside itself and draw lines connecting it to the old shape
