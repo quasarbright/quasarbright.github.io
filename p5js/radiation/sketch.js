@@ -1,13 +1,13 @@
-let speed = 5;
+let speed = 10;
 let jetPeriod = 1;
 let pulsePeriod = 0;
 let source;
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(displayWidth, displayHeight);
   colorMode(HSB)
   stroke(255);
   strokeWeight(2)
-  source = new Source(createVector(200, 200), 20);
+  source = new Source(createVector(width/2, height/2), 20);
 }
 
 function draw() {
