@@ -13,12 +13,14 @@ class Boundary {
   }
   
   void show() {
+    pushMatrix();
     stroke(255);
     strokeWeight(5);
     if(reflect){
       stroke(255, 0, 0);
     }
     line(this.start.x, this.start.y, this.end.x, this.end.y);
+    popMatrix();
   }
 }
 

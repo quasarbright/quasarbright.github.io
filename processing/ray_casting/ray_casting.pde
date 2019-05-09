@@ -2,11 +2,11 @@ Source r;
 Boundary[] bs;
 void setup() {
   size(600,600);
-  strokeWeight(10);
+  strokeWeight(1);
   //stroke(255, 50);
   strokeJoin(BEVEL);
   noFill();
-  r = new Source(new PVector(100,200), 400);
+  r = new Source(new PVector(100,200), 500);
   bs = new Boundary[]{
     new Boundary(new PVector(50,50), new PVector(200,50), false),
     new Boundary(new PVector(50,50), new PVector(50,200), false),
