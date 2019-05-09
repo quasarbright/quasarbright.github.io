@@ -16,7 +16,14 @@ function draw() {
   source.show();
   if (frameCount > 10)
     source.setPosition(createVector(mouseX, mouseY))
+  if(mouseIsPressed){
+    source.setAngleOffset(source.angleOffset - .03)
+  }
 }
+
+function mousePressed() {
+}
+
 
 function isOffScreen(position) {
   return position.x > width
@@ -46,14 +53,14 @@ class Jet {
   }
 
   spawn() {
-    this.particles.push(new Particle(this.position.copy(), this.velocity));
+    this.particles.push(new Particle(this.position.copy(), this.velocity.copy()));
   }
-  
+
   clearOffscreen() {
-    for(let i = this.particles.length-1; i >= 0; i--) {
+    for (let i = this.particles.length - 1; i >= 0; i--) {
       let p = this.particles[i].position;
-      if(isOffScreen(p)){
-        this.particles.splice(i,1)
+      if (isOffScreen(p)) {
+        this.particles.splice(i, 1)
       }
     }
   }
@@ -69,15 +76,19 @@ class Jet {
     this.age++;
   }
 
+  rotate(angle) {
+    this.velocity.rotate(angle)
+  }
+
   show() {
     push();
     noFill();
-    let hu = this.age*speed % 256;
+    let hu = this.age * speed % 256;
     stroke(hu, 255, 255)
-    let a = this.particles[this.particles.length-1].position;
+    let a = this.particles[this.particles.length - 1].position;
     let b = this.position;
     line(a.x, a.y, b.x, b.y)
-    for (let i = this.particles.length-1; i > 0; i--) {
+    for (let i = this.particles.length - 1; i > 0; i--) {
       let particle = this.particles[i];
       let prev = this.particles[i - 1]
       let a = particle.position;
@@ -107,7 +118,7 @@ class Pulse {
     noFill()
     stroke(255, 50)
     let p = this.position;
-    ellipse(p.x, p.y, this.radius*2);
+    ellipse(p.x, p.y, this.radius * 2);
     pop()
   }
 }
@@ -148,6 +159,7 @@ class Source {
   constructor(position, numJets) {
     this.position = position;
     this.jets = [];
+    this.angleOffset = 0;
     for (let i = 0; i < numJets; i++) {
       let angle = i * TWO_PI / numJets;
       let velocity = p5.Vector.fromAngle(angle).mult(speed);
@@ -162,6 +174,13 @@ class Source {
       jet.position = p;
     }
     this.pulser.position = p;
+  }
+
+  setAngleOffset(angleOffset) {
+    for (let jet of this.jets) {
+      jet.velocity.rotate(angleOffset - this.angleOffset)
+    }
+    this.angleOffset = angleOffset;
   }
 
   update() {
