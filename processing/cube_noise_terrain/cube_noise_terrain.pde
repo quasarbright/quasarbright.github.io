@@ -4,14 +4,14 @@ float noiseScl = 0.002;
 float tnoiseScl = 0.02;
 final float depth = 500;
 int n = 30;
-int nx = 2*n;
-int ny = n;
+int nx = n;
+int ny = 2*n;
 int nz = n;
 float w, h, d;// dims of each cube
 float threshold = 0.4;
 boolean[][][] vals;
 void setup() {
-  size(1000,500,P3D);
+  size(250,500,P3D);
   noStroke();
   fill(0, 255, 0);
   cam = new PeasyCam(this, depth*2);
@@ -76,6 +76,6 @@ void draw() {
 }
 
 float f(float x, float y, float z) {
-  float noise = noise(noiseScl*(x+width)*2 + frameCount * tnoiseScl, noiseScl*(y+height), noiseScl*(z+depth));
+  float noise = noise(noiseScl*(x+width), noiseScl*(y+height)*3 + frameCount * tnoiseScl, noiseScl*(z+depth));
   return noise;
 }
