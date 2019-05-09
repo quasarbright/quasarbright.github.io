@@ -1,9 +1,9 @@
 import peasy.*;
 PeasyCam cam;
-float noiseScl = 0.002;
+float noiseScl = 0.005;
 float tnoiseScl = 0.02;
-final float depth = 500;
-int n = 30;
+final float depth = 250;
+int n = 25;
 int nx = n;
 int ny = 2*n;
 int nz = n;
@@ -14,7 +14,7 @@ void setup() {
   size(250,500,P3D);
   noStroke();
   fill(0, 255, 0);
-  cam = new PeasyCam(this, depth*2);
+  cam = new PeasyCam(this, depth*3);
   w = width * 1.0 / nx;
   h = height * 1.0 / ny;
   d = depth * 1.0 / nz;
