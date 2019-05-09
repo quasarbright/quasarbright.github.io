@@ -1,12 +1,12 @@
 Source r;
 Boundary[] bs;
 void setup() {
-  size(400,400);
+  size(600,600);
   strokeWeight(10);
   stroke(255, 50);
   strokeJoin(BEVEL);
   noFill();
-  r = new Source(new PVector(100,200), 600);
+  r = new Source(new PVector(100,200), 500);
   bs = new Boundary[]{
     new Boundary(new PVector(300,100), new PVector(300,300), true),
     randomBoundary(true),
