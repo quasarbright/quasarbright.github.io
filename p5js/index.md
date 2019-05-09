@@ -28,3 +28,6 @@ This solves the [travelling salesman problem](https://www.wikiwand.com/en/Travel
 Colorful polygon fractals. Click to iterate the fractal, press a key to switch between the two fractal modes:  
 center mode: draw a dot at the center of a shape and draw the triangles going from the shape's edges to the center  
 prism mode: draw a smaller version of the shape inside itself and draw lines connecting it to the old shape
+## [Rainbow Radiation](https://quasarbright.github.io/p5js/radiation)
+colorful lines fly out of your mouse cursor   
+move the mouse and click to make the lines fly out in a spiral
