@@ -1,15 +1,32 @@
-Ray r;
-Boundary b;
+Source r;
+Boundary[] bs;
 void setup() {
   size(400,400);
-  stroke(255);
-  r = new Ray(new PVector(100,200), PI/4);
-  b = new Boundary(new PVector(300,100), new PVector(300,300));
+  strokeWeight(2);
+  stroke(255, 50);
+  r = new Source(new PVector(100,200), 500);
+  bs = new Boundary[]{
+    new Boundary(new PVector(300,100), new PVector(300,300)),
+    randomBoundary(),
+    randomBoundary(),
+    randomBoundary(),
+    randomBoundary(),
+    new Boundary(new PVector(0, 0), new PVector(width, 0)),
+    new Boundary(new PVector(0, 0), new PVector(0, height)),
+    new Boundary(new PVector(width, height), new PVector(0, height)),
+    new Boundary(new PVector(width, height), new PVector(width, 0)),
+  };
 }
 
 void draw() {
   background(0);
-  r.show(b);
-  b.show();
-  r.direction = PVector.sub(new PVector(mouseX, mouseY), r.start);
+  r.show(bs);
+  for(Boundary b: bs){
+    b.show();
+  }
+  r.setPosition(new PVector(mouseX, mouseY));
+}
+
+Boundary randomBoundary(){
+  return new Boundary(new PVector(random(width), random(height)), new PVector(random(width), random(height)));
 }

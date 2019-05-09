@@ -8,7 +8,7 @@ class Ray {
   
   void show() {
     PVector end = PVector.add(this.start, this.direction.copy().setMag(10));
-    ellipse(this.start.x, this.start.y, 5, 5);
+    //ellipse(this.start.x, this.start.y, 5, 5);
     line(this.start.x, this.start.y, end.x, end.y);
   }
   
@@ -18,6 +18,30 @@ class Ray {
     if(c != null){
       line(this.start.x, this.start.y, c.x, c.y);
     }
+  }
+  
+  void show(Boundary[] bs){
+    PVector c = this.cast(bs);
+    this.show();
+    if(c != null){
+      line(this.start.x, this.start.y, c.x, c.y);
+    }
+  }
+  
+  PVector cast(Boundary[] bs) {
+    float bestDistSq = Float.MAX_VALUE;
+    PVector bestPos = null;
+    for(Boundary b: bs) {
+      PVector c = this.cast(b);
+      if(c != null){
+        float dsq = PVector.sub(c, this.start).magSq();
+        if(dsq < bestDistSq){
+          bestDistSq = dsq;
+          bestPos = c;
+        }
+      }
+    }
+    return bestPos;
   }
   
   PVector cast(Boundary b) {
