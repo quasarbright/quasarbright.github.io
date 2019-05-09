@@ -4,9 +4,11 @@ void setup() {
   size(400,400);
   strokeWeight(2);
   stroke(255, 50);
+  strokeJoin(BEVEL);
+  noFill();
   r = new Source(new PVector(100,200), 500);
   bs = new Boundary[]{
-    new Boundary(new PVector(300,100), new PVector(300,300)),
+    new Boundary(new PVector(300,100), new PVector(300,300), true),
     randomBoundary(),
     randomBoundary(),
     randomBoundary(),
@@ -16,6 +18,7 @@ void setup() {
     new Boundary(new PVector(width, height), new PVector(0, height)),
     new Boundary(new PVector(width, height), new PVector(width, 0)),
   };
+  println(reflect(new PVector(1,1), new PVector(100,0)));
 }
 
 void draw() {
@@ -28,5 +31,6 @@ void draw() {
 }
 
 Boundary randomBoundary(){
-  return new Boundary(new PVector(random(width), random(height)), new PVector(random(width), random(height)));
+  boolean reflect = random(1) < .5;
+  return new Boundary(new PVector(random(width), random(height)), new PVector(random(width), random(height)), reflect);
 }

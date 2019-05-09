@@ -6,6 +6,11 @@ class Ray {
     this.direction = PVector.fromAngle(angle);
   }
   
+  Ray(PVector start, PVector direction) {
+    this.start = start;
+    this.direction = direction;
+  }
+  
   void show() {
     PVector end = PVector.add(this.start, this.direction.copy().setMag(10));
     //ellipse(this.start.x, this.start.y, 5, 5);
@@ -21,27 +26,57 @@ class Ray {
   }
   
   void show(Boundary[] bs){
-    PVector c = this.cast(bs);
+    ArrayList<PVector> cs = this.cast(bs);
+    stroke(255, 50);
     this.show();
-    if(c != null){
-      line(this.start.x, this.start.y, c.x, c.y);
+    noFill();
+    beginShape();
+    vertex(this.start.x, this.start.y);
+    for(PVector c: cs){
+      vertex(c.x, c.y);
     }
+    endShape();
   }
   
-  PVector cast(Boundary[] bs) {
+  ArrayList<PVector> cast(Boundary[] bs) {
+    // returns possibly empty list of non-null vectors
+    // only going to be longer than 1 if it hits a mirror
+    // accounts for reflections
     float bestDistSq = Float.MAX_VALUE;
+    ArrayList<PVector> ans = new ArrayList<PVector>();
     PVector bestPos = null;
+    Boundary bestBoundary = null;
     for(Boundary b: bs) {
       PVector c = this.cast(b);
       if(c != null){
         float dsq = PVector.sub(c, this.start).magSq();
-        if(dsq < bestDistSq){
+        if(dsq < bestDistSq && dsq > 0.1){
           bestDistSq = dsq;
           bestPos = c;
+          bestBoundary = b;
         }
       }
     }
-    return bestPos;
+    if(bestPos != null){
+      ans.add(bestPos);
+    }
+    if(bestBoundary != null && bestPos != null){
+      if(bestBoundary.reflect){
+        // tangent vector of the mirror
+        PVector tan = PVector.sub(bestBoundary.end, bestBoundary.start);
+        // this ray's direction
+        PVector ray = this.direction;
+        // the new ray's direction
+        PVector refl = reflect(ray, tan);
+        // new ray starting from the mirror
+        Ray next = new Ray(bestPos, refl);
+        ArrayList<PVector> rest = next.cast(bs);
+        for(PVector v: rest){
+          ans.add(v);
+        }
+      }
+    }
+    return ans;
   }
   
   PVector cast(Boundary b) {
@@ -70,4 +105,17 @@ class Ray {
     PVector disp = PVector.sub(end, this.start);
     return PVector.add(this.start, PVector.mult(disp, u));
   }
+}
+
+
+PVector reflect(PVector ray, PVector tan) {
+  // projection of ray onto tan
+  float dot = ray.dot(tan);
+  if(dot < 0){
+    tan = PVector.mult(tan, -1);
+  }
+  PVector shadow = tan.copy().setMag(ray.dot(tan) / tan.mag());
+  // projection to ray
+  PVector perp = PVector.sub(ray, shadow);
+  return PVector.sub(ray, PVector.mult(perp, 2));
 }
