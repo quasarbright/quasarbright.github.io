@@ -14,6 +14,7 @@ class Boundary {
   
   void show() {
     stroke(255);
+    strokeWeight(5);
     if(reflect){
       stroke(255, 0, 0);
     }

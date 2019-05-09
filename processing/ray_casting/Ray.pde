@@ -27,7 +27,8 @@ class Ray {
   
   void show(Boundary[] bs){
     ArrayList<PVector> cs = this.cast(bs);
-    stroke(255, 50);
+    strokeWeight(10);
+    stroke(255, 10);
     this.show();
     noFill();
     beginShape();

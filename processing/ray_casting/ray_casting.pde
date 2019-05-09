@@ -2,17 +2,17 @@ Source r;
 Boundary[] bs;
 void setup() {
   size(400,400);
-  strokeWeight(2);
+  strokeWeight(10);
   stroke(255, 50);
   strokeJoin(BEVEL);
   noFill();
-  r = new Source(new PVector(100,200), 500);
+  r = new Source(new PVector(100,200), 600);
   bs = new Boundary[]{
     new Boundary(new PVector(300,100), new PVector(300,300), true),
-    randomBoundary(),
-    randomBoundary(),
-    randomBoundary(),
-    randomBoundary(),
+    randomBoundary(true),
+    randomBoundary(false),
+    randomBoundary(false),
+    randomBoundary(false),
     new Boundary(new PVector(0, 0), new PVector(width, 0)),
     new Boundary(new PVector(0, 0), new PVector(0, height)),
     new Boundary(new PVector(width, height), new PVector(0, height)),
@@ -30,7 +30,6 @@ void draw() {
   r.setPosition(new PVector(mouseX, mouseY));
 }
 
-Boundary randomBoundary(){
-  boolean reflect = random(1) < .5;
+Boundary randomBoundary(boolean reflect){
   return new Boundary(new PVector(random(width), random(height)), new PVector(random(width), random(height)), reflect);
 }
