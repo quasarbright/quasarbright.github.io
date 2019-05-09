@@ -14,7 +14,7 @@ void setup() {
   size(250,500,P3D);
   noStroke();
   fill(0, 255, 0);
-  cam = new PeasyCam(this, depth*3);
+  cam = new PeasyCam(this, depth*4);
   w = width * 1.0 / nx;
   h = height * 1.0 / ny;
   d = depth * 1.0 / nz;
