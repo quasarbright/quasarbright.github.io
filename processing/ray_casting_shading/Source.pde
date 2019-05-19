@@ -54,6 +54,24 @@ class Source {
     stroke(255);
     point(this.position.x, this.position.y);
   }
+  
+  void showPerspective(Boundary[] bs) {
+    pushMatrix();
+    noStroke();
+    float[] brightnesses = new float[rays.size()];
+    int j = 0;
+    for(Ray ray:rays){
+      brightnesses[j] = ray.brightness(bs);
+      j++;
+    }
+    float w = width * 1.0 / brightnesses.length;
+    for(int i = 0; i < brightnesses.length; i++){
+      fill(brightnesses[i]);
+      rect(i*w, 0, w, height);
+    }
+    popMatrix();
+  }
+  
   void setPosition(PVector p) {
     this.position = p;
     for(Ray ray: this.rays){

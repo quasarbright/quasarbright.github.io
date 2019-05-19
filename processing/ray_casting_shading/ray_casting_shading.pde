@@ -2,13 +2,14 @@ Source r;
 Boundary[] bs;
 float movementSpeed = 5;
 float rotationSpeed = TWO_PI / 60;
+boolean perspective = true;
 void setup() {
   size(600,600);
   strokeWeight(1);
   //stroke(255, 50);
   strokeJoin(BEVEL);
   noFill();
-  r = new Source(new PVector(100,200), 1000, HALF_PI, PI/4);
+  r = new Source(new PVector(100,200), 1000, HALF_PI, 0);
   bs = new Boundary[]{
     new Boundary(new PVector(50,50), new PVector(200,50), false),
     new Boundary(new PVector(50,50), new PVector(50,200), false),
@@ -34,10 +35,14 @@ void setup() {
 
 void draw() {
   background(0);
-  r.showTopdown(bs);
-  for(Boundary b: bs){
-    //b.show();
+  if(perspective){
+    r.showPerspective(bs);
+  } else {
+    r.showTopdown(bs);
   }
+  //for(Boundary b: bs){
+    //b.show();
+  //}
   
   if(keyPressed){
     switch(key){
@@ -61,6 +66,10 @@ void draw() {
       break;
     }
   }
+}
+
+void mousePressed(){
+  perspective = !perspective;
 }
 
 Boundary randomBoundary(boolean reflect){

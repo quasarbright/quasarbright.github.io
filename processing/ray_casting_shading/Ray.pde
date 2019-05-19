@@ -25,13 +25,19 @@ class Ray {
   //  }
   //}
   
-  void show(Boundary[] bs){
+  float brightness(Boundary[] bs){
     ArrayList<PVector> cs = this.cast(bs);
     if(cs.isEmpty()){
-      return;
+      return 0;
     }
     float dsq = this.totalDistSq(cs);
     float br = map(dsq, 0, .2*width*width, 255, 0);
+    return br;
+  }
+  
+  void show(Boundary[] bs){
+    ArrayList<PVector> cs = this.cast(bs);
+    float br = this.brightness(bs);
     strokeWeight(6);
     stroke(br);
     PVector p = cs.get(cs.size()-1);
