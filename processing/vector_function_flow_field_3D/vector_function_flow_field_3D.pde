@@ -1,5 +1,5 @@
-import peasy.*;
-PeasyCam cam;
+//import peasy.*;
+//PeasyCam cam;
 float size = 5;
 float xmin = -size;
 float xmax = size;
@@ -16,13 +16,14 @@ float depth = 400;
 FlowField f;
 void setup(){
   size(400,400, P3D);
-  cam = new PeasyCam(this, depth);
+  //fullScreen(P3D);
+  //cam = new PeasyCam(this, depth);
   stroke(255);
   strokeWeight(5);
   w = width * 1.0 / nx;
   h = height * 1.0 / ny;
   d = depth * 1.0 / nz;
-  f = new FlowField(new F(), 20, 20);
+  f = new FlowField(new F(), 20, 20, 20);
 }
 
 void draw(){

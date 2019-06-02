@@ -17,7 +17,7 @@ class Particle{
   void show() {
     stroke(255);
     PVector p = toPixel(this.pos);
-    point(p.x, p.y);
+    point(p.x, p.y, p.z);
   }
   
   void update(){
@@ -27,9 +27,12 @@ class Particle{
   
   boolean oob() {
     // are we out of bounds?
-    return this.pos.x < xmin
+    return 
+         this.pos.x < xmin
       || this.pos.x > xmax
       || this.pos.y < ymin
-      || this.pos.y > ymax;
+      || this.pos.y > ymax
+      || this.pos.z < zmin
+      || this.pos.z > zmax;
   }
 }

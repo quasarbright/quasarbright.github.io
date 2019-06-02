@@ -30,14 +30,20 @@ class Field {
       float y = r*h;
       for(int c = 0; c <= nx; c++){
         float x = c*w;
-        PVector px = new PVector(x, y);
-        PVector pc = toCoord(px);
-        PVector v = this.vectorAt(pc);//this.vectors[r][c];
-        v = v.copy().setMag(vecLen);
-        PVector endc = PVector.add(pc, v);
-        PVector endx = toPixel(endc);
-        circle(x, y, 2);
-        line(x, y, endx.x, endx.y);
+        for(int q = 0; q <= nz; nz++){
+          float z = q*d;
+          PVector px = new PVector(x, y, z);
+          PVector pc = toCoord(px);
+          PVector v = this.vectorAt(pc);//this.vectors[r][c];
+          v = v.copy().setMag(vecLen);
+          PVector endc = PVector.add(pc, v);
+          PVector endx = toPixel(endc);
+          push();
+          translate(x, y);
+          sphere(2);
+          pop();
+          line(x, y, endx.x, endx.y);
+        }
       }
     }
   }
