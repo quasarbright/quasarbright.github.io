@@ -25,3 +25,5 @@ python/mp3/test.py
 */.nb-gradle/*
 
 */libraries/*
+
+**/.vscode/**
