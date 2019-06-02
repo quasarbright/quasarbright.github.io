@@ -14,6 +14,17 @@ class Inward extends FieldFunction {
   }
 }
 
+class F extends FieldFunction {
+  PVector apply(PVector p){
+    float x = p.x;
+    float y = p.y;
+    return new PVector(
+      x*x-y*y-4,
+      2*x*y
+    );
+  }
+}
+
 class TestFunc extends FieldFunction {
   PVector apply(PVector p){
     //return new PVector (10, 1);

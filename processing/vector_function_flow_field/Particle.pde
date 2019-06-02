@@ -16,7 +16,6 @@ class Particle{
   
   void show() {
     stroke(255);
-    strokeWeight(1);
     PVector p = toPixel(this.pos);
     point(p.x, p.y);
   }

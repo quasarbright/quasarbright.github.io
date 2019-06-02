@@ -7,18 +7,24 @@ int n = 50;
 int nx = n;
 int ny = n;
 float w, h; // size of each vector cell
-Field f;
+FlowField f;
 void setup(){
   size(400,400);
   stroke(255);
+  strokeWeight(5);
   w = width * 1.0 / nx;
   h = height * 1.0 / ny;
-  f = new Field(new Inward());
+  f = new FlowField(new F(), 20, 20);
 }
 
 void draw(){
   background(0);
+  f.update();
   f.show();
+}
+
+void mousePressed() {
+  f.addParticles();
 }
 
 PVector toCoord(PVector p) {
