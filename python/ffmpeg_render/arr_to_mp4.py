@@ -20,7 +20,7 @@ def arr_to_mp4(arr, output_path, framerate=30, temp_dir=temp_img_dir_path):
         imgarr = arr[i]
         img = Image.fromarray(imgarr)
         img.save(os.path.join(temp_dir, str(i)+'.png'))
-    subprocess.call('ffmpeg -framerate {0} -i {1}/%d.png out.mp4'.format(framerate, temp_dir).split(' '))
+    subprocess.call('ffmpeg -framerate {0} -i {1}/%d.png -pix_fmt yuv420p out.mp4'.format(framerate, temp_dir).split(' '))
     shutil.rmtree(temp_dir)
 
 if __name__ == "__main__":
