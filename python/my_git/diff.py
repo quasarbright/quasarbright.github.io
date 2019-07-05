@@ -20,7 +20,7 @@ def next_match(lines1, lines2, i, j):
     while i < len(lines1) and j < len(lines2):
         a = lines1[i]
         b = lines2[j]
-        if a in lines2 and b in lines1:
+        if a in lines2[j:] and b in lines1[i:]:
             ain2 = lines2.index(a, j)
             bin1 = lines1.index(b, i)
             if ain2-j < bin1-i:
@@ -29,10 +29,10 @@ def next_match(lines1, lines2, i, j):
                 return i, ain2
             else:
                 return bin1, j
-        elif a in lines2 and b not in lines1:
+        elif a in lines2[j:] and b not in lines1[i:]:
             ain2 = lines2.index(a, j)
             return i, ain2
-        elif a not in lines2 and b in lines1:
+        elif a not in lines2[j:] and b in lines1[i:]:
             bin1 = lines1.index(b, i)
             return bin1, j
         else:
@@ -44,11 +44,40 @@ def next_match(lines1, lines2, i, j):
 def line_by_line_diff(lines1, lines2):
     '''
     expects array of lines (no newlines)
+    returns arary of lines (no newlines)
     '''
     ans = [] # array of lines
     i = 0
     j = 0
     matchI, matchJ = next_match(lines1, lines2, i, j)
-    ### left off here. you're going to need to make this into a while loop btw
+    insertions = None
+    deletions = None
+    while i < len(lines1) and j < len(lines2):
+        if (matchI, matchJ) == (-1,-1):
+            deletions = lines1[i:]
+            insertions = lines2[j:]
+            ans.extend(prepend_lines(deletions, "-\t" ))
+            ans.extend(prepend_lines(insertions, "+\t"))
+            return ans
+        else:
+            deletions = lines1[i:matchI]
+            insertions = lines2[j:matchJ]
+            ans.extend(prepend_lines(deletions, "-\t" ))
+            ans.extend(prepend_lines(insertions, "+\t"))
+            ans.extend(prepend_lines([lines1[matchI]], " \t"))
+            i = matchI + 1
+            j = matchJ + 1
+        matchI, matchJ = next_match(lines1, lines2, i, j)
     return ans
+
+def file_to_lines(path):
+    with open(path, 'r') as f:
+        return f.read().splitlines()
+if __name__ == '__main__':
+    import sys
+    file1 = sys.argv[1]
+    file2 = sys.argv[2]
+    lines1 = file_to_lines(file1)
+    lines2 = file_to_lines(file2)
+    print('\n'.join(line_by_line_diff(lines1, lines2)))
         
