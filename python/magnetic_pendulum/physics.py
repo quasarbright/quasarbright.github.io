@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 class Vector:
     def __init__(self, x, y):
@@ -113,6 +112,7 @@ class World:
         traceLength = 0
         iterations = 0
         if show:
+            import matplotlib.pyplot as plt
             plt.axis([-2,2,-2,2])
             for magnetPosition in self.magnetPositions:
                 plt.scatter(magnetPosition.x, magnetPosition.y)
