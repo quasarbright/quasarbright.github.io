@@ -34,7 +34,7 @@ class Vector:
             return self
 
 class World:
-    def __init__(self, n, magnetForce=1, pendulumForce=1, frictionForce=1, finishDistance=.1, finishVelocity=.1, dt=1/60, maxForce=.5):
+    def __init__(self, n, magnetForce=.2, pendulumForce=.02, frictionForce=.02, finishDistance=.1, finishVelocity=1, dt=1/60, maxForce=.5):
         '''
         n: number of magnets
         magnetForce, pendulumForce, frictionForce: force constants
@@ -102,7 +102,7 @@ class World:
         slowEnough = vel.magSq() < self.finishVelocity**2
         return closeEnough and slowEnough
 
-    def simulate(self, startingPosition, mass, show=False, maxIterations=1000):
+    def simulate(self, startingPosition, mass=1, show=False, maxIterations=1000):
         '''
         simulates the system with a pendulum and n magnets
         returns the ending magnet index and the trace length
@@ -152,8 +152,8 @@ class World:
 
         
 if __name__ == '__main__':
-    world = World(3, pendulumForce=.02, magnetForce=.2, frictionForce=.02, maxForce=.5)
-    world.simulate(Vector(-1,0.1), mass=1, show=True)
+    world = World(3)
+    world.simulate(Vector(1,1), 1, show=True)
 
 
 
