@@ -1,0 +1,54 @@
+def prepend_lines(lines, s):
+    '''prepends each line in lines (array of lines no newline) with s'''
+    ans = []
+    for line in lines:
+        ans.append(s + line)
+    return ans
+
+
+def next_match(lines1, lines2, i, j):
+    '''
+    lines1 and lines2 are [string, ...] no newline
+    i, j are int indices representing the start for each list
+    returns (a index, b index) for next match
+    (-1, -1) if no more matches
+    '''
+    # i, j are start
+    # a, b are lines1[i], lines2[j]
+    # ain2, bin1 are indices of a, b in the other list respectively
+    # either returns (i, ain2) or (bin1, j)
+    while i < len(lines1) and j < len(lines2):
+        a = lines1[i]
+        b = lines2[j]
+        if a in lines2 and b in lines1:
+            ain2 = lines2.index(a, j)
+            bin1 = lines1.index(b, i)
+            if ain2-j < bin1-i:
+                # we care about which one is sooner
+                # relative to where we are now
+                return i, ain2
+            else:
+                return bin1, j
+        elif a in lines2 and b not in lines1:
+            ain2 = lines2.index(a, j)
+            return i, ain2
+        elif a not in lines2 and b in lines1:
+            bin1 = lines1.index(b, i)
+            return bin1, j
+        else:
+            i += 1
+            j += 1
+    return -1, -1
+
+
+def line_by_line_diff(lines1, lines2):
+    '''
+    expects array of lines (no newlines)
+    '''
+    ans = [] # array of lines
+    i = 0
+    j = 0
+    matchI, matchJ = next_match(lines1, lines2, i, j)
+    ### left off here. you're going to need to make this into a while loop btw
+    return ans
+        

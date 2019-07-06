@@ -56,18 +56,51 @@ def line_by_line_diff(lines1, lines2):
         if (matchI, matchJ) == (-1,-1):
             deletions = lines1[i:]
             insertions = lines2[j:]
-            ans.extend(prepend_lines(deletions, "-\t" ))
-            ans.extend(prepend_lines(insertions, "+\t"))
+            ans.extend(prepend_lines(deletions, "-:" ))
+            ans.extend(prepend_lines(insertions, "+:"))
             return ans
         else:
             deletions = lines1[i:matchI]
             insertions = lines2[j:matchJ]
-            ans.extend(prepend_lines(deletions, "-\t" ))
-            ans.extend(prepend_lines(insertions, "+\t"))
-            ans.extend(prepend_lines([lines1[matchI]], " \t"))
+            ans.extend(prepend_lines(deletions, "-:" ))
+            ans.extend(prepend_lines(insertions, "+:"))
+            ans.extend(prepend_lines([lines1[matchI]], " :"))
             i = matchI + 1
             j = matchJ + 1
         matchI, matchJ = next_match(lines1, lines2, i, j)
+    return ans
+
+def character_by_character_diff(s1, s2):
+    '''
+    expects two strings
+    returns string
+    '''
+    ans = ''
+    i = 0
+    j = 0
+    matchI, matchJ = next_match(s1, s2, i, j)
+    insertions = None
+    deletions = None
+    while i < len(s1) and j < len(s2):
+        if (matchI, matchJ) == (-1, -1):
+            deletions = s1[i:]
+            insertions = s2[j:]
+            if len(deletions) > 0:
+                ans += "{-"+deletions+"-}"
+            if len(insertions) > 0:
+                ans += "{+"+insertions+"+}"
+            return ans
+        else:
+            deletions = s1[i:matchI]
+            insertions = s2[j:matchJ]
+            if len(deletions) > 0:
+                ans += "{-"+deletions+"-}"
+            if len(insertions) > 0:
+                ans += "{+"+insertions+"+}"
+            ans += s1[matchI]
+            i = matchI + 1
+            j = matchJ + 1
+        matchI, matchJ = next_match(s1, s2, i, j)
     return ans
 
 def file_to_lines(path):
@@ -75,9 +108,11 @@ def file_to_lines(path):
         return f.read().splitlines()
 if __name__ == '__main__':
     import sys
-    file1 = sys.argv[1]
-    file2 = sys.argv[2]
-    lines1 = file_to_lines(file1)
-    lines2 = file_to_lines(file2)
-    print('\n'.join(line_by_line_diff(lines1, lines2)))
+    # file1 = sys.argv[1]
+    # file2 = sys.argv[2]
+    # lines1 = file_to_lines(file1)
+    # lines2 = file_to_lines(file2)
+    # print('\n'.join(line_by_line_diff(lines1, lines2)))
+    print(character_by_character_diff('mike delmonaco', 'moke dedudelmonco'))
+    print(character_by_character_diff('mike', 'moke'))
         
