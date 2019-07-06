@@ -19,13 +19,8 @@ This randomly generates two ginchulates, which are a consonant sound, a vowel, a
 They just sound funny
 ## [Magnetic Pendulum](https://quasarbright.github.io/p5js/magnetic%20pendulum)
 This simulates three magnets on a table with a pendulum hanging a magnetic object above the center. Depending on where you release the magnet, you could end up at any of the three magnets. Click and drag to release pendulums and see where they end up. Where the pendulum ends up is extremely sensitive to the initial dropping position. Here is a picture of where a pendulum ends up based on the starting position: ![](https://quasarbright.github.io/images/magnet%20pendulum.PNG)
-## [random circles with no overlap](https://quasarbright.github.io/p5js/random%20circles%20no%20overlap)
-## [random graph](https://quasarbright.github.io/p5js/random%20graph)
-## [random squares with no overlap](https://quasarbright.github.io/p5js/random%20squares%20no%20overlap)
 ## [Minimum Spanning Tree](https://quasarbright.github.io/p5js/spanning%20tree)
 This generates a [minimum spanning tree](https://www.wikiwand.com/en/Minimum_spanning_tree) of a random collection of points. You can add points to see how the MST changes
-## [Travelling salesman problem](https://quasarbright.github.io/p5js/travelling%20salesman)
-This solves the [travelling salesman problem](https://www.wikiwand.com/en/Travelling_salesman_problem) for a random collection of points.
 ## [Polygon Fractals](https://quasarbright.github.io/p5js/polygon%20fractal)
 Colorful polygon fractals. Click to iterate the fractal, press a key to switch between the two fractal modes:  
 center mode: draw a dot at the center of a shape and draw the triangles going from the shape's edges to the center  
@@ -33,3 +28,10 @@ prism mode: draw a smaller version of the shape inside itself and draw lines con
 ## [Rainbow Radiation](https://quasarbright.github.io/p5js/radiation)
 colorful lines fly out of your mouse cursor   
 move the mouse and click to make the lines fly out in a spiral
+## [random circles with no overlap](https://quasarbright.github.io/p5js/random%20circles%20no%20overlap)
+## [random graph](https://quasarbright.github.io/p5js/random%20graph)
+## [random squares with no overlap](https://quasarbright.github.io/p5js/random%20squares%20no%20overlap)
+## [smart rockets](https://editor.p5js.org/mdelmonaco/present/BkJquZ1Ae)
+There are two competing populations of rockets, each using gnetics and evolution to try to learn to reach the target by applying a series of forces to themselves. The populations don't interact with each other, but it's cool to see two at once. The better rockets have a higher chance of reproducing and there is genetic crossover between parents
+## [Travelling salesman problem](https://quasarbright.github.io/p5js/travelling%20salesman)
+This solves the [travelling salesman problem](https://www.wikiwand.com/en/Travelling_salesman_problem) for a random collection of points.
