@@ -5,7 +5,7 @@ def prepend_lines(lines, s):
         ans.append(s + line)
     return ans
 
- def find_all_matches(lines1, lines2):
+def find_all_matches(lines1, lines2):
     matches = [] #[(i1, i2),...]
     for i1 in range(lines1):
         a = lines1[i1]
