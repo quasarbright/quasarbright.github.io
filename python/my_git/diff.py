@@ -6,39 +6,47 @@ def prepend_lines(lines, s):
     return ans
 
 
-def next_match(lines1, lines2, i, j):
+def next_match(lines1, lines2, start1, start2):
     '''
     lines1 and lines2 are [string, ...] no newline
-    i, j are int indices representing the start for each list
+    start1, start2 are int indices representing the start for each list
     returns (a index, b index) for next match
     (-1, -1) if no more matches
     '''
-    # i, j are start
-    # a, b are lines1[i], lines2[j]
-    # ain2, bin1 are indices of a, b in the other list respectively
-    # either returns (i, ain2) or (bin1, j)
-    while i < len(lines1) and j < len(lines2):
-        a = lines1[i]
-        b = lines2[j]
-        if a in lines2[j:] and b in lines1[i:]:
-            ain2 = lines2.index(a, j)
-            bin1 = lines1.index(b, i)
-            if ain2-j < bin1-i:
-                # we care about which one is sooner
-                # relative to where we are now
-                return i, ain2
-            else:
-                return bin1, j
-        elif a in lines2[j:] and b not in lines1[i:]:
-            ain2 = lines2.index(a, j)
-            return i, ain2
-        elif a not in lines2[j:] and b in lines1[i:]:
-            bin1 = lines1.index(b, i)
-            return bin1, j
-        else:
-            i += 1
-            j += 1
-    return -1, -1
+    foundMatch = False
+    i1Best = float('inf')
+    i2Best = float('inf')
+    bestDist = float('inf') # (i1best - start1) + (i2best - start2)
+    for i1 in range(start1, len(lines1)):
+        a = lines1[i1]
+        if a in lines2[start2:]:
+            # match
+            foundMatch = True
+            ain2 = lines2.index(a, start2)
+            dist = (i1 - start1) + (ain2 - start2)
+            if dist < bestDist:
+                # new best match
+                i1Best = i1
+                i2Best = ain2
+                bestDist = dist
+    for i2 in range(start2, len(lines2)):
+        b = lines2[i2]
+        if b in lines1[start1:]:
+            # match
+            foundMatch = True
+            bin1 = lines1.index(b, start1)
+            dist = (bin1 - start1) + (i2 - start2)
+            if dist < bestDist:
+                # new best match
+                i1Best = bin1
+                i2Best = i2
+                bestDist = dist
+    
+    if foundMatch:
+        return i1Best, i2Best
+    else:
+        return -1, -1
+
 
 
 def line_by_line_diff(lines1, lines2):
