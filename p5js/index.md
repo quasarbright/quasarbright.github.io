@@ -13,7 +13,7 @@ This is [John Conway's game of life](https://www.wikiwand.com/en/Conway%27s_Game
 ## [Display Graph](https://quasarbright.github.io/p5js/display%20graph)
 This allows you to display any graph and then edit the locations of vertices by clicking and dragging. Currently, it randomly generates a graph, but theoretically, the code can be used to display any graph.
 ## [Genetic Steering](https://editor.p5js.org/mdelmonaco/full/HJpO5IJ7Z)  
-These creatures need to eat green food and avoid red poison to survive. They starve if they don't eat enough, and have a random chance of reproducing at every moment. Each creature has a radius they can see food, a radius for poison, an attractive strength for food, and a repulsive force for poison. What configuration is optimal for survival?
+These creatures need to eat green food and avoid red poison to survive. They starve if they don't eat enough, and have a random chance of reproducing with some mutation at every moment. Each creature has a radius they can see food, a radius for poison, an attractive strength for food, and a repulsive force for poison. What configuration is optimal for survival?
 ## [Ginchology](https://quasarbright.github.io/p5js/ginchology)
 This randomly generates two ginchulates, which are a consonant sound, a vowel, and finally, an "nch". Ex: "dench"  
 They just sound funny
