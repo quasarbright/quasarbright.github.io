@@ -5,7 +5,24 @@ def prepend_lines(lines, s):
         ans.append(s + line)
     return ans
 
+ def find_all_matches(lines1, lines2):
+    matches = [] #[(i1, i2),...]
+    for i1 in range(lines1):
+        a = lines1[i1]
+        if a in lines2:
+            ain2 = lines2.index(a)
+            matches.append((i1, ain2))
+    for i2 in range(lines2):
+        b = lines2[i2]
+        if b in lines1:
+            bin1 = lines1.index(b)
+            match = (bin1, i2)
+            if match not in matches:
+                matches.append(match)
+    return matches
 
+
+# next match complexity len(lines1)^2 + len(lines2)^2
 def next_match(lines1, lines2, start1, start2):
     '''
     lines1 and lines2 are [string, ...] no newline
@@ -115,7 +132,7 @@ def file_to_lines(path):
     with open(path, 'r') as f:
         return f.read().splitlines()
 if __name__ == '__main__':
-    import sys
+    # import sys
     # file1 = sys.argv[1]
     # file2 = sys.argv[2]
     # lines1 = file_to_lines(file1)
