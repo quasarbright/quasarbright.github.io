@@ -6,8 +6,6 @@ title: p5.js stuff
 P5.js is a javascript graphics library. A graphics library lets your program display things other than text, like shapes, pictures, animations, and pretty much anything you can think of.
 ## [2048](https://quasarbright.github.io/p5js/2048)
 The game 2048. Move the tiles with the arrow keys. Combine equal tiles to double their value. your goal is to create a tile with the value 2048 by combining tiles.
-## [Asteroids](https://quasarbright.github.io/p5js/asteroids)
-This one isn't finished yet. Right now, all you can do is move around and shoot. Move with WASD and shoot with your mouse
 ## [Conway's Game of Life](https://quasarbright.github.io/p5js/conway)
 This is [John Conway's game of life](https://www.wikiwand.com/en/Conway%27s_Game_of_Life), a cellular automaton where cells live or die depending on the state of their neighbors. Click on the cells to toggle their life state and hit start to see what happens.
 ## [Display Graph](https://quasarbright.github.io/p5js/display%20graph)
