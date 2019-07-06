@@ -5,22 +5,77 @@ def prepend_lines(lines, s):
         ans.append(s + line)
     return ans
 
-def find_all_matches(lines1, lines2):
-    matches = [] #[(i1, i2),...]
-    for i1 in range(lines1):
-        a = lines1[i1]
-        if a in lines2:
-            ain2 = lines2.index(a)
-            matches.append((i1, ain2))
-    for i2 in range(lines2):
-        b = lines2[i2]
-        if b in lines1:
-            bin1 = lines1.index(b)
-            match = (bin1, i2)
-            if match not in matches:
-                matches.append(match)
-    return matches
+def find_used_matches(lines1, lines2):
+    '''
+    simulates using the next shortest distance match after each match
+    and returns [(i1, i2),...] as they would be used
+    '''
+    ans = [] # [(i1, i2),...]
+    i = 0
+    j = 0
+    matchI, matchJ = next_match(lines1, lines2, i, j)
+    while (matchI, matchJ) != (-1, -1):
+        # while we havent hit the end and there's matches left
+        # (if we hit the end, we get (-1, -1))
+        ans.append((matchI, matchJ))
+        i = matchI + 1
+        j = matchJ + 1
+        matchI, matchJ = next_match(lines1, lines2, i, j)
+    return ans
+    
+def universal_diff(list1, list2):
+    '''expects 2 iterables of comparables which have str functions
+    returns [(indices, deletions, insertions, same),...]'''
+    ans = []
+    used_matches = find_used_matches(list1, list2)
+    if len(used_matches) == 0:
+        return [((0,0,len(list1),len(list2)), list1, list2, [],)]
+    i1, i2 = (0,0)
+    for match in used_matches:
+        mi1, mi2 = match
+        indices = (i1, i2, mi1, mi2)
+        deletions = list1[i1:mi1]
+        insertions = list2[i2:mi2]
+        same = list1[mi1]
+        i1 = mi1 + 1
+        i2 = mi2 + 1
+        ans.append((indices, deletions, insertions, same))
+    ans.append(((i1,i2, len(list1), len(list2)),list1[i1:],list2[i2:],list1[0:0]))
+    return ans
 
+def display_line_diffs_only(diff):
+    '''
+    doesn't show sames
+    shows line insertions and deletions
+    with line numbers
+    '''
+    for delta in diff:
+        indices, deletions, insertions, same = delta
+        i1, i2, mi1, mi2 = indices
+        if len(deletions) > 0 or len(insertions) > 0:
+            # if there's a delta
+            # print line range of difference
+            print('({}, {}) - ({}, {})'.format(i1+1, i2+1, mi1+1, mi2+2))
+            if len(deletions) > 0:
+                print('\n'.join(prepend_lines(deletions, '- :')))
+            if len(insertions) > 0:
+                print('\n'.join(prepend_lines(insertions, '+ :')))
+
+def display_character_diff(diff):
+    '''
+    mike delmonaco -> 
+    moke dedudelmonco
+    m{-i-}{+o+}ke de{+dude+}lmon{-a-}co
+    '''
+    ans = ''
+    for delta in diff:
+        indices, deletions, insertions, same = delta
+        if len(deletions) > 0:
+            ans += '{-'+deletions+'-}'
+        if len(insertions) > 0:
+            ans += '{+'+insertions+'+}'
+        ans += same
+    print(ans)
 
 # next match complexity len(lines1)^2 + len(lines2)^2
 def next_match(lines1, lines2, start1, start2):
@@ -63,8 +118,6 @@ def next_match(lines1, lines2, start1, start2):
         return i1Best, i2Best
     else:
         return -1, -1
-
-
 
 def line_by_line_diff(lines1, lines2):
     '''
@@ -138,6 +191,11 @@ if __name__ == '__main__':
     # lines1 = file_to_lines(file1)
     # lines2 = file_to_lines(file2)
     # print('\n'.join(line_by_line_diff(lines1, lines2)))
-    print(character_by_character_diff('mike delmonaco', 'moke dedudelmonco'))
-    print(character_by_character_diff('mike', 'moke'))
-        
+    # print(character_by_character_diff('mike delmonaco', 'moke dedudelmonco'))
+    # print(character_by_character_diff('mike', 'moke'))
+    new_diff = file_to_lines('diff.py')
+    old_diff = file_to_lines('old_diff')
+    mike = 'mike delmonaco'
+    moke = 'moke dedudelmonco'
+    print(find_used_matches(mike, moke))
+    display_line_diffs_only(universal_diff(old_diff, new_diff))
