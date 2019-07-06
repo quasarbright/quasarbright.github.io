@@ -23,9 +23,18 @@ class Vector:
     
     def magSq(self):
         return self.x**2 + self.y**2
+    
+    def setMag(self, mag):
+        return self.mult(mag / self.mag())
+    
+    def limit(self, mag):
+        if self.magSq() > mag**2:
+            return self.setMag(mag)
+        else:
+            return self
 
 class World:
-    def __init__(self, n, magnetForce=1, pendulumForce=1, frictionForce=1, finishDistance=.1, finishVelocity=.1, dt=1/60):
+    def __init__(self, n, magnetForce=1, pendulumForce=1, frictionForce=1, finishDistance=.1, finishVelocity=.1, dt=1/60, maxForce=.5):
         '''
         n: number of magnets
         magnetForce, pendulumForce, frictionForce: force constants
@@ -43,6 +52,7 @@ class World:
         self.finishDistance = finishDistance
         self.finishVelocity = finishVelocity
         self.dt = dt
+        self.maxForce = maxForce
     
     def calculatePendulumForce(self, pos):
         # hooke's law
@@ -57,6 +67,7 @@ class World:
             displacement = pos - magnetPosition
             dispMag = displacement.mag()
             force = displacement.mult(-self.magnetForce/(dispMag**3))
+            force = force.limit(self.maxForce)
             resultantForce += force
         return resultantForce
     
@@ -114,7 +125,7 @@ class World:
             # a = dv/dt
             # v = dp/dt (where p = position, not momentum)
 
-            dv = acceleration.mult(self.dt)
+            dv = acceleration#.mult(self.dt)
             velocity += dv
 
             dp = velocity.mult(self.dt)
@@ -124,6 +135,10 @@ class World:
             iterations += 1
 
             if show:
+                plt.cla()
+                plt.axis([-2,2,-2,2])
+                for magnetPosition in self.magnetPositions:
+                    plt.scatter(magnetPosition.x, magnetPosition.y)
                 plt.scatter(position.x, position.y)
                 plt.pause(self.dt)
         
@@ -137,8 +152,8 @@ class World:
 
         
 if __name__ == '__main__':
-    world = World(3, frictionForce=2)
-    world.simulate(Vector(1,1), mass=1, show=True)
+    world = World(3, pendulumForce=.02, magnetForce=.2, frictionForce=.02, maxForce=.5)
+    world.simulate(Vector(-1,0.1), mass=1, show=True)
 
 
 
