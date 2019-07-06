@@ -8,7 +8,8 @@ This is a collection of places where I have learned things over the years. All o
 # [Tutorials](https://quasarbright.github.io/tutorials)
 Programming tutorials
 # [Machine Learning projects](https://quasarbright.github.io/MachineLearning/README)
+These are some interesting things I did with neural networks
 # [Unity Projects](https://quasarbright.github.io/UnityProjects/)
-These are some webgl games I made in the Unity game engine. Since they run on webgl, they can run right from your browser. To see the code, [click here](https://github.com/quasarbright/UnityProjects)
+These are some webgl games I made in the Unity game engine. Since they run on webgl, they can run right from your browser
 # [Art](https://twitter.com/QuasarBright)
 Vector art from shows and videogames that I like
