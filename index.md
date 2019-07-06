@@ -1,5 +1,5 @@
 ---
-title: quasarbright
+title: Michael Delmonaco
 ---
 # [p5 js stuff](https://quasarbright.github.io/p5js)
 This is a collection of interesting programs I made using p5.js. They can run in browser, so just click on the link and it'll run. If you want to see the code, [click here](https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js)
