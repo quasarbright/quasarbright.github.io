@@ -10,11 +10,15 @@ The game 2048. Move the tiles with the arrow keys. Combine equal tiles to double
 This is [John Conway's game of life](https://www.wikiwand.com/en/Conway%27s_Game_of_Life), a cellular automaton where cells live or die depending on the state of their neighbors. Click on the cells to toggle their life state and hit start to see what happens.
 ## [Display Graph](https://quasarbright.github.io/p5js/display%20graph)
 This allows you to display any graph and then edit the locations of vertices by clicking and dragging. Currently, it randomly generates a graph, but theoretically, the code can be used to display any graph.
-## [Genetic Steering](https://editor.p5js.org/mdelmonaco/present/HJpO5IJ7Z)  
+## [Genetic Steering](https://editor.p5js.org/mdelmonaco/present/HJpO5IJ7Z)
 These creatures need to eat green food and avoid red poison to survive. They starve if they don't eat enough, and have a random chance of reproducing with some mutation at every moment. Each creature has a radius they can see food, a radius for poison, an attractive strength for food, and a repulsive force for poison. What configuration is optimal for survival?
 ## [Ginchology](https://quasarbright.github.io/p5js/ginchology)
 This randomly generates two ginchulates, which are a consonant sound, a vowel, and finally, an "nch". Ex: "dench"  
 They just sound funny
+## [Kana Word Generator](https://quasarbright.github.io/p5js/kanaWordGenerator)
+This page randomly generates ":Japanese-sounding" words.  
+Japanese words are mostly composed of simple consonant-vowel syllables like "ka", and the structure of these words follow simple rules with few exceptions. For example, consonants must be followed by vowels (except "n). I made these rules into a graph. In the graph syllables are vertices, and directed edges represent whether a syllable can follow another syllable. In this case, a syllable is a consonant-vowel pair, "n", or a vowel. The only rule that doesn't fit into this graph is that strings of vowels usually don't go over 2.  
+I also tried to include rules that make the generated words sound more Japanese, such as only including syllables which are present in hiragana, restricting which vowels can follow which vowels, and limiting vowel string to a length of 2.
 ## [Magnetic Pendulum](https://quasarbright.github.io/p5js/magnetic%20pendulum)
 This simulates three magnets on a table with a pendulum hanging a magnetic object above the center. Depending on where you release the magnet, you could end up at any of the three magnets. Click and drag to release pendulums and see where they end up. Where the pendulum ends up is extremely sensitive to the initial dropping position. Here is a picture of where a pendulum ends up based on the starting position: ![](https://quasarbright.github.io/images/magnet%20pendulum.PNG)
 ## [Minimum Spanning Tree](https://quasarbright.github.io/p5js/spanning%20tree)
