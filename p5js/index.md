@@ -16,7 +16,7 @@ These creatures need to eat green food and avoid red poison to survive. They sta
 This randomly generates two ginchulates, which are a consonant sound, a vowel, and finally, an "nch". Ex: "dench"  
 They just sound funny
 ## [Kana Word Generator](https://quasarbright.github.io/p5js/kanaWordGenerator)
-This page randomly generates ":Japanese-sounding" words.  
+This page randomly generates "Japanese-sounding" words.  
 Japanese words are mostly composed of simple consonant-vowel syllables like "ka", and the structure of these words follow simple rules with few exceptions. For example, consonants must be followed by vowels (except "n). I made these rules into a graph. In the graph syllables are vertices, and directed edges represent whether a syllable can follow another syllable. In this case, a syllable is a consonant-vowel pair, "n", or a vowel. The only rule that doesn't fit into this graph is that strings of vowels usually don't go over 2.  
 I also tried to include rules that make the generated words sound more Japanese, such as only including syllables which are present in hiragana, restricting which vowels can follow which vowels, and limiting vowel string to a length of 2.
 ## [Magnetic Pendulum](https://quasarbright.github.io/p5js/magnetic%20pendulum)
