@@ -16,7 +16,7 @@ syllables.extend([
     'sa', 'shi', 'su', 'se', 'so',
     'za', 'ji', 'zu', 'ze', 'zo',
     'ta', 'chi', 'tsu', 'te', 'to',
-    'da', 'dzu', 'de', 'do',
+    'da', 'de', 'do',
     'ha', 'hi', 'fu', 'he', 'ho',
     'ya', 'yu', 'yo',
     'wa', 'wo',
@@ -44,6 +44,10 @@ for vowel in vowels:
     for syllable in syllables:
         syllableGraph.set_edge(vowel, syllable)
 
+# n can follow anything but itself
+for syllable in syllables+[*vowels]:
+    syllableGraph.set_edge(syllable, 'n')
+
 # handle special syllables
 for syllable in syllables:
     # n can precede normal syllables
@@ -55,7 +59,7 @@ for syllable in syllables:
             syllableGraph.set_edge(syllable, vowel)
             syllableGraph.set_edge('a', vowel)
     elif syllable[-1] == 'i':
-        for vowel in 'ie':
+        for vowel in 'ieo':
             syllableGraph.set_edge(syllable, vowel)
             syllableGraph.set_edge('i', vowel)
     elif syllable[-1] == 'u':
