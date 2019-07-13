@@ -38,31 +38,41 @@ syllableGraph.add_node(*specialSyllables)
 for a in syllables:
     for b in syllables:
         syllableGraph.set_edge(a, b)
+
+# vowels can be followed by all syllables
+for vowel in vowels:
+    for syllable in syllables:
+        syllableGraph.set_edge(vowel, syllable)
+
 # handle special syllables
 for syllable in syllables:
     # n can precede normal syllables
     syllableGraph.set_edge('n', syllable)
     # only allow dipthongs that "sound japanese"
+    # this does syllable endings and standalone vowel syllables
     if syllable[-1] == 'a':
-        syllableGraph.set_edge(syllable, 'a')
-        syllableGraph.set_edge(syllable, 'i')
-        syllableGraph.set_edge(syllable, 'e')
-        syllableGraph.set_edge(syllable, 'o')
+        for vowel in 'aieo':
+            syllableGraph.set_edge(syllable, vowel)
+            syllableGraph.set_edge('a', vowel)
     elif syllable[-1] == 'i':
-        syllableGraph.set_edge(syllable, 'i')
-        syllableGraph.set_edge(syllable, 'e')
+        for vowel in 'ie':
+            syllableGraph.set_edge(syllable, vowel)
+            syllableGraph.set_edge('i', vowel)
     elif syllable[-1] == 'u':
-        syllableGraph.set_edge(syllable, 'a')
-        syllableGraph.set_edge(syllable, 'i')
-        syllableGraph.set_edge(syllable, 'u')
-        syllableGraph.set_edge(syllable, 'e')
-        syllableGraph.set_edge(syllable, 'o')
+        for vowel in 'aiueo':
+            syllableGraph.set_edge(syllable, vowel)
+            syllableGraph.set_edge('u', vowel)
     elif syllable[-1] == 'e':
-        syllableGraph.set_edge(syllable, 'i')
-        syllableGraph.set_edge(syllable, 'o')
-# we have to manually prevent vowel chains longer than dipthongs. The graph won't be enough
+        for vowel in 'io':
+            syllableGraph.set_edge(syllable, vowel)
+            syllableGraph.set_edge('e', vowel)
+    elif syllable[-1] == 'o':
+        for vowel in 'aiue':
+            syllableGraph.set_edge(syllable, vowel)
+            syllableGraph.set_edge('o', vowel)
 
 # now, generate using the rules
+# we have to manually prevent vowel chains longer than 2. The graph won't be enough
 def getNextSyllable(wordList: List[str]) -> str:
     '''
     wordList list of syllables, length > 0
@@ -91,9 +101,10 @@ def generateWord(length: int=5) -> str:
     # start word
     # word is list of syllables
     wordList = [random.choice(starters)]
-    
+    while len(wordList) < length:
+        wordList.append(getNextSyllable(wordList))
     return ''.join(wordList)
 
 if __name__ == '__main__':
     for x in range(10):
-        print(getNextSyllable(['ka', 'i']))
+        print(generateWord(5))
