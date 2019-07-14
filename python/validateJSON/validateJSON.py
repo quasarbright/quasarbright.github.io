@@ -1,6 +1,6 @@
 import re
 
-numberRegex = r'(\d+\.?\d*)|(\d*\.?\d+)'
+numberRegex = r'(-?\d+\.?\d*)|(-?\d*\.?\d+)'
 stringRegex = r'"[^^"\n]*"' # expects contents to be trashed
 boolRegex = r'true|false'
 nullregex = r'null'
@@ -134,6 +134,57 @@ def validatePrimitive(p: str) -> bool: # needs testing
     if match is None:
         raise SyntaxError('Invalid primitive')
     return True
+
+def findCloser(json: str, openCharacterIndex: int) -> int:
+    '''
+    find the closing character of th opening character at characterIndex
+    opening character can be either {, [, or "
+    json: json contents as string
+    characterIndex: the index of the opening character
+    return: index of closing charaacter
+    '''
+    noStringContents = trashStringContents(json)
+    openCharacter = json[openCharacterIndex]
+    if openCharacter not in ['{', '[', '"']:
+        raise ValueError('open character must be either {'+', [, or ": {}'.format(openCharacter))
+    
+    if openCharacter == '"':
+        # just return the index of the next quote
+        return noStringContents.index('"', openCharacterIndex+1)
+    
+    if openCharacter == '{':
+        closeCharacter = '}'
+    elif openCharacter == '[':
+        closeCharacter = ']'
+    '''
+    find the count at the open character
+    then, keep going until the count goes back down to what it was before that
+    '''
+    # find the count before our open
+    # running count of opens - closes
+    count = 0
+    targetCount = None
+    for characterIndex, character in enumerate(json[:openCharacterIndex]):
+        if character == openCharacter:
+            count += 1
+        elif character == closeCharacter:
+            count -= 1
+    # right now, count is set to the count just before our open
+    targetCount = count
+    
+    # now, find where the count goes back down
+    for characterIndexOffset, character in enumerate(json[openCharacterIndex:]):
+        characterIndex = openCharacterIndex + characterIndexOffset
+        # in the first iteration, the count should go up by 1
+        if character == openCharacter:
+            count += 1
+        elif character == closeCharacter:
+            count -= 1
+        if count == targetCount:
+            return characterIndex
+    
+    # closer not found, return -1
+    return -1
 
 def validateKeyValue(kv: str) -> bool:
     pass

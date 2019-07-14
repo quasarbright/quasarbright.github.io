@@ -141,6 +141,120 @@ class TestBraceValidation(unittest.TestCase):
         ))
 
 
+class TestValidatePrimitive(unittest.TestCase):
+    def testIntSuccess(self):
+        self.assertTrue(validatePrimitive('123'))
+        self.assertTrue(validatePrimitive('0'))
+        self.assertTrue(validatePrimitive('-12'))
+    
+    def testFloatSucess(self):
+        self.assertTrue(validatePrimitive('187.345345'))
+        self.assertTrue(validatePrimitive('123.'))
+        self.assertTrue(validatePrimitive('.55'))
+        self.assertTrue(validatePrimitive('0.55'))
+        self.assertTrue(validatePrimitive('000.55'))
+        self.assertTrue(validatePrimitive('-45.123'))
+        self.assertTrue(validatePrimitive('-65.'))
+        self.assertTrue(validatePrimitive('-.546'))
+    
+    def testStringSuccess(self):
+        self.assertTrue(validatePrimitive('"hello"'))
+        self.assertTrue(validatePrimitive(r'"quote \""'))
+        self.assertTrue(validatePrimitive(r'"fake new line \n"'))
+    
+    def testBoolSuccess(self):
+        self.assertTrue(validatePrimitive('true'))
+        self.assertTrue(validatePrimitive('false'))
+    
+    def testNullSuccess(self):
+        self.assertTrue(validatePrimitive('null'))
+    
+    def testBadNumber(self):
+        with self.assertRaisesRegex(SyntaxError, 'Invalid primitive'):
+            validatePrimitive('.')
+        with self.assertRaisesRegex(SyntaxError, 'Invalid primitive'):
+            validatePrimitive('-.')
+        with self.assertRaisesRegex(SyntaxError, 'Invalid primitive'):
+            validatePrimitive('23432-')
+        with self.assertRaisesRegex(SyntaxError, 'Invalid primitive'):
+            validatePrimitive('2.3.6')
+        with self.assertRaisesRegex(SyntaxError, 'Invalid primitive'):
+            validatePrimitive('i')
+        with self.assertRaisesRegex(SyntaxError, 'Invalid primitive'):
+            validatePrimitive('123\n4')
+    
+    def testBadString(self):
+        with self.assertRaisesRegex(SyntaxError, 'Invalid primitive'):
+            validatePrimitive('"unclosed')
+        with self.assertRaisesRegex(SyntaxError, 'Invalid primitive'):
+            validatePrimitive('"string"extra')
+        with self.assertRaisesRegex(SyntaxError, 'Invalid primitive'):
+            validatePrimitive('"string""another"')
+        with self.assertRaisesRegex(SyntaxError, 'Invalid primitive'):
+            validatePrimitive('"real newline \n"')
+    
+    def testBadElse(self):
+        with self.assertRaisesRegex(SyntaxError, 'Invalid primitive'):
+            validatePrimitive('identifier')
+        with self.assertRaisesRegex(SyntaxError, 'Invalid primitive'):
+            validatePrimitive('tru\ne')
+        with self.assertRaisesRegex(SyntaxError, 'Invalid primitive'):
+            validatePrimitive('fals\ne')
+        with self.assertRaisesRegex(SyntaxError, 'Invalid primitive'):
+            validatePrimitive('nu\nll')
+    
+    def testComplex(self):
+        with self.assertRaisesRegex(SyntaxError, 'Invalid primitive'):
+            validatePrimitive('{}')
+        with self.assertRaisesRegex(SyntaxError, 'Invalid primitive'):
+            validatePrimitive('{"key": "value"}')
+        with self.assertRaisesRegex(SyntaxError, 'Invalid primitive'):
+            validatePrimitive('["s1", n1]')
+
+class TestFindCloser(unittest.TestCase):
+    def testEasyBrace(self):
+        json='{}'
+        self.assertEqual(findCloser(json, 0), 1)
+        json='{"key", "value"}'
+        self.assertEqual(findCloser(json, 0), len(json)-1)
+    
+    def testEasyBracket(self):
+        json='[]'
+        self.assertEqual(findCloser(json, 0), 1)
+        json='["s1", n1]'
+        self.assertEqual(findCloser(json, 0), len(json)-1)
+    
+    def testInnerOpen(self):
+        json='{"obj": {"key": "value"}, "k": "v"}'
+        self.assertEqual(findCloser(json, 8), 23)
+    
+    def testOuterOpen(self):
+        json='{"obj": {"key": "value"}, "k": "v"}'
+        self.assertEqual(findCloser(json, 0), len(json)-1)
+    
+    def testMultiline(self):
+        json='''{
+    "key": "value"
+}'''
+        self.assertEqual(findCloser(json, 0), len(json)-1)
+        json='''{
+    "obj": {
+        "key": "value"
+    },
+    "k": "v"
+}'''
+        self.assertEqual(findCloser(json, json.index('{', 1)), json.index('}'))
+    
+    def testQuote(self):
+        json='"hello"'
+        self.assertEqual(findCloser(json, 0), len(json)-1)
+        json='{"key": "value"}'
+        self.assertEqual(findCloser(json, 1), 5)
+        self.assertEqual(findCloser(json, 8), len(json)-2)
+    
+
+
+
 class ToMove():#unittest.TestCase):
     def testInArrayMissingClose(self):
         with self.assertRaisesRegex(SyntaxError, "Missing }"):
