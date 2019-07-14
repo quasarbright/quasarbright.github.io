@@ -4,7 +4,7 @@ numberRegex = r'(\d+\.?\d*)|(\d*\.?\d+)'
 stringRegex = r'"[^^"\n]*"' # expects contents to be trashed
 boolRegex = r'true|false'
 nullregex = r'null'
-scalarRegex = r'{}|{}|{}|{}'.format(numberRegex, stringRegex, boolRegex, nullregex)
+primitiveRegex = r'{}|{}|{}|{}'.format(numberRegex, stringRegex, boolRegex, nullregex)
 
 
 def trashEscapedCharacters(s: str) -> str:
@@ -124,32 +124,16 @@ def validateBrackets(json: str) -> bool:
     '''
     return validateOpenClose(json, '[', ']')
 
-def validateString(s: str) -> bool:
+def validatePrimitive(p: str) -> bool: # needs testing
     '''
-    ensure s is a valid string
-    the string should include the quotes
-    ex: '"hello"'
+    ensures p is a valid primitive
+    number, string, bool, or 
     '''
-    return validateQuotes(s)
-
-def validateNumber(n: str) -> bool:
-    '''
-    ensure n is a valid number string
-    '''
-    match = re.fullmatch(numberRegex, n)
-    if match is None or n == '.':
-        raise SyntaxError("Invalid number")
+    p = trashStringContents(p)
+    match = re.fullmatch(primitiveRegex, p)
+    if match is None:
+        raise SyntaxError('Invalid primitive')
     return True
-
-def validateBool(b: str) -> bool:
-    '''
-    ensure b is a valid bool string
-    '''
-    if b not in ['true', 'false']:
-        raise SyntaxError("Invalid boolean. Must be true or false")
-
-def validateNull(null: str) -> bool:
-    pass
 
 def validateKeyValue(kv: str) -> bool:
     pass
