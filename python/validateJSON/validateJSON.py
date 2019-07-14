@@ -1,5 +1,12 @@
 import re
 
+numberRegex = r'(\d+\.?\d*)|(\d*\.?\d+)'
+stringRegex = r'"[^^"\n]*"' # expects contents to be trashed
+boolRegex = r'true|false'
+nullregex = r'null'
+scalarRegex = r'{}|{}|{}|{}'.format(numberRegex, stringRegex, boolRegex, nullregex)
+
+
 def trashEscapedCharacters(s: str) -> str:
     '''
     s: any 
@@ -48,9 +55,8 @@ def trashStringContents(json: str) -> str:
     '''
     noEscapes = trashEscapedCharacters(json)
     # match anything between quotes other than a quote or newline
-    stringContentsRegex = re.compile(r'"[^"\n]*"')
     ans = noEscapes
-    for match in re.finditer(stringContentsRegex, noEscapes):
+    for match in re.finditer(stringRegex, noEscapes):
         span = match.span()
         beginning, end = span
         length = end - beginning - 2
@@ -119,13 +125,28 @@ def validateBrackets(json: str) -> bool:
     return validateOpenClose(json, '[', ']')
 
 def validateString(s: str) -> bool:
-    pass
+    '''
+    ensure s is a valid string
+    the string should include the quotes
+    ex: '"hello"'
+    '''
+    return validateQuotes(s)
 
-def validateInt(n: str) -> bool:
-    pass
+def validateNumber(n: str) -> bool:
+    '''
+    ensure n is a valid number string
+    '''
+    match = re.fullmatch(numberRegex, n)
+    if match is None or n == '.':
+        raise SyntaxError("Invalid number")
+    return True
 
-def validateBool(bool: str) -> bool:
-    pass
+def validateBool(b: str) -> bool:
+    '''
+    ensure b is a valid bool string
+    '''
+    if b not in ['true', 'false']:
+        raise SyntaxError("Invalid boolean. Must be true or false")
 
 def validateNull(null: str) -> bool:
     pass
