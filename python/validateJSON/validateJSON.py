@@ -1,11 +1,49 @@
 import re
+from typing import Tuple
 
 numberRegex = r'(-?\d+\.?\d*)|(-?\d*\.?\d+)'
 stringRegex = r'"[^^"\n]*"' # expects contents to be trashed
 boolRegex = r'true|false'
 nullregex = r'null'
 primitiveRegex = r'{}|{}|{}|{}'.format(numberRegex, stringRegex, boolRegex, nullregex)
+objectRegex = r'\{(.|\s)*\}'
+arrayRegex = r'\[(.|\s)*\]'
+valueRegex = r'{}|{}|{}'.format(primitiveRegex, objectRegex, arrayRegex)
 
+primitiveFileRegex = r'\s*'+primitiveFileRegex+r'\s*'
+objectFileRegex = r'\s*'+objectRegex+r'\s*'
+arrayFileRegex = r'\s*'+arrayRegex+r'\s*'
+fileRegex = r'\s*'+valueRegex+r'\s*'
+
+def doesPass(json: str, exception, validator: callable) -> bool:
+    '''
+    does the json pass the validator?
+    suppresses syntax errors, returns whether it passes
+    '''
+    try:
+        validator(json)
+    except SyntaxError:
+        return False
+    return True
+
+
+def indexToCoord(contents: str, characterIndex: int) -> Tuple[int, int]:
+    '''
+    convert a global character index to a (line, index) tuple
+    where index is the index within the line
+    '''
+    lineIndex = contents.count('\n', 0, characterIndex)
+    lineNumber = lineIndex + 1
+    # go to the characterIndex, and go left until you hit a newline or the
+    # beginning of the string. The distance is the character position
+    # within the line
+    distanceToPreceedingNewline = 0
+    for character in contents[characterIndex-1::-1]:
+        if character == '\n':
+            break
+        distanceToPreceedingNewline += 1
+    characterNumber = distanceToPreceedingNewline + 1
+    return (lineNumber, characterNumber)
 
 def trashEscapedCharacters(s: str) -> str:
     '''
@@ -186,23 +224,76 @@ def findCloser(json: str, openCharacterIndex: int) -> int:
     # closer not found, return -1
     return -1
 
-def validateKeyValue(kv: str) -> bool:
+# def validateKeyValue(kv: str) -> bool:
+#     pass
+
+def validateArray(arr: str, offset: Tuple[int, int]=(0,0)) -> bool:
+    '''
+    asserts arr is bound by []
+    '''
+    noStringContents = trashStringContents(arr)
+    arrayMatch = re.fullmatch(arrayRegex, noStringContents)
+    assert arrayMatch is not None
+    # contents are values separated by commas, ignoring surrounding whitespace
+    commaRegex = r'\[(\s*{0}\s*,)*(\s*{0}\s*)\]'.format(valueRegex)
+    commaMatch = re.fullmatch(commaRegex, noStringContents)
+    if commaMatch is not None:
+        return True
+    
+    
+
+def validateNoDuplicateKeys(obj: str, offset: Tuple[int, int]=(0,0)) -> bool:
     pass
 
-def validateArrayCommas(arr: str) -> bool:
-    pass
+def validateObject(obj: str, offset: Tuple[int, int]=(0, 0)) -> bool:
+    '''
+    asserts obj is bound by []
+    '''
+    objMatch = re.fullmatch(objectRegex, obj)
+    assert objMatch is not None
 
-def validateArray(arr: str) -> bool:
-    pass
+def validateJSON(json: str, offset: Tuple[int, int]=(0, 0)) -> bool:
+    '''
+    validates the entire contents
+    '''
+    validateQuotes()
+    validateBraces()
+    validateBrackets()
+    primitiveFileMatch = re.fullmatch(primitiveFileRegex, json)
+    if primitiveFileMatch is not None:
+        return True
+    fileMatch = re.fullmatch(fileRegex, json)
+    if fileMatch is None:
+        raise SyntaxError('file must be a single object, array, or primitive')
+    nonWhitespaceMatch = re.search(r'\S', json)
+    startIndex = nonWhitespaceMatch.span()[0]
+    startCharacter = json[startIndex]
+    if startCharacter == '{':
+        closeIndex = findCloser(json, startIndex)
+        startCoord = indexToCoord(json, startIndex)
+        obj = json[startIndex:closeIndex+1]
+        return validateObject(obj, offset=startIndex)
+    elif startCharacter == '[':
+        closeIndex = findCloser(json, startIndex)
+        startCoord = indexToCoord(json, startIndex)
+        arr = json[startIndex:closeIndex+1]
+        return validateArray(arr, offset=startIndex)
+    else:
+        assert False, "shouldn't get here"
 
-def validateObjectCommas(obj: str) -> bool:
-    pass
+    # while characterIndex < len(json):
+    #     character = json[characterIndex]
+    #     # skip leading whitespace
+    #     whitespaceMatch = re.match(r'\s', character)
+    #     if whitespaceMatch is not None:
+    #         characterIndex += 1
+    #         continue
+    #     elif character == '{':
+    #         # we're dealing with an object
+    #         closeIndex = findCloser(json, characterIndex)
+    #         objectContents = json[characterIndex:closeIndex+1]
+    #         validateObject(objectContents)
+    #         characterIndex = closeIndex+ 1
+    #         continue
+    #     elif character == 
 
-def validateNoDuplicateKeys(obj: str) -> bool:
-    pass
-
-def validateObject(obj: str) -> bool:
-    pass
-
-def validateJSON(json: str) -> bool:
-    pass

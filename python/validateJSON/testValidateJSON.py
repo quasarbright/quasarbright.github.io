@@ -253,6 +253,16 @@ class TestFindCloser(unittest.TestCase):
         self.assertEqual(findCloser(json, 8), len(json)-2)
     
 
+class TestIndexToCoord(unittest.TestCase):
+    def testEmpty(self):
+        self.assertEqual(indexToCoord('', 0), (1,1))
+    def testFirst(self):
+        self.assertEqual(indexToCoord('one\ntwo\nthree', 1), (1,2))
+    def testLater(self):
+        self.assertEqual(indexToCoord('one\ntwo\nthree', 6), (2,3))
+    def testOnNewline(self):
+        self.assertEqual(indexToCoord('one\ntwo\nthree', 3), (1, 4))
+
 
 
 class ToMove():#unittest.TestCase):
