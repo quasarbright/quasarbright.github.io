@@ -39,8 +39,58 @@ def validateQuotes(json: str) -> bool:
     # nothing went wrong so return True
     return True
 
-def trashStringContents(json: str) -> bool:
-    pass
+def trashStringContents(json: str) -> str:
+    '''
+    replaces all string contents with ~
+    Ex: {"key": "val"} -> {"~~~": "~~~"}
+    json: the json string
+    returns the replaced json string
+    '''
+    noEscapes = trashEscapedCharacters(json)
+    # match anything between quotes other than a quote or newline
+    stringContentsRegex = re.compile(r'"[^"\n]*"')
+    ans = noEscapes
+    for match in re.finditer(stringContentsRegex, noEscapes):
+        span = match.span()
+        beginning, end = span
+        length = end - beginning - 2
+        ans = ans[:beginning+1] + '~'*length + ans[end-1:]
+    return ans
+
+def validateOpenClose(json: str, openChar: str, closeChar: str) -> bool:
+    '''
+    ensure that:
+    every open has a close
+    things are properly nested
+    openChar and closeChar should just be characters of length 1
+    '''
+    '''
+    replace string contents with ~
+    and check with running count
+    '''
+    # this means we don't have to worry about open and close in strings
+    noStringContents = trashStringContents(json)
+    # count is a running count of open - close
+    # encountering open means +1
+    # encountering close means -1
+    # it should never go negative
+    # it should end at 0
+    count = 0
+    lines = noStringContents.splitlines()
+    for lineIndex, line in enumerate(lines):
+        lineNumber = lineIndex + 1
+        for characterIndex, character in enumerate(line):
+            characterNumber = characterIndex + 1
+            if character == openChar:
+                count += 1
+            elif character == closeChar:
+                count -= 1
+            if count < 0:
+                raise SyntaxError(
+                    'Unexpected {} at {}:{}'.format(closeChar, lineNumber, characterNumber))
+    if count > 0:
+        raise SyntaxError('Missing {}'.format(closeChar))
+    return True
 
 def validateBraces(json: str) -> bool:
     '''
@@ -49,17 +99,24 @@ def validateBraces(json: str) -> bool:
     things are properly nested
     '''
     '''
-    replace everything unimportant between braces with ~
-    and checks braces
+    replace string contents with ~
+    and check with running count
     '''
-    # replace everything inside strings with 
+    return validateOpenClose(json, '{', '}')
+    
 
 
 def validateBrackets(json: str) -> bool:
-    pass
-
-def validateArrray(arr: str) -> bool:
-    pass
+    '''
+    ensure that:
+    every open has a close
+    things are properly nested
+    '''
+    '''
+    replace string contents with ~
+    and check with running count
+    '''
+    return validateOpenClose(json, '[', ']')
 
 def validateString(s: str) -> bool:
     pass
@@ -76,7 +133,10 @@ def validateNull(null: str) -> bool:
 def validateKeyValue(kv: str) -> bool:
     pass
 
-def validateArrCommas(arr: str) -> bool:
+def validateArrayCommas(arr: str) -> bool:
+    pass
+
+def validateArray(arr: str) -> bool:
     pass
 
 def validateObjectCommas(obj: str) -> bool:

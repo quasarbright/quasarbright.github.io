@@ -52,7 +52,6 @@ class TestTrashStringContents(unittest.TestCase):
     def testBig(self):
         json = '''{
     "key": "value",
-
 }'''
         expected='''{
     "~~~": "~~~~~",
@@ -85,7 +84,7 @@ r'''{
         ))
 
 
-class TestBraceValidation():#unittest.TestCase):
+class TestBraceValidation(unittest.TestCase):
     def testNormalMissingClose(self):
         with self.assertRaisesRegex(SyntaxError, "Missing }"):
             validateBraces('{"key":"value"')
