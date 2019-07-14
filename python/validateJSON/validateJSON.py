@@ -2,18 +2,25 @@ import re
 from typing import Tuple
 
 numberRegex = r'(-?\d+\.?\d*)|(-?\d*\.?\d+)'
-stringRegex = r'"[^^"\n]*"' # expects contents to be trashed
+stringRegex = r'"[^^"\n]*"' # expects contents to be trashedContents + noStringContents[closeIndex:]
+# string contents are already trashed
 boolRegex = r'true|false'
-nullregex = r'null'
-primitiveRegex = r'{}|{}|{}|{}'.format(numberRegex, stringRegex, boolRegex, nullregex)
+nullRegex = r'null'
+primitiveRegex = r'{}|{}|{}|{}'.format(numberRegex, stringRegex, boolRegex, nullRegex)
 objectRegex = r'\{(.|\s)*\}'
 arrayRegex = r'\[(.|\s)*\]'
 valueRegex = r'{}|{}|{}'.format(primitiveRegex, objectRegex, arrayRegex)
 
-primitiveFileRegex = r'\s*'+primitiveFileRegex+r'\s*'
+stringNonGreedyRegex = r'"[^^"\n]*?"'
+objectNonGreedyRegex = r'\{(.|\s)*?\}'
+arrayNonGreedyRegex = r'\[(.|\s)*?\]'
+valueNonGreedyRegex = r'{}|{}|{}|{}|{}|{}'.format(numberRegex, boolRegex, nullRegex, stringNonGreedyRegex, objectNonGreedyRegex, arrayNonGreedyRegex)
+
+primitiveFileRegex = r'\s*'+primitiveRegex+r'\s*'
 objectFileRegex = r'\s*'+objectRegex+r'\s*'
 arrayFileRegex = r'\s*'+arrayRegex+r'\s*'
 fileRegex = r'\s*'+valueRegex+r'\s*'
+fileNonGreedyRegex = r'\s*'+valueNonGreedyRegex+r'\s*'
 
 def doesPass(json: str, exception, validator: callable) -> bool:
     '''
@@ -45,6 +52,10 @@ def indexToCoord(contents: str, characterIndex: int) -> Tuple[int, int]:
     characterNumber = distanceToPreceedingNewline + 1
     return (lineNumber, characterNumber)
 
+def addCoords(a: Tuple[int, int], b: Tuple[int, int]) -> Tuple[int, int]:
+    '''adds the two tuple (lineNumber, characterNumber)s together'''
+    return (a[0]+b[0], a[1]+b[1])
+
 def trashEscapedCharacters(s: str) -> str:
     '''
     s: any 
@@ -64,6 +75,43 @@ def trashEscapedCharacters(s: str) -> str:
     noChar = re.sub(r'\\', r'~', noQuote)
     # now the only quotes left are unescaped, real ones
     return noChar
+
+def trashValues(json: str) -> str:
+    '''replaces all, string contents, non-string primitives,
+    object contents, and array contents contained WITHIN json root with ~
+    ignores whitespace
+    asserts obj or arr
+    '''
+    # this is necessary to be able to use greedy r'{.*}' to capture exactly 1 object
+    noStringContents = trashStringContents(json)
+    objectOrArrayRegex = r'\s*({}|{})\s*'.format(objectRegex, arrayRegex)
+    objectOrArrayMatch = re.fullmatch(objectOrArrayRegex, noStringContents)
+    assert objectOrArrayMatch is not None
+    outerRegex = r'\S(.|\s)*\S' # eliminates surrounding whitespace
+    outerMatch = re.search(outerRegex, noStringContents)
+    # start after the outer opens
+    startIndex = outerMatch.span()[0] + 1
+    endIndex = outerMatch.span()[1]-1
+    characterIndex = startIndex
+    while characterIndex < endIndex:
+        assert len(noStringContents) == len(json)
+        character = noStringContents[characterIndex]
+        if character in '{[':
+            openIndex = characterIndex
+            closeIndex = findCloser(noStringContents, openIndex)
+            # now replace all non-whitespace between with ~
+            contents = noStringContents[openIndex+1:closeIndex]
+            trashedContents = re.sub(r'\S', '~', contents)
+            noStringContents = noStringContents[:openIndex+1] + trashedContents + noStringContents[closeIndex:]
+            characterIndex = closeIndex+1
+            continue
+        else:
+            characterIndex += 1
+            continue
+    # string contents are already trashed
+    # filter out non-string primitives
+    noStringContents = re.sub(r'[\w\d]', '~', noStringContents)
+    return noStringContents
 
 def validateQuotes(json: str) -> bool:
     '''
@@ -194,23 +242,8 @@ def findCloser(json: str, openCharacterIndex: int) -> int:
         closeCharacter = '}'
     elif openCharacter == '[':
         closeCharacter = ']'
-    '''
-    find the count at the open character
-    then, keep going until the count goes back down to what it was before that
-    '''
-    # find the count before our open
     # running count of opens - closes
     count = 0
-    targetCount = None
-    for characterIndex, character in enumerate(json[:openCharacterIndex]):
-        if character == openCharacter:
-            count += 1
-        elif character == closeCharacter:
-            count -= 1
-    # right now, count is set to the count just before our open
-    targetCount = count
-    
-    # now, find where the count goes back down
     for characterIndexOffset, character in enumerate(json[openCharacterIndex:]):
         characterIndex = openCharacterIndex + characterIndexOffset
         # in the first iteration, the count should go up by 1
@@ -218,7 +251,7 @@ def findCloser(json: str, openCharacterIndex: int) -> int:
             count += 1
         elif character == closeCharacter:
             count -= 1
-        if count == targetCount:
+        if count == 0:
             return characterIndex
     
     # closer not found, return -1
@@ -226,6 +259,39 @@ def findCloser(json: str, openCharacterIndex: int) -> int:
 
 # def validateKeyValue(kv: str) -> bool:
 #     pass
+
+
+def validateArrayNoRecursion(arr: str, offset: Tuple[int, int]=(0, 0)) -> bool:
+    '''
+    validates that it's a comma separated array of values,
+    doesn't validate the values themselves
+    '''
+    noValueContents = trashValues(arr)
+    commaRegex = r'\[(\s*{0}\s*,)*(\s*{0}\s*)\]'.format(valueNonGreedyRegex)
+    commaMatch = re.fullmatch(commaRegex, noValueContents)
+    if commaMatch is not None:
+        return True
+    else:
+        # trailing comma?
+        trailingCommaRegex = r'(?<={}\s*),\s*\]'.format(valueRegex)
+        trailingCommaMatch = re.search(trailingCommaRegex, noValueContents)
+        if trailingCommaMatch is not None:
+            errorIndex = trailingCommaMatch.span()[0]
+            errorCoord = indexToCoord(errorIndex)
+            errorCoord = addCoords(errorCoord, offset)
+            raise SyntaxError('Trailing comma at {}:{}'.format(errorCoord[0], errorCoord[1]))
+        # missing comma?
+        missingCommaRegex = r'(?<={})\s*{}'.format(valueRegex)
+        missingCommaMatch = re.search(missingCommaRegex, noValueContents)
+        if missingCommaMatch is not None:
+            errorIndex = missingCommaMatch.span()[0]
+            errorCoord = indexToCoord(errorIndex)
+            errorCoord = addCoords(errorCoord, offset)
+            raise SyntaxError('Expected comma at {}:{}'.format(errorCoord[0], errorCoord[1]))
+    # looks good
+    return True
+        
+        
 
 def validateArray(arr: str, offset: Tuple[int, int]=(0,0)) -> bool:
     '''
@@ -235,10 +301,7 @@ def validateArray(arr: str, offset: Tuple[int, int]=(0,0)) -> bool:
     arrayMatch = re.fullmatch(arrayRegex, noStringContents)
     assert arrayMatch is not None
     # contents are values separated by commas, ignoring surrounding whitespace
-    commaRegex = r'\[(\s*{0}\s*,)*(\s*{0}\s*)\]'.format(valueRegex)
-    commaMatch = re.fullmatch(commaRegex, noStringContents)
-    if commaMatch is not None:
-        return True
+    
     
     
 

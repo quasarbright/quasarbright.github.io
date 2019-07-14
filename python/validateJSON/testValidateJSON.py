@@ -58,6 +58,45 @@ class TestTrashStringContents(unittest.TestCase):
 }'''
         self.assertEqual(trashStringContents(json), expected)
 
+class TestTrashValues(unittest.TestCase):
+    def testSimple(self):
+        json = '{ "obj": {"key": "value"}}'
+        expected = '{ "~~~": {~~~~~~ ~~~~~~~}}'
+        self.assertEqual(trashValues(json), expected)
+    
+    def testWhitespace(self):
+        json = '''{
+    "obj": {
+        "key": "value"
+    }
+}'''
+        expected = '''{
+    "~~~": {
+        ~~~~~~ ~~~~~~~
+    }
+}'''
+        self.assertEqual(trashValues(json), expected)
+    
+    def testNonString(self):
+        json = '{"num": 123}'
+        expected = '{"~~~": ~~~}'
+        self.assertEqual(trashValues(json), expected)
+        json = '{"num": true}'
+        expected = '{"~~~": ~~~~}'
+        self.assertEqual(trashValues(json), expected)
+        json = '{"num": null}'
+        expected = '{"~~~": ~~~~}'
+        self.assertEqual(trashValues(json), expected)
+        json = '{"num": false}'
+        expected = '{"~~~": ~~~~~}'
+        self.assertEqual(trashValues(json), expected)
+    
+    def testArray(self):
+        json = '[2, 3, 4, "hi", {"key": "val"}]'
+        expected = '[~, ~, ~, "~~", {~~~~~~ ~~~~~}]'
+        self.assertEqual(trashValues(json), expected)
+
+
 
 class TestQuoteValidation(unittest.TestCase):
     def testMissingClose(self):
@@ -262,8 +301,6 @@ class TestIndexToCoord(unittest.TestCase):
         self.assertEqual(indexToCoord('one\ntwo\nthree', 6), (2,3))
     def testOnNewline(self):
         self.assertEqual(indexToCoord('one\ntwo\nthree', 3), (1, 4))
-
-
 
 class ToMove():#unittest.TestCase):
     def testInArrayMissingClose(self):

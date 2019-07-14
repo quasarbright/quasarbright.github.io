@@ -2,5 +2,5 @@
     "sdf": "hello \n new quote \" slash \\",
     "number": 2.1,
     "boolean": true,
-    "null": 
+    "null": null
 }
