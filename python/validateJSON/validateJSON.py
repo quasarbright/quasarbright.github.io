@@ -287,8 +287,19 @@ def validateArrayNoRecursion(arr: str, offset: Tuple[int, int]=(0, 0)) -> bool:
         valueMatches = []
         for valueMatch in valueMatchIter:
             valueMatches.append(valueMatch)
+        commaRegex = re.compile(r'\s*,\s*')
+        for valueMatchIndex in range(len(valueMatches)-1):
+            currentMatch = valueMatches[valueMatchIndex]
+            nextMatch = valueMatches[valueMatchIndex+1]
+            start = currentMatch.end()+1
+            end = nextMatch.start() # excluded
+            commaMatch = commaRegex.search(noValueContents, start, end)
+            if commaMatch is None:
+                errorIndex = start
+                errorCoord = indexToCoord(noValueContents, errorIndex)
+                errorCoord = addCoords(errorCoord, offset)
+                raise SyntaxError('Expected comma at {}:{}'.format(*errorCoord))
         ### left off here about to go between the match objects checking for commas
-        print()
 
         # missingCommaRegex = r'({0})\s*({0})'.format(trashedValueNonGreedyRegex)
         # missingCommaMatch = re.search(missingCommaRegex, noValueContents)

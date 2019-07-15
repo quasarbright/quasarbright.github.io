@@ -352,6 +352,7 @@ class TestValidateArrayNoRecursion(unittest.TestCase):
         json = '["s", "g" 12354]'
         with self.assertRaisesRegex(SyntaxError, 'Expected comma at 1:10'):
             validateArrayNoRecursion(json)
+            ### left off here debugging test
     
     def testOffset(self):
         json = '["s",]'
