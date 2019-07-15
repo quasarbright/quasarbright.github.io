@@ -1,20 +1,22 @@
 import re
 from typing import Tuple
 
-numberRegex = r'(-?\d+\.?\d*)|(-?\d*\.?\d+)'
-stringRegex = r'"[^^"\n]*"' # expects contents to be trashedContents + noStringContents[closeIndex:]
+numberRegex = r'-?\d+\.?\d*|-?\d*\.?\d+'
+stringRegex = r'"[^"\n]*"' # expects escaped quotes to be gone
 # string contents are already trashed
 boolRegex = r'true|false'
 nullRegex = r'null'
 primitiveRegex = r'{}|{}|{}|{}'.format(numberRegex, stringRegex, boolRegex, nullRegex)
-objectRegex = r'\{(.|\s)*\}'
-arrayRegex = r'\[(.|\s)*\]'
+objectRegex = r'\{[\s\S]*\}'
+arrayRegex = r'\[[\s\S]*\]'
 valueRegex = r'{}|{}|{}'.format(primitiveRegex, objectRegex, arrayRegex)
+trashedValueRegex = r'~+|"~*"|[{\{][~\s]*?[}\]]'
 
-stringNonGreedyRegex = r'"[^^"\n]*?"'
-objectNonGreedyRegex = r'\{(.|\s)*?\}'
-arrayNonGreedyRegex = r'\[(.|\s)*?\]'
+stringNonGreedyRegex = r'"[^"\n]*?"'
+objectNonGreedyRegex = r'\{[\s\S]*?\}'
+arrayNonGreedyRegex = r'\[[\s\S]*?\]'
 valueNonGreedyRegex = r'{}|{}|{}|{}|{}|{}'.format(numberRegex, boolRegex, nullRegex, stringNonGreedyRegex, objectNonGreedyRegex, arrayNonGreedyRegex)
+trashedValueNonGreedyRegex = r'~+|"~*?"|[{\{][~\s]*?[}\]]'
 
 primitiveFileRegex = r'\s*'+primitiveRegex+r'\s*'
 objectFileRegex = r'\s*'+objectRegex+r'\s*'
@@ -87,7 +89,7 @@ def trashValues(json: str) -> str:
     objectOrArrayRegex = r'\s*({}|{})\s*'.format(objectRegex, arrayRegex)
     objectOrArrayMatch = re.fullmatch(objectOrArrayRegex, noStringContents)
     assert objectOrArrayMatch is not None
-    outerRegex = r'\S(.|\s)*\S' # eliminates surrounding whitespace
+    outerRegex = r'\S[\s\S]*\S' # eliminates surrounding whitespace
     outerMatch = re.search(outerRegex, noStringContents)
     # start after the outer opens
     startIndex = outerMatch.span()[0] + 1
@@ -267,27 +269,34 @@ def validateArrayNoRecursion(arr: str, offset: Tuple[int, int]=(0, 0)) -> bool:
     doesn't validate the values themselves
     '''
     noValueContents = trashValues(arr)
-    commaRegex = r'\[(\s*{0}\s*,)*(\s*{0}\s*)\]'.format(valueNonGreedyRegex)
+    commaRegex = r'\[((\s*{0}\s*,)*(\s*{0}\s*))?\]'.format(valueNonGreedyRegex)
     commaMatch = re.fullmatch(commaRegex, noValueContents)
     if commaMatch is not None:
         return True
     else:
         # trailing comma?
-        trailingCommaRegex = r'(?<={}\s*),\s*\]'.format(valueRegex)
+        trailingCommaRegex = r',\s*\]\s*'.format(valueRegex)
         trailingCommaMatch = re.search(trailingCommaRegex, noValueContents)
         if trailingCommaMatch is not None:
             errorIndex = trailingCommaMatch.span()[0]
-            errorCoord = indexToCoord(errorIndex)
+            errorCoord = indexToCoord(noValueContents, errorIndex)
             errorCoord = addCoords(errorCoord, offset)
             raise SyntaxError('Trailing comma at {}:{}'.format(errorCoord[0], errorCoord[1]))
         # missing comma?
-        missingCommaRegex = r'(?<={})\s*{}'.format(valueRegex)
-        missingCommaMatch = re.search(missingCommaRegex, noValueContents)
-        if missingCommaMatch is not None:
-            errorIndex = missingCommaMatch.span()[0]
-            errorCoord = indexToCoord(errorIndex)
-            errorCoord = addCoords(errorCoord, offset)
-            raise SyntaxError('Expected comma at {}:{}'.format(errorCoord[0], errorCoord[1]))
+        valueMatchIter = re.finditer(trashedValueNonGreedyRegex, noValueContents)
+        valueMatches = []
+        for valueMatch in valueMatchIter:
+            valueMatches.append(valueMatch)
+        ### left off here about to go between the match objects checking for commas
+        print()
+
+        # missingCommaRegex = r'({0})\s*({0})'.format(trashedValueNonGreedyRegex)
+        # missingCommaMatch = re.search(missingCommaRegex, noValueContents)
+        # if missingCommaMatch is not None:
+        #     errorIndex = missingCommaMatch.start(1) + len(missingCommaMatch.group(1))
+        #     errorCoord = indexToCoord(noValueContents, errorIndex)
+        #     errorCoord = addCoords(errorCoord, offset)
+        #     raise SyntaxError('Expected comma at {}:{}'.format(errorCoord[0], errorCoord[1]))
     # looks good
     return True
         

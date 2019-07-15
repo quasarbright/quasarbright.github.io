@@ -325,6 +325,58 @@ class ToMove():#unittest.TestCase):
     ]'''
             )
 
+class TestValidateArrayNoRecursion(unittest.TestCase):
+    def testSuccess(self):
+        json = '["string", 123, true, null, notAValue, {"key": bad "value"}]'
+        self.assertTrue(validateArrayNoRecursion(json))
+    
+    def testEmptySuccess(self):
+        json = '[]'
+        self.assertTrue(validateArrayNoRecursion(json))
+    
+    def testMultilineSuccess(self):
+        json = '[\n  1,\n  2\n]'
+        self.assertTrue(validateArrayNoRecursion(json))
+    
+    def testMultilineError(self):
+        json = '[\n  1,\n  2,\n]'
+        with self.assertRaisesRegex(SyntaxError, 'Trailing comma at 3:4'):
+            validateArrayNoRecursion(json)
+
+    def testTrailingComma(self):
+        json = '[12, 14,]'
+        with self.assertRaisesRegex(SyntaxError, 'Trailing comma at 1:8'):
+            validateArrayNoRecursion(json)
+    
+    def testMissingComma(self):
+        json = '["s", "g" 12354]'
+        with self.assertRaisesRegex(SyntaxError, 'Expected comma at 1:10'):
+            validateArrayNoRecursion(json)
+    
+    def testOffset(self):
+        json = '["s",]'
+        with self.assertRaisesRegex(SyntaxError, 'Trailing comma at 3:15'):
+            validateArrayNoRecursion(json, offset=(2, 10))
+
+class TestValueRegex(unittest.TestCase):
+    def assertFullmatch(self, pat, string):
+        self.assertIsNotNone(re.fullmatch(pat, string))
+    
+    def assertNotFullmatch(self, pat, string):
+        self.assertIsNone(re.fullmatch(pat, string))
+    
+    def testObj(self):
+        self.assertFullmatch(valueRegex, '{"key": "value"}')
+    
+    def testArr(self):
+        self.assertFullmatch(valueRegex, '[123, 3, "hello"]')
+
+    def testNumber(self):
+        self.assertFullmatch(valueRegex, '123')
+        self.assertFullmatch(valueRegex, '-123')
+        self.assertFullmatch(valueRegex, '-123.234')
+        self.assertFullmatch(valueRegex, '-.234')
+        self.assertFullmatch(valueRegex, '-345.')        
 
 
 # with self.assertRaisesRegex(SyntaxError, ""):
