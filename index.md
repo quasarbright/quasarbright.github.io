@@ -1,8 +1,6 @@
 ---
 title: QuasarBright
 ---
-* TOC
-{:toc}
 # Michael Delmonaco
 This is my personal website. Here, I have a variety of different kinds of projects I've worked on for fun over the years. Most of the projects I've done can't be displayed on a webpage, so check my repositories if you want to see more!
 # [Machine Learning projects](https://quasarbright.github.io/MachineLearning/README)
