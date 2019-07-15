@@ -10,13 +10,13 @@ primitiveRegex = r'{}|{}|{}|{}'.format(numberRegex, stringRegex, boolRegex, null
 objectRegex = r'\{[\s\S]*\}'
 arrayRegex = r'\[[\s\S]*\]'
 valueRegex = r'{}|{}|{}'.format(primitiveRegex, objectRegex, arrayRegex)
-trashedValueRegex = r'~+|"~*"|[{\{][~\s]*?[}\]]'
+trashedValueRegex = r'~+|"~*"|\[[~\s]*\]|\{[~\s]*\}'
 
 stringNonGreedyRegex = r'"[^"\n]*?"'
 objectNonGreedyRegex = r'\{[\s\S]*?\}'
 arrayNonGreedyRegex = r'\[[\s\S]*?\]'
 valueNonGreedyRegex = r'{}|{}|{}|{}|{}|{}'.format(numberRegex, boolRegex, nullRegex, stringNonGreedyRegex, objectNonGreedyRegex, arrayNonGreedyRegex)
-trashedValueNonGreedyRegex = r'~+|"~*?"|[{\{][~\s]*?[}\]]'
+trashedValueNonGreedyRegex = r'~+|"~*?"|\[[~\s]*?\]|\{[~\s]*?\}'
 
 primitiveFileRegex = r'\s*'+primitiveRegex+r'\s*'
 objectFileRegex = r'\s*'+objectRegex+r'\s*'
@@ -269,8 +269,9 @@ def validateArrayNoRecursion(arr: str, offset: Tuple[int, int]=(0, 0)) -> bool:
     doesn't validate the values themselves
     '''
     noValueContents = trashValues(arr)
-    commaRegex = r'\[((\s*{0}\s*,)*(\s*{0}\s*))?\]'.format(valueNonGreedyRegex)
-    commaMatch = re.fullmatch(commaRegex, noValueContents)
+    # this is what it should look like
+    validRegex = r'\[(\s*({0})\s*,\s*)+\s*({0})\s*\]|\[\s*({0})?\s*\]'.format(trashedValueNonGreedyRegex)
+    commaMatch = re.fullmatch(validRegex, noValueContents)
     if commaMatch is not None:
         return True
     else:
@@ -291,7 +292,7 @@ def validateArrayNoRecursion(arr: str, offset: Tuple[int, int]=(0, 0)) -> bool:
         for valueMatchIndex in range(len(valueMatches)-1):
             currentMatch = valueMatches[valueMatchIndex]
             nextMatch = valueMatches[valueMatchIndex+1]
-            start = currentMatch.end()+1
+            start = currentMatch.end()
             end = nextMatch.start() # excluded
             commaMatch = commaRegex.search(noValueContents, start, end)
             if commaMatch is None:
