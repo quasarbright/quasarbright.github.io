@@ -321,10 +321,19 @@ def validateArray(arr: str, offset: Tuple[int, int]=(0,0)) -> bool:
     noStringContents = trashStringContents(arr)
     arrayMatch = re.fullmatch(arrayRegex, noStringContents)
     assert arrayMatch is not None
-    # contents are values separated by commas, ignoring surrounding whitespace
-    
-    
-    
+    validateArrayNoRecursion(arr, offset)
+    # now validate each element
+    # find where each element starts and ends
+    noValueContents = trashValues(arr)
+    trashedValueMatchIter = re.finditer(trashedValueNonGreedyRegex, noValueContents)
+    for trashedValueMatch in trashedValueMatchIter:
+        start, end = trashedValueMatch.span()
+        element = arr[start:end]
+        startCoord = indexToCoord(arr, start)
+        startCoord = addCoords(startCoord, (-1,-1))
+        newOffset = addCoords(startCoord)
+        validateJSON(element, newOffset)
+    return True
 
 def validateNoDuplicateKeys(obj: str, offset: Tuple[int, int]=(0,0)) -> bool:
     pass

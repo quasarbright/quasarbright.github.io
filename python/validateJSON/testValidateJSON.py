@@ -359,6 +359,23 @@ class TestValidateArrayNoRecursion(unittest.TestCase):
         with self.assertRaisesRegex(SyntaxError, 'Trailing comma at 3:15'):
             validateArrayNoRecursion(json, offset=(2, 10))
 
+class TestArrayFull(unittest.TestCase):
+    def testPrimitiveSuccess(self):
+        self.assertTrue(validateArray('[true, false, null, "hello", "quote \"", -123, 3.5]'))
+        self.assertTrue(validateArray('[1234]'))
+    
+    def testArraySuccess(self):
+        self.assertTrue(validateArray('["true", 234, ["e1", 90]]'))
+        self.assertTrue(validateArray('[["e1", 90]]'))
+    
+    def testObjSuccess(self):
+        self.assertTrue(validateArray('[true, {"key": "value", "key2": 2}]'))
+        self.assertTrue(validateArray('[true, {"key": "value", "key2": 2}, [3, 4]]'))
+    
+    def testManyLayersSuccess(self):
+        self.assertTrue(validateArray('[1, [2, [3, [], 43]]]'))
+        self.assertTrue(validateArray('[23, {"arr": ["s", 322]}]'))
+
 class TestValueRegex(unittest.TestCase):
     def assertFullmatch(self, pat, string):
         self.assertIsNotNone(re.fullmatch(pat, string))
