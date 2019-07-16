@@ -54,8 +54,19 @@ def indexToCoord(contents: str, characterIndex: int) -> Tuple[int, int]:
     characterNumber = distanceToPreceedingNewline + 1
     return (lineNumber, characterNumber)
 
-def addCoords(a: Tuple[int, int], b: Tuple[int, int]) -> Tuple[int, int]:
+def coordToIndex(contents: str, coord: Tuple[int, int]) -> int:
+    assert False # needs testing
+    lineNumber, characterNumber = coord
+    currentLineNumber = 1
+    for characterIndex, character in enumerate(contents):
+        if currentLineNumber == lineNumber:
+            return characterIndex + characterNumber
+        if character == '\n':
+            currentLineNumber += 1
+
+def addCoords(contents: str, a: Tuple[int, int], b: Tuple[int, int]) -> Tuple[int, int]:
     '''adds the two tuple (lineNumber, characterNumber)s together'''
+    assert False # need to convert to indices, add, then convert
     return (a[0]+b[0], a[1]+b[1])
 
 def trashEscapedCharacters(s: str) -> str:
