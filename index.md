@@ -7,7 +7,7 @@ This is my personal website. Here, I have a variety of different kinds of projec
 These are some interesting things I did with neural networks, which are my favorite tool to work with in computer science. The code is stored in its own repository, MachineLearning.
 # [Unity projects](https://quasarbright.github.io/UnityProjects/)
 These are some webgl games I made in the Unity game engine. Since they run on webgl, they can run right from your browser. The code is stored in its own repository, UnityProjects
-# [p5 js projects](https://quasarbright.github.io/p5js)
+# [p5 js projects](https://quasarbright.github.io/p5js/index)
 This is a collection of interesting programs I made using p5.js. They can run in browser, so just click on a link and it'll run. The code is stored in the quasarbright repository.
 # [Interactive Math Visualization Tools](https://quasarbright.github.io/ThreePeriods/)
 This is a collection of interactive math visualization tools that my classmate William Liu and I created for our senior project in High School 
