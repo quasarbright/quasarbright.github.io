@@ -1,6 +1,6 @@
 import re
 from typing import Tuple
-
+assert False # unexpected comma
 assert False # adding coords doesn't work
 # you need some kind of system to propagate the error
 # index back to the root validator
@@ -165,6 +165,13 @@ def trashStringContents(json: str) -> str:
         length = end - beginning - 2
         ans = ans[:beginning+1] + '~'*length + ans[end-1:]
     return ans
+
+def trashPrimitiveContents(json: str) -> str:
+    '''
+    replaces all string contents and primitives with ~
+    '''
+    noStringContents = trashStringContents(json)
+    return re.sub(r'[^\s{}[\]":,]', '~', noStringContents)
 
 def validateOpenClose(json: str, openChar: str, closeChar: str) -> bool:
     '''
@@ -405,3 +412,28 @@ def validateJSON(json: str, offset: Tuple[int, int]=(0, 0)) -> bool:
     #         continue
     #     elif character == 
 
+def validateTrailingComma(json: str) -> bool:
+    noStringContents = trashStringContents(json)
+    trailingCommaRegex = r',\s*[}\]]'
+    trailingCommaMatch = re.search(json, trailingCommaRegex)
+    if trailingCommaMatch is not None:
+        errorIndex = trailingCommaMatch.start()
+        errorCoord = indexToCoord(json, errorIndex)
+        raise SyntaxError('trailing comma at {}:{}'.format(*errorCoord))
+    return True
+
+def validateExpectedComma(json: str) -> bool:
+    noPrimitiveContents = trashPrimitiveContents(json)
+    # missing comma?
+    '''
+    search for a value ending and a value beginning only separated by whitespace
+    '''
+    beginningsRegex = r'["[{~]'
+    endingsRegex = r'["}\]~]'
+    missingCommaRegex = r'{}[\s]*{}'.format(endingsRegex, beginningsRegex)
+    # use no string contesnts
+
+
+'''
+maybe recurse, but toss the whole json and a start and end index
+'''
