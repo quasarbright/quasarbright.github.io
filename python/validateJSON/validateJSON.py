@@ -1,6 +1,10 @@
 import re
 from typing import Tuple
 
+assert False # adding coords doesn't work
+# you need some kind of system to propagate the error
+# index back to the root validator
+
 numberRegex = r'-?\d+\.?\d*|-?\d*\.?\d+'
 stringRegex = r'"[^"\n]*"' # expects escaped quotes to be gone
 # string contents are already trashed
