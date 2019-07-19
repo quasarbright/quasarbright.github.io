@@ -410,6 +410,8 @@ def validateJSONHelp(json: str, span: Tuple[int, int]=None) -> bool:
     validates the specified part of the json file.
     the part should just be one value
     '''
+
+    assert False, "need test for invalid primitive before obj"
     if span == None:
         startIndex = 0
         endIndex = len(json)
