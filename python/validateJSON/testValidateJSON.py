@@ -341,23 +341,24 @@ class TestValidateArrayNoRecursion(unittest.TestCase):
     def testMultilineError(self):
         json = '[\n  1,\n  2,\n]'
         with self.assertRaisesRegex(SyntaxError, 'Trailing comma at 3:4'):
-            validateArrayNoRecursion(json)
+            validateTrailingComma(json)
 
     def testTrailingComma(self):
         json = '[12, 14,]'
         with self.assertRaisesRegex(SyntaxError, 'Trailing comma at 1:8'):
-            validateArrayNoRecursion(json)
+            validateTrailingComma(json)
     
     def testMissingComma(self):
         json = '["s", "g" 12354]'
         with self.assertRaisesRegex(SyntaxError, 'Expected comma at 1:10'):
-            validateArrayNoRecursion(json)
+            validateExpectedComma(json)
             ### left off here debugging test
     
     def testOffset(self):
+        assert False
         json = '["s",]'
         with self.assertRaisesRegex(SyntaxError, 'Trailing comma at 3:15'):
-            validateArrayNoRecursion(json, offset=(2, 10))
+            validateTrailingComma(json, offset=(2, 10))
 
 class TestArrayFull(unittest.TestCase):
     def testPrimitiveSuccess(self):

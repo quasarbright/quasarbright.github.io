@@ -1,7 +1,5 @@
 import re
 from typing import Tuple
-assert False # unexpected comma
-assert False # adding coords doesn't work
 # you need some kind of system to propagate the error
 # index back to the root validator
 
@@ -46,6 +44,8 @@ def indexToCoord(contents: str, characterIndex: int) -> Tuple[int, int]:
     where index is the index within the line
     '''
     lineIndex = contents.count('\n', 0, characterIndex)
+    if lineIndex == 0:
+        return (1, characterIndex+1)
     lineNumber = lineIndex + 1
     # go to the characterIndex, and go left until you hit a newline or the
     # beginning of the string. The distance is the character position
@@ -58,15 +58,15 @@ def indexToCoord(contents: str, characterIndex: int) -> Tuple[int, int]:
     characterNumber = distanceToPreceedingNewline + 1
     return (lineNumber, characterNumber)
 
-def coordToIndex(contents: str, coord: Tuple[int, int]) -> int:
-    assert False # needs testing
-    lineNumber, characterNumber = coord
-    currentLineNumber = 1
-    for characterIndex, character in enumerate(contents):
-        if currentLineNumber == lineNumber:
-            return characterIndex + characterNumber
-        if character == '\n':
-            currentLineNumber += 1
+# def coordToIndex(contents: str, coord: Tuple[int, int]) -> int:
+#     assert False # needs testing
+#     lineNumber, characterNumber = coord
+#     currentLineNumber = 1
+#     for characterIndex, character in enumerate(contents):
+#         if currentLineNumber == lineNumber:
+#             return characterIndex + characterNumber
+#         if character == '\n':
+#             currentLineNumber += 1
 
 def addCoords(contents: str, a: Tuple[int, int], b: Tuple[int, int]) -> Tuple[int, int]:
     '''adds the two tuple (lineNumber, characterNumber)s together'''
@@ -415,23 +415,36 @@ def validateJSON(json: str, offset: Tuple[int, int]=(0, 0)) -> bool:
 def validateTrailingComma(json: str) -> bool:
     noStringContents = trashStringContents(json)
     trailingCommaRegex = r',\s*[}\]]'
-    trailingCommaMatch = re.search(json, trailingCommaRegex)
+    trailingCommaMatch = re.search(trailingCommaRegex, noStringContents)
     if trailingCommaMatch is not None:
         errorIndex = trailingCommaMatch.start()
         errorCoord = indexToCoord(json, errorIndex)
-        raise SyntaxError('trailing comma at {}:{}'.format(*errorCoord))
+        raise SyntaxError('Trailing comma at {}:{}'.format(*errorCoord))
     return True
 
-def validateExpectedComma(json: str) -> bool:
+def validateExpectedComma(json: str) -> bool:# needs testing
     noPrimitiveContents = trashPrimitiveContents(json)
-    # missing comma?
-    '''
-    search for a value ending and a value beginning only separated by whitespace
-    '''
     beginningsRegex = r'["[{~]'
     endingsRegex = r'["}\]~]'
-    missingCommaRegex = r'{}[\s]*{}'.format(endingsRegex, beginningsRegex)
-    # use no string contesnts
+    missingCommaRegex = r'{}([\s]*{})'.format(endingsRegex, beginningsRegex)
+    # use no string contents
+    missingCommaMatch = re.search(missingCommaRegex, noPrimitiveContents)
+    if missingCommaMatch is not None:
+        errorIndex = missingCommaMatch.start(1)
+        errorCoord = indexToCoord(json, errorIndex)
+        raise SyntaxError('Expected comma at {}:{}'.format(*errorCoord))
+    return True
+
+def validateUnexpectedComma(json: str) -> bool:# needs testing
+    noStringContents = trashStringContents(json)
+    unexpectedCommaRegex = r',\s*(,)'
+    unexpectedCommaMatch = re.search(unexpectedCommaRegex, noStringContents)
+    if unexpectedCommaMatch is not None:
+        errorIndex = unexpectedCommaMatch.start(1)
+        errorCoord = indexToCoord(json, errorIndex)
+        raise SyntaxError('Unexpected comma at {}:{}'.format())
+    return True
+
 
 
 '''
