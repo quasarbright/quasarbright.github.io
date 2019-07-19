@@ -420,6 +420,16 @@ def validateJSONHelp(json: str, span: Tuple[int, int]=None) -> bool:
     fileMatch = re.fullmatch(fileRegex, localJSON)
     if fileMatch is None:
         assert False,  "shouldn't get here"
+    
+    # all whitespace?
+    if re.search(r'\s*', localJSON) is not None:
+        # whitespace file is valid
+        return True
+
+    # one primitive?
+    primitiveFileMatch = re.fullmatch(primitiveFileRegex, localJSON)
+    if primitiveFileMatch is not None:
+        return True
 
     # now we know it's an object or an array, so find the case
     # and validate accordingly
