@@ -68,10 +68,10 @@ def indexToCoord(contents: str, characterIndex: int) -> Tuple[int, int]:
 #         if character == '\n':
 #             currentLineNumber += 1
 
-def addCoords(contents: str, a: Tuple[int, int], b: Tuple[int, int]) -> Tuple[int, int]:
-    '''adds the two tuple (lineNumber, characterNumber)s together'''
-    assert False # need to convert to indices, add, then convert
-    return (a[0]+b[0], a[1]+b[1])
+# def addCoords(contents: str, a: Tuple[int, int], b: Tuple[int, int]) -> Tuple[int, int]:
+#     '''adds the two tuple (lineNumber, characterNumber)s together'''
+#     assert False # need to convert to indices, add, then convert
+#     return (a[0]+b[0], a[1]+b[1])
 
 def trashEscapedCharacters(s: str) -> str:
     '''
@@ -282,119 +282,73 @@ def findCloser(json: str, openCharacterIndex: int) -> int:
     return -1
 
 # def validateKeyValue(kv: str) -> bool:
-#     pass
-
-
-def validateArrayNoRecursion(arr: str, offset: Tuple[int, int]=(0, 0)) -> bool:
-    '''
-    validates that it's a comma separated array of values,
-    doesn't validate the values themselves
-    '''
-    noValueContents = trashValues(arr)
-    # this is what it should look like
-    validRegex = r'\[(\s*({0})\s*,\s*)+\s*({0})\s*\]|\[\s*({0})?\s*\]'.format(trashedValueNonGreedyRegex)
-    commaMatch = re.fullmatch(validRegex, noValueContents)
-    if commaMatch is not None:
-        return True
-    else:
-        # trailing comma?
-        trailingCommaRegex = r',\s*\]\s*'.format(valueRegex)
-        trailingCommaMatch = re.search(trailingCommaRegex, noValueContents)
-        if trailingCommaMatch is not None:
-            errorIndex = trailingCommaMatch.span()[0]
-            errorCoord = indexToCoord(noValueContents, errorIndex)
-            errorCoord = addCoords(errorCoord, offset)
-            raise SyntaxError('Trailing comma at {}:{}'.format(errorCoord[0], errorCoord[1]))
-        # missing comma?
-        valueMatchIter = re.finditer(trashedValueNonGreedyRegex, noValueContents)
-        valueMatches = []
-        for valueMatch in valueMatchIter:
-            valueMatches.append(valueMatch)
-        commaRegex = re.compile(r'\s*,\s*')
-        for valueMatchIndex in range(len(valueMatches)-1):
-            currentMatch = valueMatches[valueMatchIndex]
-            nextMatch = valueMatches[valueMatchIndex+1]
-            start = currentMatch.end()
-            end = nextMatch.start() # excluded
-            commaMatch = commaRegex.search(noValueContents, start, end)
-            if commaMatch is None:
-                errorIndex = start
-                errorCoord = indexToCoord(noValueContents, errorIndex)
-                errorCoord = addCoords(errorCoord, offset)
-                raise SyntaxError('Expected comma at {}:{}'.format(*errorCoord))
-        ### left off here about to go between the match objects checking for commas
-
-        # missingCommaRegex = r'({0})\s*({0})'.format(trashedValueNonGreedyRegex)
-        # missingCommaMatch = re.search(missingCommaRegex, noValueContents)
-        # if missingCommaMatch is not None:
-        #     errorIndex = missingCommaMatch.start(1) + len(missingCommaMatch.group(1))
-        #     errorCoord = indexToCoord(noValueContents, errorIndex)
-        #     errorCoord = addCoords(errorCoord, offset)
-        #     raise SyntaxError('Expected comma at {}:{}'.format(errorCoord[0], errorCoord[1]))
-    # looks good
-    return True
-        
+#     pass        
         
 
-def validateArray(arr: str, offset: Tuple[int, int]=(0,0)) -> bool:
+def validateArray(json: str, span: Tuple[int, int]=None) -> bool:
     '''
     asserts arr is bound by []
     '''
+    if span is None:
+        startIndex = 0
+        endIndex = len(json)
+    else:
+        startIndex, endIndex = span
+    arr = json[startIndex:endIndex]
+
     noStringContents = trashStringContents(arr)
     arrayMatch = re.fullmatch(arrayRegex, noStringContents)
     assert arrayMatch is not None
-    validateArrayNoRecursion(arr, offset)
     # now validate each element
     # find where each element starts and ends
     noValueContents = trashValues(arr)
     trashedValueMatchIter = re.finditer(trashedValueNonGreedyRegex, noValueContents)
     for trashedValueMatch in trashedValueMatchIter:
         start, end = trashedValueMatch.span()
-        element = arr[start:end]
-        startCoord = indexToCoord(arr, start)
-        startCoord = addCoords(startCoord, (-1,-1))
-        newOffset = addCoords(startCoord)
-        validateJSON(element, newOffset)
+        validateJSONHelp(json, span=(start, end))
     return True
 
-def validateNoDuplicateKeys(obj: str, offset: Tuple[int, int]=(0,0)) -> bool:
+def validateNoDuplicateKeys(json: str, span: Tuple[int, int]=None) -> bool:
     pass
 
-def validateObject(obj: str, offset: Tuple[int, int]=(0, 0)) -> bool:
+def validateObject(json: str, span: Tuple[int, int]=None) -> bool:
     '''
     asserts obj is bound by []
     '''
+    if span is None:
+        startIndex = 0
+        endIndex = len(json)
+    else:
+        startIndex, endIndex = span
+    obj = json[startIndex:endIndex]
     objMatch = re.fullmatch(objectRegex, obj)
     assert objMatch is not None
 
-def validateJSON(json: str, offset: Tuple[int, int]=(0, 0)) -> bool:
+def validateJSON(json: str) -> bool:
     '''
-    validates the entire contents
+    validates the entire file
     '''
-    validateQuotes()
-    validateBraces()
-    validateBrackets()
+    # all whitespace?
+    if re.search(r'\s*', json) is not None:
+        # whitespace file is valid
+        return True
+    
+    # one primitive?
     primitiveFileMatch = re.fullmatch(primitiveFileRegex, json)
     if primitiveFileMatch is not None:
         return True
-    fileMatch = re.fullmatch(fileRegex, json)
-    if fileMatch is None:
-        raise SyntaxError('file must be a single object, array, or primitive')
-    nonWhitespaceMatch = re.search(r'\S', json)
-    startIndex = nonWhitespaceMatch.span()[0]
-    startCharacter = json[startIndex]
-    if startCharacter == '{':
-        closeIndex = findCloser(json, startIndex)
-        startCoord = indexToCoord(json, startIndex)
-        obj = json[startIndex:closeIndex+1]
-        return validateObject(obj, offset=startIndex)
-    elif startCharacter == '[':
-        closeIndex = findCloser(json, startIndex)
-        startCoord = indexToCoord(json, startIndex)
-        arr = json[startIndex:closeIndex+1]
-        return validateArray(arr, offset=startIndex)
-    else:
-        assert False, "shouldn't get here"
+    
+    # make sure bounding characters are properly nested
+    validateQuotes(json)
+    validateBraces(json)
+    validateBrackets(json)
+
+    # check comma stuff
+    validateTrailingComma(json)
+    validateExpectedComma(json)
+    validateUnexpectedComma(json)
+    
+    validateJSONHelp(json)
 
     # while characterIndex < len(json):
     #     character = json[characterIndex]
@@ -412,6 +366,37 @@ def validateJSON(json: str, offset: Tuple[int, int]=(0, 0)) -> bool:
     #         continue
     #     elif character == 
 
+def validateJSONHelp(json: str, span: Tuple[int, int]=None) -> bool:
+    '''
+    validates the specified part of the json file.
+    the part should just be one value
+    '''
+    if span == None:
+        startIndex = 0
+        endIndex = len(json)
+    else:
+        startIndex, endIndex = span
+    localJSON = json[startIndex: endIndex]
+    # make sure it's an object, array, or something
+    fileMatch = re.fullmatch(fileRegex, localJSON)
+    if fileMatch is None:
+        assert False,  "shouldn't get here"
+
+    # now we know it's an object or an array, so find the case
+    # and validate accordingly
+    nonWhitespaceMatch = re.search(r'\S', localJSON)
+    openIndex = nonWhitespaceMatch.start()
+    absoluteOpenIndex = startIndex + openIndex
+    startCharacter = localJSON[openIndex]
+    absoluteCloseIndex = findCloser(json, absoluteOpenIndex)
+    if startCharacter == '{':
+        return validateObject(json, span=(absoluteOpenIndex, absoluteCloseIndex+1))
+    elif startCharacter == '[':
+        return validateArray(json, span=(absoluteOpenIndex, absoluteCloseIndex+1))
+    else:
+        assert False, "shouldn't get here"
+
+
 def validateTrailingComma(json: str) -> bool:
     noStringContents = trashStringContents(json)
     trailingCommaRegex = r',\s*[}\]]'
@@ -424,11 +409,17 @@ def validateTrailingComma(json: str) -> bool:
 
 def validateExpectedComma(json: str) -> bool:# needs testing
     noPrimitiveContents = trashPrimitiveContents(json)
+    quotesAsParens = re.sub(r'"([^"]*)"', r'(\1)', noPrimitiveContents)
+    
     beginningsRegex = r'["[{~]'
     endingsRegex = r'["}\]~]'
-    missingCommaRegex = r'{}([\s]*{})'.format(endingsRegex, beginningsRegex)
+    missingCommaRegex = r'[)}\]](\s*[{[(~])|~(\s*[[{(])'
+    # closer then whitespace then opener/prim
+    # or
+    # prim then whitespace then opener
+    # missingCommaRegex = r'{}(\s*{})'.format(endingsRegex, beginningsRegex)
     # use no string contents
-    missingCommaMatch = re.search(missingCommaRegex, noPrimitiveContents)
+    missingCommaMatch = re.search(missingCommaRegex, quotesAsParens)
     if missingCommaMatch is not None:
         errorIndex = missingCommaMatch.start(1)
         errorCoord = indexToCoord(json, errorIndex)
@@ -448,5 +439,5 @@ def validateUnexpectedComma(json: str) -> bool:# needs testing
 
 
 '''
-maybe recurse, but toss the whole json and a start and end index
+you need to check for unexpected ":"
 '''

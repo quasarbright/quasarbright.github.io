@@ -326,18 +326,6 @@ class ToMove():#unittest.TestCase):
             )
 
 class TestValidateArrayNoRecursion(unittest.TestCase):
-    def testSuccess(self):
-        json = '["string", 123, true, null, notAValue, {"key": bad "value"}]'
-        self.assertTrue(validateArrayNoRecursion(json))
-    
-    def testEmptySuccess(self):
-        json = '[]'
-        self.assertTrue(validateArrayNoRecursion(json))
-    
-    def testMultilineSuccess(self):
-        json = '[\n  1,\n  2\n]'
-        self.assertTrue(validateArrayNoRecursion(json))
-    
     def testMultilineError(self):
         json = '[\n  1,\n  2,\n]'
         with self.assertRaisesRegex(SyntaxError, 'Trailing comma at 3:4'):
@@ -353,12 +341,6 @@ class TestValidateArrayNoRecursion(unittest.TestCase):
         with self.assertRaisesRegex(SyntaxError, 'Expected comma at 1:10'):
             validateExpectedComma(json)
             ### left off here debugging test
-    
-    def testOffset(self):
-        assert False
-        json = '["s",]'
-        with self.assertRaisesRegex(SyntaxError, 'Trailing comma at 3:15'):
-            validateTrailingComma(json, offset=(2, 10))
 
 class TestArrayFull(unittest.TestCase):
     def testPrimitiveSuccess(self):
