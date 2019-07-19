@@ -234,6 +234,45 @@ def validateBrackets(json: str) -> bool:
     '''
     return validateOpenClose(json, '[', ']')
 
+def validateTrailingComma(json: str) -> bool:
+    noStringContents = trashStringContents(json)
+    trailingCommaRegex = r',\s*[}\]]'
+    trailingCommaMatch = re.search(trailingCommaRegex, noStringContents)
+    if trailingCommaMatch is not None:
+        errorIndex = trailingCommaMatch.start()
+        errorCoord = indexToCoord(json, errorIndex)
+        raise SyntaxError('Trailing comma at {}:{}'.format(*errorCoord))
+    return True
+
+def validateExpectedComma(json: str) -> bool:# needs testing
+    noPrimitiveContents = trashPrimitiveContents(json)
+    quotesAsParens = re.sub(r'"([^"]*)"', r'(\1)', noPrimitiveContents)
+    
+    beginningsRegex = r'["[{~]'
+    endingsRegex = r'["}\]~]'
+    missingCommaRegex = r'[)}\]](\s*[{[(~])|~(\s*[[{(])'
+    # closer then whitespace then opener/prim
+    # or
+    # prim then whitespace then opener
+    # missingCommaRegex = r'{}(\s*{})'.format(endingsRegex, beginningsRegex)
+    # use no string contents
+    missingCommaMatch = re.search(missingCommaRegex, quotesAsParens)
+    if missingCommaMatch is not None:
+        errorIndex = missingCommaMatch.start(1)
+        errorCoord = indexToCoord(json, errorIndex)
+        raise SyntaxError('Expected comma at {}:{}'.format(*errorCoord))
+    return True
+
+def validateUnexpectedComma(json: str) -> bool:# needs testing
+    noStringContents = trashStringContents(json)
+    unexpectedCommaRegex = r',\s*(,)'
+    unexpectedCommaMatch = re.search(unexpectedCommaRegex, noStringContents)
+    if unexpectedCommaMatch is not None:
+        errorIndex = unexpectedCommaMatch.start(1)
+        errorCoord = indexToCoord(json, errorIndex)
+        raise SyntaxError('Unexpected comma at {}:{}'.format())
+    return True
+
 def validatePrimitive(p: str) -> bool: # needs testing
     '''
     ensures p is a valid primitive
@@ -395,46 +434,6 @@ def validateJSONHelp(json: str, span: Tuple[int, int]=None) -> bool:
         return validateArray(json, span=(absoluteOpenIndex, absoluteCloseIndex+1))
     else:
         assert False, "shouldn't get here"
-
-
-def validateTrailingComma(json: str) -> bool:
-    noStringContents = trashStringContents(json)
-    trailingCommaRegex = r',\s*[}\]]'
-    trailingCommaMatch = re.search(trailingCommaRegex, noStringContents)
-    if trailingCommaMatch is not None:
-        errorIndex = trailingCommaMatch.start()
-        errorCoord = indexToCoord(json, errorIndex)
-        raise SyntaxError('Trailing comma at {}:{}'.format(*errorCoord))
-    return True
-
-def validateExpectedComma(json: str) -> bool:# needs testing
-    noPrimitiveContents = trashPrimitiveContents(json)
-    quotesAsParens = re.sub(r'"([^"]*)"', r'(\1)', noPrimitiveContents)
-    
-    beginningsRegex = r'["[{~]'
-    endingsRegex = r'["}\]~]'
-    missingCommaRegex = r'[)}\]](\s*[{[(~])|~(\s*[[{(])'
-    # closer then whitespace then opener/prim
-    # or
-    # prim then whitespace then opener
-    # missingCommaRegex = r'{}(\s*{})'.format(endingsRegex, beginningsRegex)
-    # use no string contents
-    missingCommaMatch = re.search(missingCommaRegex, quotesAsParens)
-    if missingCommaMatch is not None:
-        errorIndex = missingCommaMatch.start(1)
-        errorCoord = indexToCoord(json, errorIndex)
-        raise SyntaxError('Expected comma at {}:{}'.format(*errorCoord))
-    return True
-
-def validateUnexpectedComma(json: str) -> bool:# needs testing
-    noStringContents = trashStringContents(json)
-    unexpectedCommaRegex = r',\s*(,)'
-    unexpectedCommaMatch = re.search(unexpectedCommaRegex, noStringContents)
-    if unexpectedCommaMatch is not None:
-        errorIndex = unexpectedCommaMatch.start(1)
-        errorCoord = indexToCoord(json, errorIndex)
-        raise SyntaxError('Unexpected comma at {}:{}'.format())
-    return True
 
 
 
