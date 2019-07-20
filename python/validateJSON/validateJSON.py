@@ -344,6 +344,7 @@ def validateArray(json: str, span: Tuple[int, int]=None) -> bool:
     trashedValueMatchIter = re.finditer(trashedValueNonGreedyRegex, noValueContents)
     for trashedValueMatch in trashedValueMatchIter:
         start, end = trashedValueMatch.span()
+        # validate that element
         validateJSONHelp(json, span=(start, end))
     return True
 
@@ -360,8 +361,11 @@ def validateObject(json: str, span: Tuple[int, int]=None) -> bool:
     else:
         startIndex, endIndex = span
     obj = json[startIndex:endIndex]
-    objMatch = re.fullmatch(objectRegex, obj)
+    noStringContents = trashStringContents(obj)
+    objMatch = re.fullmatch(objectRegex, noStringContents)
     assert objMatch is not None
+    noValueContents = trashValues(noStringContents)
+    
 
 def validateJSON(json: str) -> bool:
     '''
@@ -411,7 +415,6 @@ def validateJSONHelp(json: str, span: Tuple[int, int]=None) -> bool:
     the part should just be one value
     '''
 
-    assert False, "need test for invalid primitive before obj"
     if span == None:
         startIndex = 0
         endIndex = len(json)
@@ -433,7 +436,7 @@ def validateJSONHelp(json: str, span: Tuple[int, int]=None) -> bool:
     if primitiveFileMatch is not None:
         return True
 
-    # now we know it's an object or an array, so find the case
+    # now we know it's an object, an array, or nothing, so find the case
     # and validate accordingly
     nonWhitespaceMatch = re.search(r'\S', localJSON)
     openIndex = nonWhitespaceMatch.start()
@@ -445,7 +448,10 @@ def validateJSONHelp(json: str, span: Tuple[int, int]=None) -> bool:
     elif startCharacter == '[':
         return validateArray(json, span=(absoluteOpenIndex, absoluteCloseIndex+1))
     else:
-        assert False, "shouldn't get here"
+        # it's nothing
+        # this assumes the function was correctly fed exactly one value
+        absoluteStartCoord = indexToCoord(json, openIndex+startIndex)
+        raise SyntaxError("Invalid value at {}:{}".format(*absoluteStartCoord))
 
 
 
