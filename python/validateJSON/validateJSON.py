@@ -23,7 +23,7 @@ trashedValueNonGreedyRegex = r'~+|"~*?"|\[[~\s]*?\]|\{[~\s]*?\}'
 primitiveFileRegex = r'\s*'+primitiveRegex+r'\s*'
 objectFileRegex = r'\s*'+objectRegex+r'\s*'
 arrayFileRegex = r'\s*'+arrayRegex+r'\s*'
-fileRegex = r'\s*'+valueRegex+r'\s*'
+fileRegex = r'\s*('+valueRegex+r')\s*'
 fileNonGreedyRegex = r'\s*'+valueNonGreedyRegex+r'\s*'
 
 def doesPass(json: str, exception, validator: callable) -> bool:
@@ -250,7 +250,7 @@ def validateExpectedComma(json: str) -> bool:# needs testing
     
     beginningsRegex = r'["[{~]'
     endingsRegex = r'["}\]~]'
-    missingCommaRegex = r'[)}\]](\s*[{[(~])|~(\s*[[{(])'
+    missingCommaRegex = r'[)}\]](\s*[{[(~])|~(\s*[[{(])|~(\s+~)'
     # closer then whitespace then opener/prim
     # or
     # prim then whitespace then opener
@@ -258,9 +258,12 @@ def validateExpectedComma(json: str) -> bool:# needs testing
     # use no string contents
     missingCommaMatch = re.search(missingCommaRegex, quotesAsParens)
     if missingCommaMatch is not None:
-        errorIndex = missingCommaMatch.start(1)
-        errorCoord = indexToCoord(json, errorIndex)
-        raise SyntaxError('Expected comma at {}:{}'.format(*errorCoord))
+        for groupIndex in range(len(missingCommaMatch.groups())):
+            groupNumber = groupIndex + 1
+            if missingCommaMatch.group(groupNumber) is not None:
+                errorIndex = missingCommaMatch.start(groupNumber)
+                errorCoord = indexToCoord(json, errorIndex)
+                raise SyntaxError('Expected comma at {}:{}'.format(*errorCoord))
     return True
 
 def validateUnexpectedComma(json: str) -> bool:# needs testing
@@ -270,7 +273,7 @@ def validateUnexpectedComma(json: str) -> bool:# needs testing
     if unexpectedCommaMatch is not None:
         errorIndex = unexpectedCommaMatch.start(1)
         errorCoord = indexToCoord(json, errorIndex)
-        raise SyntaxError('Unexpected comma at {}:{}'.format())
+        raise SyntaxError('Unexpected comma at {}:{}'.format(*errorCoord))
     return True
 
 def validatePrimitive(p: str) -> bool: # needs testing
@@ -365,14 +368,74 @@ def validateObject(json: str, span: Tuple[int, int]=None) -> bool:
     objMatch = re.fullmatch(objectRegex, noStringContents)
     assert objMatch is not None
     noValueContents = trashValues(noStringContents)
+    # keyValueRegex = r'({})\s*:\s*({})'.format(stringRegex, trashedValueRegex)
+    # trashedObjectRegex = r'\{(\s*'+keyValueRegex+r'\s*,\s*)*'+keyValueRegex+r'\}|\{\s*\}'
+    # trashedObjectMatch = re.fullmatch(trashedObjectRegex, noValueContents)
+    # Missing :
+    # take advantage of commas being prevalidated
+    missingColonRegex = r'[{'+r',]\s*"[^"]"(\s*({}))'.format(trashedValueNonGreedyRegex)
+    missingColonMatch = re.search(missingColonRegex, noValueContents)
+    if missingColonMatch is not None:
+        errorIndex = missingColonMatch.start(1)
+        absoluteErrorIndex = errorIndex + startIndex
+        absoluteErrorCoord = indexToCoord(json, absoluteErrorIndex)
+        raise SyntaxError("Missing : at {}:{}".format(*absoluteErrorCoord))
     
+    # Unexpected :
+    # before key
+    badRegex = r':\s*({})\s*:\s*({})'.format(stringRegex, trashedValueNonGreedyRegex)
+    badMatch = re.search(badRegex, noValueContents)
+    if badMatch is not None:
+        errorIndex = badMatch.start()
+        absoluteErrorIndex = errorIndex + startIndex
+        absoluteErrorCoord = indexToCoord(json, absoluteErrorIndex)
+        raise SyntaxError("Unexpected : at {}:{}".format(*absoluteErrorCoord))
+    # extra after key
+    badRegex = r'({})\s*:\s*(:)({})'.format(stringRegex, trashedValueNonGreedyRegex)
+    badMatch = re.search(badRegex, noValueContents)
+    if badMatch is not None:
+        errorIndex = badMatch.start(2)
+        absoluteErrorIndex = errorIndex + startIndex
+        absoluteErrorCoord = indexToCoord(json, absoluteErrorIndex)
+        raise SyntaxError("Unexpected : at {}:{}".format(*absoluteErrorCoord))
+    
+    # extra after value
+    badRegex = r'({})\s*:\s*({})\s*(:)'.format(stringRegex, trashedValueNonGreedyRegex)
+    badMatch = re.search(badRegex, noValueContents)
+    if badMatch is not None:
+        errorIndex = badMatch.start(3)
+        absoluteErrorIndex = errorIndex + startIndex
+        absoluteErrorCoord = indexToCoord(json, absoluteErrorIndex)
+        raise SyntaxError("Unexpected : at {}:{}".format(*absoluteErrorCoord))
+    
+    # non-string key?
+    keyRegex = r'({})\s*:'.format(trashedValueNonGreedyRegex)
+    keyMatchIter = re.finditer(keyRegex, noValueContents)
+    for keyMatch in keyMatchIter:
+        key = keyMatch.group(1)
+        stringMatch = re.fullmatch(stringRegex, key)
+        if stringMatch is None:
+            errorIndex = keyMatch.start(1)
+            absoluteErrorIndex = startIndex + errorIndex
+            absoluteErrorCoord = indexToCoord(absoluteErrorIndex, json)
+            raise SyntaxError("Object keys must be strings. At {}:{}".format(*absoluteErrorCoord))
+    
+    # recursively validate values
+    keyValueRegex = r'({})\s*:\s*({})'.format(stringRegex, trashedValueNonGreedyRegex)
+    keyValueIter = re.finditer(keyValueRegex, noValueContents)
+    for keyValueMatch in keyValueIter:
+        valueStart, valueEnd = keyValueMatch.span(2)
+        absoluteStart = valueStart + startIndex
+        absoluteEnd = valueEnd + startIndex
+        validateJSONHelp(json, span=(absoluteStart, absoluteEnd))
+    return True
 
 def validateJSON(json: str) -> bool:
     '''
     validates the entire file
     '''
     # all whitespace?
-    if re.search(r'\s*', json) is not None:
+    if re.fullmatch(r'\s*', json) is not None:
         # whitespace file is valid
         return True
     
@@ -392,6 +455,9 @@ def validateJSON(json: str) -> bool:
     validateUnexpectedComma(json)
     
     validateJSONHelp(json)
+
+    # looks good
+    return True
 
     # while characterIndex < len(json):
     #     character = json[characterIndex]
@@ -414,7 +480,6 @@ def validateJSONHelp(json: str, span: Tuple[int, int]=None) -> bool:
     validates the specified part of the json file.
     the part should just be one value
     '''
-
     if span == None:
         startIndex = 0
         endIndex = len(json)
@@ -457,4 +522,13 @@ def validateJSONHelp(json: str, span: Tuple[int, int]=None) -> bool:
 
 '''
 you need to check for unexpected ":"
+'''
+'''
+a better design probably would have been to tokenize everything,
+keeping track of start and end indices, and work with that.
+That would eliminate the need for trashing, and you wouldn't need to
+worry about so many regular expressions
+
+Oh my god you could have tokenized everything and literally made it a tree
+then recursed the tree. DAMN IT
 '''

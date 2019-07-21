@@ -379,7 +379,58 @@ class TestValueRegex(unittest.TestCase):
         self.assertFullmatch(valueRegex, '-.234')
         self.assertFullmatch(valueRegex, '-345.')        
 
-
+class TestGeneral(unittest.TestCase):
+    def testExampleSuccess(self):
+        with open('example.json', 'r') as f:
+            json = f.read()
+            self.assertTrue(validateJSON(json))
+    def testUnexpectedComma(self):
+        json = '[1, 3, ,4, 5]'
+        with self.assertRaisesRegex(SyntaxError, 'Unexpected comma at 1:8'):
+            validateJSON(json)
+        json = '{"a":"b",,"a":"b"}'
+        with self.assertRaisesRegex(SyntaxError, 'Unexpected comma at 1:10'):
+            validateJSON(json)
+        json = '{"a":"b","a":{"k":"v",,"k":"v"}}'
+        with self.assertRaisesRegex(SyntaxError, 'Unexpected comma at 1:{}'.format(json.find(',"k')+1)):
+            validateJSON(json)
+        
+    def testTrailingComma(self):
+        json = '[1, 2, 3,]'
+        with self.assertRaisesRegex(SyntaxError, r'Trailing comma .*'):
+            validateJSON(json)
+        json = '[1, 2, 3, [1,]]'
+        with self.assertRaisesRegex(SyntaxError, r'Trailing comma .*'):
+            validateJSON(json)
+        json = '[1, 2, 3, {"k":1,}]'
+        with self.assertRaisesRegex(SyntaxError, r'Trailing comma .*'):
+            validateJSON(json)
+    def testExpectedComma(self):
+        json = '[1, 2 3, 4]'
+        with self.assertRaisesRegex(SyntaxError, 'Expected comma at 1:{}'.format(1+json.find(' 3'))):
+            validateJSON(json)
+        json = '[1, 2, 3, 4, [1 2]]'
+        with self.assertRaisesRegex(SyntaxError, r'Expected comma .*'):
+            validateJSON(json)
+class TestObjectNoRecusion(unittest.TestCase):
+    def testSuccess(self):
+        json = '{"k": "v"}'
+        self.assertTrue(validateObject(json))
+        json = '{"k": "v", "k2": 123}'
+        self.assertTrue(validateObject(json))
+    def testEarlyColon(self):
+        json = '{:"K":"V"}'
+        with self.assertRaisesRegex(SyntaxError, 'Unexpected : at 1:2'):
+            validateObject(json)
+    def testMiddleColon(self):
+        json = '{"K"::"V"}'
+        with self.assertRaisesRegex(SyntaxError, 'Unexpected : at 1:6'):
+            validateObject(json)
+    def testLateColon(self):
+        json = '{"K":"V":}'
+        with self.assertRaisesRegex(SyntaxError, 'Unexpected : at 1:{}'.format(1+json.find(':}'))):
+            validateObject(json)
+    
 # with self.assertRaisesRegex(SyntaxError, ""):
 #     validateJSON('''{
 #         {"key": "value"},

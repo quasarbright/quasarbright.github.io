@@ -2,5 +2,19 @@
     "sdf": "hello \n new quote \" slash \\",
     "number": 2.1,
     "boolean": true,
-    "null": null
+    "null": null,
+    "arr": [
+        1, 2, 3, 4, {"key": "value"},
+        null
+    ],
+    "obj": {
+        "minecraft": "good",
+        "fortnite": "bad",
+        "upvotes": "to the left",
+        "another object": {
+            "name": "Yoshikage Kira",
+            "age": 33,
+            "evil string": "hahaha \\\"\n}}[][["
+        }
+    }
 }
