@@ -518,6 +518,16 @@ def validateJSONHelp(json: str, span: Tuple[int, int]=None) -> bool:
         absoluteStartCoord = indexToCoord(json, openIndex+startIndex)
         raise SyntaxError("Invalid value at {}:{}".format(*absoluteStartCoord))
 
+if __name__ == "__main__":
+    import sys
+    path = sys.argv[1]
+    with open(path, 'r') as f:
+        json = f.read()
+        try:
+            validateJSON(json)
+            print('json is valid')
+        except SyntaxError as e:
+            print(e.msg)
 
 
 '''
