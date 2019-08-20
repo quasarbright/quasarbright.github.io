@@ -1,5 +1,11 @@
 # [Processing](https://processing.org/)
 Here are some interesting projects I've done using Processing for Java. Since Processing sketches can't be directly displayed in browser like p5.js sketches, I have included screenshots and YouTube videos of my sketches running.
+
+## Magnetic Pendulum
+![](https://quasarbright.github.io/images/magnet%20pendulum.PNG)  
+
+There are 3 magnets arranged in a triangle and another magnet on a pendulum. The magnet on the pendulum is attracted to the other 3 magnets, and the pendulum pulls it towards the center. The picture is colored based on which magnet the pendulum ends on when released from that location.
+
 ## Complex Color Plotter
 <iframe width="560" height="315" src="https://www.youtube.com/embed/AVB6F626P1Q" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
 
