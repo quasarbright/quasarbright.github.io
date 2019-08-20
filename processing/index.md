@@ -14,4 +14,9 @@ To graph a function, we go to each point in the complex plane, call that `z`, ca
 ## Perlin Cube Terrain
 <iframe width="560" height="315" src="https://www.youtube.com/embed/_ozs9ZBzMyw" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
 
-I created a scalar field in 3D space parameterized by perlin noise, and translated it over time. I thresholded the scalar field such that values above a certain number were filled in as a green cube, and those below it were left empty.
+I created a scalar field in 3D space parameterized by perlin noise, and translated it over time. I thresholded the scalar field such that values above a certain number were filled in as a green cube, and those below it were left empty.  
+
+## Crystallization
+<iframe width="560" height="315" src="https://www.youtube.com/embed/FRw5XWjBsms" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
+
+There is a frozen particle at the center of the screen. Each particle randomly drifts around until it hits a frozen particle. At that point, it gets frozen. As this process continues, an interesting pattern forms.  
