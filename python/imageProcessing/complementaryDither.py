@@ -1,6 +1,6 @@
 '''
 Floyd-Steinberg error-diffusion dithering
-converts from 8-bit grayscale to black and white
+converts from 8-bit grayscale to black and white, then converts black and white to two random complementary colors
 '''
 import random
 import colorsys
