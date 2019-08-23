@@ -2,6 +2,8 @@
 Floyd-Steinberg error-diffusion dithering
 converts from 8-bit grayscale to black and white
 '''
+import random
+import colorsys
 from PIL import Image
 import numpy as np
 
@@ -68,9 +70,47 @@ def imgToGrayscaleArr(imgPath: str) -> np.ndarray:
     grayscaleArr = grayscaleArr.reshape(height, width)
     return grayscaleArr
 
+def blackWhiteToColor(img: np.ndarray) -> np.ndarray:
+    '''takes a black and white image and converts white to a random color,
+        and black to the color's complement
+    
+    Args:
+        img (numpy.ndarray): black and white (dithered) image of shape (height, width)
+            containing values of either 0 or 255
+    
+    Returns:
+        numpy.ndarray: image with only two random complementary colors in it.
+    '''
+    height, width = img.shape
+    newImg = np.zeros((height, width, 3))
+    
+    hu = random.random()
+    complement = (0.5 + hu) % 1
+
+    color1 = (hu, 1, .5)
+    color1 = colorsys.hsv_to_rgb(*color1)
+    color1 = np.array(color1) * 256
+
+    color2 = (complement, 1, .5)
+    color2 = colorsys.hsv_to_rgb(*color2)
+    color2 = np.array(color2) * 256
+
+    for r in range(height):
+        for c in range(width):
+            oldPixel = img[r, c]
+            if oldPixel == 255:
+                newPixel = color1
+            else:
+                newPixel = color2
+            newImg[r, c] = newPixel
+    newImg = np.array(newImg)
+    return newImg
+
 def main(imgPath: str) -> None:
     arr = imgToGrayscaleArr(imgPath)
     ditheredArr = dither(arr)
+    ditheredArr = blackWhiteToColor(ditheredArr)
+    ditheredArr = ditheredArr.astype('uint8')
     ditheredImg = Image.fromarray(ditheredArr)
     ditheredImg.show()
 
