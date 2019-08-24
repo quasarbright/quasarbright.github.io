@@ -1,8 +1,11 @@
+'''Render an image as text with unicode shade characters
+Uses Floyd-Steinberg dithering on a grayscale version of the image
+'''
 import numpy as np
 from PIL import Image
 
 palette = [' ', '░', '▒', '▓', '█']
-paletteSize = len(shades)
+paletteSize = len(palette)
 
 def findClosestColor(color: int, paletteSize: int = 5) -> int:
         color *= paletteSize
