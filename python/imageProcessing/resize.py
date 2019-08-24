@@ -68,9 +68,8 @@ def nearestNeighbor(arr: np.ndarray, shape: tuple) -> np.ndarray:
 
 def resize(imgPath: str, shape: tuple) -> Image:
     img = Image.open(imgPath)
-    img.show()
     arr = np.asarray(img)
-    resizedArr = bilinear(arr, shape)
+    resizedArr = nearestNeighbor(arr, shape)
     resizedImg = Image.fromarray(resizedArr)
     return resizedImg
 

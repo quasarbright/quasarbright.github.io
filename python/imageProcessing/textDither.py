@@ -26,15 +26,15 @@ def dither(arr: np.ndarray) -> np.ndarray:
             shape (height, width)
     '''
     # normalize image to [0, 1)
-    img = np.copy(img)
-    img = img / 256
+    arr = np.copy(arr)
+    arr = arr / 256
     
-    height, width = img.shape
+    height, width = arr.shape[:2]
     for r in range(height):
         for c in range(width):
-            oldPixel = img[r, c]
+            oldPixel = arr[r, c]
             newPixel = findClosestColor(oldPixel)
-            img[r, c] = newPixel
+            arr[r, c] = newPixel
             error = oldPixel - newPixel
 
             right = c < width - 1
@@ -42,14 +42,14 @@ def dither(arr: np.ndarray) -> np.ndarray:
             left = c > 0
 
             if right:
-                img[r, c+1] += error * 7/16
+                arr[r, c+1] += error * 7/16
             if right and down:
-                img[r+1, c+1] += error * 1/16
+                arr[r+1, c+1] += error * 1/16
             if down:
-                img[r+1, c] += error * 5/16
+                arr[r+1, c] += error * 5/16
             if left and down:
-                img[r+1, c-1] += error * 1/16
-    return img
+                arr[r+1, c-1] += error * 1/16
+    return arr
 
 def ditherToText(arr: np.ndarray) -> list:
     '''takes dithered image array in range 0-1
@@ -64,17 +64,37 @@ def ditherToText(arr: np.ndarray) -> list:
         list: list of strings
             Each string is a row of the image 
     '''
-    height, width = arr.shape
+    height, width = arr.shape[:2]
 
     # map from grayscale value to palette item
     pixelToPalette = {i / paletteSize: palette[i] for i in range(paletteSize)}
+    pixelToPalette[1] = palette[-1]
 
     strings = []
     for r in range(height):
-        row = []
+        row = ''
         for c in range(width):
             pixel = arr[r, c]
             newValue = pixelToPalette[pixel]
-            row.append(newValue)
+            row += newValue
         strings.append(row)
     return strings
+
+def main(imgPath):
+    img = resize(imgPath, (100, 100))
+    img = img.convert('L')
+    arr = np.asarray(img)
+    dithered = dither(arr)
+    lines = ditherToText(dithered)
+    output = '\n'.join(lines)
+    print(output)
+    with open('output.txt', 'w', encoding='utf-8') as f:
+        f.write(output)
+
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) < 2:
+        print('must supply image path')
+        sys.exit(1)
+    imgPath = sys.argv[1]
+    main(imgPath)
