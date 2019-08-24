@@ -17,7 +17,7 @@ def lerpColor(a, b, r: float):
     lerprgb = lerprgb * 256
     return lerprgb
 
-def bilinear(arr: np.ndarray, shape: tuple) -> np.ndarray:
+def nearestNeighbor(arr: np.ndarray, shape: tuple) -> np.ndarray:
     oldH = arr.shape[0]
     oldW = arr.shape[1]
 
@@ -55,15 +55,15 @@ def bilinear(arr: np.ndarray, shape: tuple) -> np.ndarray:
             dr = arr[downInd, rightInd]
 
             # interpolate horizontally on top and bottom
-            topHorizontalLerp = lerpColor(ul, ur, horizontalLerpRatio)
-            bottomHorizontalLerp = lerpColor(dl, dr, horizontalLerpRatio)
+            # topHorizontalLerp = lerpColor(ul, ur, horizontalLerpRatio)
+            # bottomHorizontalLerp = lerpColor(dl, dr, horizontalLerpRatio)
 
             # now vertically interpolate between the two horizontal interpolations
-            newPixel = lerpColor(topHorizontalLerp, bottomHorizontalLerp, verticalLerpRatio)
-            resized[newR, newC, :] = newPixel
+            # newPixel = lerpColor(topHorizontalLerp, bottomHorizontalLerp, verticalLerpRatio)
+            resized[newR, newC, :] = ul
 
     resized = np.array(resized)
-    resized = resized.astype('uint8')       
+    resized = resized.astype('uint8')
     return resized
 
 def resize(imgPath: str, shape: tuple) -> Image:
@@ -74,6 +74,11 @@ def resize(imgPath: str, shape: tuple) -> Image:
     resizedImg = Image.fromarray(resizedArr)
     return resizedImg
 
-imgPath = r'd:\OneDrive\Pictures\virgil.jpg'
-resized = resize(imgPath, (800, 800))
-resized.show()
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) < 2:
+        print('must provide image path')
+        sys.exit(1)
+    imgPath = sys.argv[1]
+    resized = resize(imgPath, (200, 200))
+    resized.show()

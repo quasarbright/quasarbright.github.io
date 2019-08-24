@@ -3,6 +3,7 @@ Uses Floyd-Steinberg dithering on a grayscale version of the image
 '''
 import numpy as np
 from PIL import Image
+from resize import resize
 
 palette = [' ', '░', '▒', '▓', '█']
 paletteSize = len(palette)
