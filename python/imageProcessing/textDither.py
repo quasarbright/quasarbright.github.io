@@ -9,10 +9,13 @@ palette = [' ', '░', '▒', '▓', '█']
 paletteSize = len(palette)
 
 def findClosestColor(color: int, paletteSize: int = 5) -> int:
-        color *= paletteSize
-        color = color // 1
-        color = color / paletteSize
-        return color
+    '''color in range [0, 1)
+    Rounds to the nearest 1/paletteSize
+    '''
+    color *= paletteSize
+    color = color // 1
+    color = color / paletteSize
+    return color
 
 def dither(arr: np.ndarray) -> np.ndarray:
     '''dithers image into a more discrete array with "lower bit depth"
