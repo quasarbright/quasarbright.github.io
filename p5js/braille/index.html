@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Braille Dithering</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8=" crossorigin="anonymous"></script>
+    <script src="sketch.js"></script>
+    <meta charset="utf-8" />
+</head>
+
+<body>
+    <div>
+        <input type="file" accept="image/*" id="imgUpload" onchange="loadFile(event)">
+        <br>
+        <p>Braille image resolution (in dots):</p>
+        <label for="dotWidth">Width</label>
+        <input type="number" step="1" id="dotWidth" value="80">
+        <label for="dotHeight">Height</label>
+        <input type="number" step="1" id="dotHeight" value="80"><br><br>
+        <button onclick="submit()">submit</button>
+    </div>
+    <br><br>
+    <div><textarea id="out" rows="25" cols="60">This is where the image will go</textarea></div>
+    <img id="img">
+</body>
+
+</html>
