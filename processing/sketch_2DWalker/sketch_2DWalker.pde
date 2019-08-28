@@ -1,9 +1,10 @@
 Walker[] walkers;
 int popSize = 75;
-float stepSize = 10;
+int stepSize = 10;
 void setup() {
   //size(600, 600);
   fullScreen();
+  frameRate(144);
   colorMode(HSB);
   walkers = new Walker[popSize];
   for(int i = 0; i < popSize; i++){

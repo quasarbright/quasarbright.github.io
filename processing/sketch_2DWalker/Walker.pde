@@ -8,9 +8,9 @@ class Walker {
   color c;
   boolean dead = false;
   
-  Walker(float stepSize) {
+  Walker(int stepSize) {
     this.stepSize = stepSize;
-    this.pos = new PVector(random(width), random(height));
+    this.pos = new PVector((floor(random(width)) / stepSize) * stepSize, (floor(random(height)) / stepSize) * stepSize);
     this.last = this.pos.copy();
     this.c = color(hu, 255, 255);
     hu += 2;
