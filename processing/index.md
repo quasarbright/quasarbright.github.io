@@ -49,7 +49,7 @@ I colored the mandelbrot set by the number of steps required to escape the conve
 ## 2D Random Walker
 <iframe width="560" height="315" src="https://www.youtube.com/embed/IPxwzn4a5uQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
 
-I create several [random walkers](https://www.wikiwand.com/en/Random_walk) and trace their paths. I made it so the color of each new walker slowly progresses through the color wheel. Once they reach a certain distance from the start, they despawn and a new walker spawns.
+I create several [random walkers](https://www.wikiwand.com/en/Random_walk) and trace their paths. I made it so the color of each new walker slowly progresses through the color wheel. Once they go out of bounds, they despawn and a new walker spawns.
 
 ## 3D Random Walker
 <iframe width="560" height="315" src="https://www.youtube.com/embed/Ldaid-rPy-g" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
