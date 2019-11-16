@@ -35,7 +35,7 @@ public class OrRegExp implements RegExp {
             return false;
         }
         OrRegExp orRegExp = (OrRegExp) other;
-        return new HashSet<>(regExps).equals(new HashSet<>(orRegExp.regExps));
+        return new ArrayList<>(regExps).equals(new ArrayList<>(orRegExp.regExps));
     }
 
     @Override

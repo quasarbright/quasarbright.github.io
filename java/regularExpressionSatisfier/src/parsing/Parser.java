@@ -53,7 +53,6 @@ public class Parser {
 
 
 
-      /// left off here
       /*
       Regarding groups, you need to design a nice way to do recursion while accumulating the current parenthetical depth.
       The problem is that sometimes you need to stop at a close-paren, and sometimes you don't. You can't just recurse straight-up.
@@ -87,6 +86,9 @@ public class Parser {
 
       RegExp finalRegExp = regExp;
       final Boolean[] encounteredClose = {false};
+      final Boolean[] shouldAdvance = {true};
+      /// left off here investigating big fail
+
       regExp = token.accept(new TokenVisitor<RegExp>() {
         private RegExp concat(RegExp next) {
           return finalRegExp.accept(new ConcatenateWith(next));
@@ -99,8 +101,8 @@ public class Parser {
         @Override
         public RegExp visitStartGroupToken() {
           stream.advance();
-          RegExp groupContents = parse(finalRegExp, stream, parenthesesDepth+1);
-          return new GroupRegExp(groupContents);
+          RegExp groupContents = parse(new EmptyRegExp(), stream, parenthesesDepth+1);
+          return concat(new GroupRegExp(groupContents));
         }
 
         @Override
@@ -109,6 +111,7 @@ public class Parser {
             throw new IllegalStateException("unexpected end group token");
           } else {
             encounteredClose[0] = true;
+            shouldAdvance[0] = false;
             return finalRegExp;
           }
         }
@@ -116,7 +119,7 @@ public class Parser {
         @Override
         public RegExp visitOrToken() {
           stream.advance();
-          RegExp rest = parse(finalRegExp, stream, parenthesesDepth);
+          RegExp rest = parse(new EmptyRegExp(), stream, parenthesesDepth);
           RegExp prev = finalRegExp;
           return rest.accept(new OrWith(prev));
         }
@@ -127,7 +130,7 @@ public class Parser {
         }
       });
 
-      if(!stream.isDone()) {
+      if(!stream.isDone() && shouldAdvance[0]) {
         stream.advance();
       }
 

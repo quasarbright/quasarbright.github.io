@@ -35,15 +35,16 @@ public class ParserTest {
   @Test
   public void orCapture() {
     // aaa|b
-    RegExp expected = new ConcatenationRegExp(
-            new CharacterRegExp('a'),
-            new CharacterRegExp('a'),
-            new OrRegExp(
+    String re = "aaa|b";
+    RegExp expected = new OrRegExp(
+            new ConcatenationRegExp(
                     new CharacterRegExp('a'),
-                    new CharacterRegExp('b')
-            )
+                    new CharacterRegExp('a'),
+                    new CharacterRegExp('a')
+            ),
+            new CharacterRegExp('b')
     );
-    assertEquals(expected, parse("aaa|b"));
+    assertEquals(expected, parse(re));
 
     // (aaa)|b
     expected = new OrRegExp(
@@ -58,7 +59,7 @@ public class ParserTest {
     );
     assertEquals(expected, parse("(aaa)|b"));
 
-    String re = "abc|def";
+    re = "abc|def";
     expected = new OrRegExp(
             new ConcatenationRegExp(
                     new CharacterRegExp('a'),
@@ -95,6 +96,39 @@ public class ParserTest {
                     new CharacterRegExp('e'),
                     new CharacterRegExp('f'),
                     new CharacterRegExp('g')
+            )
+    );
+    assertEquals(expected, parse(re));
+  }
+
+  @Test
+  public void testOrInGroup() {
+    String re = "(ab|cd)";
+    RegExp expected = new GroupRegExp(
+            new OrRegExp(
+                    new ConcatenationRegExp(
+                            new CharacterRegExp('a'),
+                            new CharacterRegExp('b')
+                    ),
+                    new ConcatenationRegExp(
+                            new CharacterRegExp('c'),
+                            new CharacterRegExp('d')
+                    )
+            )
+    );
+    assertEquals(expected, parse(re));
+  }
+
+  @Test
+  public void weirdOrNesting() {
+    String re = "(a|b)|c";
+    RegExp expected = new OrRegExp(
+            new GroupRegExp(new OrRegExp(
+                    new CharacterRegExp('a'),
+                    new CharacterRegExp('b')
+            )),
+            new ConcatenationRegExp(
+                    new CharacterRegExp('c')
             )
     );
     assertEquals(expected, parse(re));
@@ -152,7 +186,7 @@ public class ParserTest {
     assertEquals(expected, parse(re));
 
     re = "|a";
-    expected = new CharacterRegExp('a');
+    expected = new OrRegExp(new EmptyRegExp(), new CharacterRegExp('a'));
     assertEquals(expected, parse(re));
   }
 
