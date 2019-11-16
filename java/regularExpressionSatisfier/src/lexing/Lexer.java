@@ -8,6 +8,8 @@ import java.util.Scanner;
 
 import lexing.token.CharacterToken;
 import lexing.token.EndGroupToken;
+import lexing.token.OrToken;
+import lexing.token.RepeaterToken;
 import lexing.token.StartGroupToken;
 import lexing.token.Token;
 import utils.MyStream;
@@ -19,6 +21,14 @@ public class Lexer {
       characters.add(c);
     }
     MyStream<Character> stream = new MyStream<>(characters);
+
+    List<Token> ans = new ArrayList<>();
+    while(!stream.isDone()) {
+      char current = stream.peek();
+
+
+    }
+    return ans;
   }
 
   private CharacterToken lexCharacterToken(MyStream<Character> stream) {
@@ -30,6 +40,14 @@ public class Lexer {
   }
 
   private EndGroupToken lexEndGroupToken(MyStream<CharacterToken> stream) {
+
+  }
+
+  private OrToken lexOrToken(MyStream<CharacterToken> stream) {
+
+  }
+
+  private RepeaterToken lexRepeaterToken(MyStream<Character> stream) {
 
   }
 }
