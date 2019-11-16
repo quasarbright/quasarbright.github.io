@@ -58,4 +58,9 @@ public class SimpleSatisfier implements RegexpVisitor<String> {
     }
     return ans.toString();
   }
+
+  @Override
+  public String visitGroupRegExp(RegExp regExp) {
+    return regExp.accept(this);
+  }
 }

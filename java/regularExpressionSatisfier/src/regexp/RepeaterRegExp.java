@@ -33,4 +33,9 @@ public class RepeaterRegExp implements RegExp {
   public int hashCode() {
     return Objects.hashCode(regExp);
   }
+
+  @Override
+  public String toString() {
+    return "repeat("+regExp.toString()+")";
+  }
 }

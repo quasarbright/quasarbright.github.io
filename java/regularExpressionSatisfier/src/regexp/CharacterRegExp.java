@@ -33,4 +33,9 @@ public class CharacterRegExp implements RegExp {
     public int hashCode() {
         return Objects.hashCode(c);
     }
+
+    @Override
+    public String toString() {
+        return "char("+c+")";
+    }
 }

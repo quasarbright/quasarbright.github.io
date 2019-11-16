@@ -20,4 +20,9 @@ public class EmptyRegExp implements RegExp {
     public int hashCode() {
         return Objects.hashCode(getClass());
     }
+
+    @Override
+    public String toString() {
+        return "empty()";
+    }
 }

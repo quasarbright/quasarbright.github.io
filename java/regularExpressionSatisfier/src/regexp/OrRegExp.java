@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * An or of one ore more {@link RegExp}s.
@@ -40,5 +41,16 @@ public class OrRegExp implements RegExp {
     @Override
     public int hashCode() {
         return Objects.hashCode(new HashSet<>(regExps));
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder ans = new StringBuilder();
+        ans.append("or(");
+        List<String> strings = regExps.stream()
+                .map(Object::toString)
+                .collect(Collectors.toList());
+        ans.append(String.join(", ", strings)).append(")");
+        return ans.toString();
     }
 }

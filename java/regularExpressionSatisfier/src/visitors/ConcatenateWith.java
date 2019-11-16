@@ -5,6 +5,7 @@ import java.util.List;
 
 import regexp.CharacterRegExp;
 import regexp.ConcatenationRegExp;
+import regexp.GroupRegExp;
 import regexp.OrRegExp;
 import regexp.RegExp;
 import regexp.RegexpVisitor;
@@ -46,5 +47,10 @@ public class ConcatenateWith implements RegexpVisitor<RegExp> {
   @Override
   public RegExp visitRepeaterRegExp(RegExp regExp) {
     return new ConcatenationRegExp(new RepeaterRegExp(regExp), next);
+  }
+
+  @Override
+  public RegExp visitGroupRegExp(RegExp regExp) {
+    return new ConcatenationRegExp(new GroupRegExp(regExp), next);
   }
 }

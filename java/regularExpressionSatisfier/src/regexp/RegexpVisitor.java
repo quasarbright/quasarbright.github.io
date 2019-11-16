@@ -13,4 +13,5 @@ public interface RegexpVisitor<R> {
     R visitEmptyRegExp();
     R visitOrRegexp(List<RegExp> regExps);
     R visitRepeaterRegExp(RegExp regExp);
+    R visitGroupRegExp(RegExp regExp);
 }

@@ -2,27 +2,26 @@ package parsing;
 
 import java.util.List;
 
+import lexing.Lexer;
 import lexing.token.Token;
 import lexing.token.TokenVisitor;
 import regexp.CharacterRegExp;
 import regexp.ConcatenationRegExp;
 import regexp.EmptyRegExp;
+import regexp.GroupRegExp;
 import regexp.RegExp;
+import regexp.RegexpVisitor;
 import utils.MyStream;
 import visitors.ConcatenateWith;
+import visitors.OrWith;
+import visitors.RepeatLast;
 
 public class Parser {
-  int parenCount;
 
-  public Parser() {
-    parenCount = 0;
-  }
-
-  public RegExp parse(List<Token> tokens) {
+  public static RegExp parse(List<Token> tokens) {
     MyStream<Token> stream = new MyStream<>(tokens);
-    RegExp regExp = new EmptyRegExp();
-    while(!stream.isDone()) {
-      Token token = stream.peek();
+    RegExp emptyRegExp = new EmptyRegExp();
+    return parse(emptyRegExp, stream, 0);
 //      RegExp finalRegExp = regExp;
 //      regExp = token.accept(new TokenVisitor<RegExp>() {
 //        @Override
@@ -56,11 +55,6 @@ public class Parser {
 
       /// left off here
       /*
-      for the star issue, make a starify visitor. For a concatenation, it takes the last and starifies it.
-      for others, just starify it straight up.
-      be careful because you might not get the desired behavior for "abcd*" vs "(abcd)*"
-      Do you need a group regex that is different from a concatenation? That might be necessary.
-
       Regarding groups, you need to design a nice way to do recursion while accumulating the current parenthetical depth.
       The problem is that sometimes you need to stop at a close-paren, and sometimes you don't. You can't just recurse straight-up.
 
@@ -69,15 +63,79 @@ public class Parser {
       No type enums. Use the visitor as a type cond from fundies
       If you're doing this functionally and not oop, avoid mutation.
        */
-      stream.advance();
+  }
+
+  public static RegExp parse(String re) {
+    return parse(Lexer.lex(re));
+  }
+
+  /**
+   * Parse the token stream.
+   * If encounters close paren and parenthesesDepth is positive, that means we're in a secondary call for parsing a group
+   * so we're going to return what we have. No need to decrement paren depth bc of the nature of the recursion.
+   * The when you return, the paren depth will effectively go back to whatever it was before the caller incremented.
+   *
+   * @param current current regexp
+   * @param stream token stream
+   * @param parenthesesDepth current parentheses depth (opens - closes so far)
+   * @return the parsed Regex
+   */
+  private static RegExp parse(RegExp current, MyStream<Token> stream, int parenthesesDepth) {
+    RegExp regExp = current;
+    while(!stream.isDone()) {
+      Token token = stream.peek();
+
+      RegExp finalRegExp = regExp;
+      final Boolean[] encounteredClose = {false};
+      regExp = token.accept(new TokenVisitor<RegExp>() {
+        private RegExp concat(RegExp next) {
+          return finalRegExp.accept(new ConcatenateWith(next));
+        }
+        @Override
+        public RegExp visitCharacterToken(char c) {
+          return concat(new CharacterRegExp(c));
+        }
+
+        @Override
+        public RegExp visitStartGroupToken() {
+          stream.advance();
+          RegExp groupContents = parse(finalRegExp, stream, parenthesesDepth+1);
+          return new GroupRegExp(groupContents);
+        }
+
+        @Override
+        public RegExp visitEndGroupToken() {
+          if(parenthesesDepth == 0) {
+            throw new IllegalStateException("unexpected end group token");
+          } else {
+            encounteredClose[0] = true;
+            return finalRegExp;
+          }
+        }
+
+        @Override
+        public RegExp visitOrToken() {
+          stream.advance();
+          RegExp rest = parse(finalRegExp, stream, parenthesesDepth);
+          RegExp prev = finalRegExp;
+          return rest.accept(new OrWith(prev));
+        }
+
+        @Override
+        public RegExp visitRepeaterToken() {
+          return finalRegExp.accept(new RepeatLast());
+        }
+      });
+
+      if(!stream.isDone()) {
+        stream.advance();
+      }
+
+      if(encounteredClose[0]) {
+        break;
+      }
+
     }
-  }
-
-  private CharacterRegExp parseCharacterRegExp(MyStream<Token> stream) {
-
-  }
-
-  private RegExp parseGroup(MyStream<Token> stream) {
-
+    return regExp;
   }
 }
