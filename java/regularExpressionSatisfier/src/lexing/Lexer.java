@@ -22,32 +22,50 @@ public class Lexer {
     }
     MyStream<Character> stream = new MyStream<>(characters);
 
-    List<Token> ans = new ArrayList<>();
+    List<Token> tokens = new ArrayList<>();
     while(!stream.isDone()) {
       char current = stream.peek();
-
-
+      // expects methods not to advance
+      Token token;
+      switch (current) {
+        case '(':
+          token = lexStartGroupToken(stream);
+          break;
+        case ')':
+          token = lexEndGroupToken(stream);
+          break;
+        case '*':
+          token = lexRepeaterToken(stream);
+          break;
+        case '|':
+          token = lexOrToken(stream);
+          break;
+        default:
+          token = lexCharacterToken(stream);
+      }
+      tokens.add(token);
+      stream.advance();
     }
-    return ans;
+    return tokens;
   }
 
-  private CharacterToken lexCharacterToken(MyStream<Character> stream) {
-
+  private static CharacterToken lexCharacterToken(MyStream<Character> stream) {
+    return new CharacterToken(stream.peek());
   }
 
-  private StartGroupToken lexStartGroupToken(MyStream<Character> stream) {
-
+  private static StartGroupToken lexStartGroupToken(MyStream<Character> stream) {
+    return new StartGroupToken();
   }
 
-  private EndGroupToken lexEndGroupToken(MyStream<CharacterToken> stream) {
-
+  private static EndGroupToken lexEndGroupToken(MyStream<Character> stream) {
+    return new EndGroupToken();
   }
 
-  private OrToken lexOrToken(MyStream<CharacterToken> stream) {
-
+  private static OrToken lexOrToken(MyStream<Character> stream) {
+    return new OrToken();
   }
 
-  private RepeaterToken lexRepeaterToken(MyStream<Character> stream) {
-
+  private static RepeaterToken lexRepeaterToken(MyStream<Character> stream) {
+    return new RepeaterToken();
   }
 }

@@ -1,5 +1,6 @@
 package regexp;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -33,8 +34,7 @@ public class ConcatenationRegExp implements RegExp {
             return false;
         }
         ConcatenationRegExp concatenationRegExp = (ConcatenationRegExp) other;
-        // TODO test
-        return regExps.equals(concatenationRegExp.regExps);
+        return new ArrayList<>(regExps).equals(new ArrayList<>(concatenationRegExp.regExps));
     }
 
     @Override

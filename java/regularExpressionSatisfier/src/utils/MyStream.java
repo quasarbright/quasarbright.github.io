@@ -14,7 +14,7 @@ public class MyStream<T> {
   }
 
   private void assertNotDone() {
-    if(!isDone()) {
+    if(isDone()) {
       throw new IllegalStateException();
     }
   }
