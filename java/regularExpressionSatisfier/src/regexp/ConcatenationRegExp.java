@@ -22,7 +22,7 @@ public class ConcatenationRegExp implements RegExp {
 
     @Override
     public <R> R accept(RegexpVisitor<R> visitor) {
-        return visitor.visitConcatenationRegExp(regExps);
+        return visitor.visitConcatenationRegExp(new ArrayList<>(regExps));
     }
 
     @Override
