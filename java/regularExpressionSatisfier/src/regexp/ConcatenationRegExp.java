@@ -2,6 +2,7 @@ package regexp;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A concatenation of two or more regular expressions.
@@ -21,5 +22,23 @@ public class ConcatenationRegExp implements RegExp {
     @Override
     public <R> R accept(RegexpVisitor<R> visitor) {
         return visitor.visitConcatenationRegExp(regExps);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if(this == other) {
+            return true;
+        }
+        if(other == null || getClass() != other.getClass()) {
+            return false;
+        }
+        ConcatenationRegExp concatenationRegExp = (ConcatenationRegExp) other;
+        // TODO test
+        return regExps.equals(concatenationRegExp.regExps);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(regExps);
     }
 }
