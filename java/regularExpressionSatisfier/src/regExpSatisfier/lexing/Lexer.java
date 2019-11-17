@@ -5,6 +5,7 @@ import java.util.List;
 
 import regExpSatisfier.lexing.token.CharacterToken;
 import regExpSatisfier.lexing.token.EndGroupToken;
+import regExpSatisfier.lexing.token.EscapeCharacterToken;
 import regExpSatisfier.lexing.token.OrToken;
 import regExpSatisfier.lexing.token.RepeaterToken;
 import regExpSatisfier.lexing.token.StartGroupToken;
@@ -37,6 +38,9 @@ public class Lexer {
         case '|':
           token = lexOrToken(stream);
           break;
+        case '\\':
+          token = lexEscapeCharacterToken(stream);
+          break;
         default:
           token = lexCharacterToken(stream);
       }
@@ -48,6 +52,11 @@ public class Lexer {
 
   private static CharacterToken lexCharacterToken(MyStream<Character> stream) {
     return new CharacterToken(stream.peek());
+  }
+
+  private static EscapeCharacterToken lexEscapeCharacterToken(MyStream<Character> stream) {
+    stream.advance();
+    return new EscapeCharacterToken(stream.peek());
   }
 
   private static StartGroupToken lexStartGroupToken(MyStream<Character> stream) {

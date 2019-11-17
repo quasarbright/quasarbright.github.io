@@ -9,12 +9,15 @@ import regExpSatisfier.regexp.CharacterRegExp;
 import regExpSatisfier.regexp.EmptyRegExp;
 import regExpSatisfier.regexp.GroupRegExp;
 import regExpSatisfier.regexp.RegExp;
+import regExpSatisfier.utils.EscapeRegexUtils;
 import regExpSatisfier.utils.MyStream;
 import regExpSatisfier.visitors.ConcatenateWith;
 import regExpSatisfier.visitors.OrWith;
 import regExpSatisfier.visitors.RepeatLast;
 
 public class Parser {
+
+  private static final EscapeRegexUtils escapeRegexUtils = new EscapeRegexUtils();
 
   public static RegExp parse(List<Token> tokens) {
     MyStream<Token> stream = new MyStream<>(tokens);
@@ -94,6 +97,11 @@ public class Parser {
         @Override
         public RegExp visitCharacterToken(char c) {
           return concat(new CharacterRegExp(c));
+        }
+
+        @Override
+        public RegExp visitEscapeCharacterToken(char c) {
+          return concat(escapeRegexUtils.getEscapeRegex(c));
         }
 
         @Override
