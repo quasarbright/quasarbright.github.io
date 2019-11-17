@@ -19,6 +19,13 @@ public class ParserTest {
   }
 
   @Test
+  public void simpleRepeat() {
+    String re = "a*";
+    RegExp expected = new RepeaterRegExp(new CharacterRegExp('a'));
+    assertEquals(expected, parse(re));
+  }
+
+  @Test
   public void repeatCapture() {
     // aaab*
     RegExp expected = new ConcatenationRegExp(

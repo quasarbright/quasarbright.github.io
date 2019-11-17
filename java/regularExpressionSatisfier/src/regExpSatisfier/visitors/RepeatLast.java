@@ -19,7 +19,7 @@ public class RepeatLast implements RegexpVisitor<RegExp> {
 
   @Override
   public RegExp visitCharacterRegExp(char c) {
-    return new RepeaterRegExp(new CharacterRegExp('c'));
+    return new RepeaterRegExp(new CharacterRegExp(c));
   }
 
   @Override
