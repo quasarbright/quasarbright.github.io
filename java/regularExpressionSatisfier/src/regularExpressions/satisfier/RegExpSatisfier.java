@@ -1,11 +1,11 @@
-package regularExpressions;
+package regularExpressions.satisfier;
 
 import java.util.Scanner;
 
 import regularExpressions.parsing.Parser;
 import regularExpressions.regexp.RegExp;
 import regularExpressions.regexp.RegexpVisitor;
-import regularExpressions.visitors.RandomSatisfier;
+import regularExpressions.satisfier.visitors.RandomSatisfier;
 
 /**
  * Generates strings that satisfy the given regular expression.

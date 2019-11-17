@@ -10,6 +10,7 @@ import regularExpressions.regexp.OrRegExp;
 import regularExpressions.regexp.RegExp;
 import regularExpressions.regexp.RegexpVisitor;
 import regularExpressions.regexp.RepeaterRegExp;
+import regularExpressions.satisfier.visitors.SimpleSatisfier;
 
 import static org.junit.Assert.*;
 

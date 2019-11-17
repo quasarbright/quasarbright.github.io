@@ -1,4 +1,4 @@
-package regularExpressions.visitors;
+package regularExpressions.satisfier.visitors;
 
 import java.util.List;
 
