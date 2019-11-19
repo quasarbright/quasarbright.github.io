@@ -1,0 +1,117 @@
+package regularExpressions.matcher.visitors;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import regularExpressions.matcher.GreedyComparator;
+import regularExpressions.matcher.Match;
+import regularExpressions.regexp.CharacterRegExp;
+import regularExpressions.regexp.ConcatenationRegExp;
+import regularExpressions.regexp.EmptyRegExp;
+import regularExpressions.regexp.OrRegExp;
+import regularExpressions.regexp.RegExp;
+import regularExpressions.regexp.RegexpVisitor;
+import regularExpressions.regexp.RepeaterRegExp;
+import regularExpressions.visitors.ConcatenateWith;
+
+/**
+ * Matches as much of the string as it can.
+ */
+public class GreedyMatcher implements RegexpVisitor<List<Match>> {
+  private final String string;
+
+  public GreedyMatcher(String string) {
+    this.string = string;
+  }
+
+  /**
+   * Return the string after the first character.
+   *
+   * @param s the string
+   * @return the rest of the string
+   */
+  private String rest(String s) {
+    if(s.length() == 0) {
+      throw new IllegalArgumentException("called rest on empty string");
+    } else {
+      return s.substring(1);
+    }
+  }
+
+  private List<Match> empty() {
+    return new ArrayList<>();
+  }
+
+  private List<Match> singleton(Match match) {
+    return Collections.singletonList(match);
+  }
+
+  /**
+   * Repeat the given regexp n times.
+   *
+   * @param regExp the regexp to repeat
+   * @param n the number of times to repeat it
+   * @return a concatenation of n regexps, or empty if n = 0
+   */
+  private RegExp fixedSizeRepeater(RegExp regExp, int n) {
+    RegExp ans = new EmptyRegExp();
+    for(int i = 0; i < n; i++) {
+      ans = ans.accept(new ConcatenateWith(regExp));
+    }
+    return ans;
+  }
+
+  @Override
+  public List<Match> visitCharacterRegExp(char c) {
+    if(string.length() > 0 && string.charAt(0) == c) {
+      return singleton(new Match(0,1, string, new CharacterRegExp(c)));
+    }
+    return empty();
+  }
+
+  @Override
+  public List<Match> visitConcatenationRegExp(List<RegExp> regExps) {
+
+  }
+
+  @Override
+  public List<Match> visitEmptyRegExp() {
+    return singleton(new Match(0,0, string, new EmptyRegExp()));
+  }
+
+  @Override
+  public List<Match> visitOrRegexp(List<RegExp> regExps) {
+    // for each regexp get all matches and append everything into allMatches
+    List<Match> allMatches = regExps.stream()
+            .map((RegExp regExp) -> regExp.accept(this))
+            .flatMap((List<Match> matches) -> matches.stream())
+            .collect(Collectors.toList());
+    return allMatches;
+  }
+
+  @Override
+  public List<Match> visitRepeaterRegExp(RegExp regExp) {
+    // relies on concat, not or
+    List<Match> allMatches = new ArrayList<>();
+    RegExp currentExpansion = new EmptyRegExp();
+    List<Match> currentMatches = currentExpansion.accept(this);
+    allMatches.addAll(currentMatches);
+    RegexpVisitor<RegExp> concatenator = new ConcatenateWith(regExp);
+    while(!currentMatches.isEmpty()) {
+      currentExpansion = currentExpansion.accept(concatenator);
+      currentMatches = currentExpansion.accept(this);
+      allMatches.addAll(currentMatches);
+    }
+    return allMatches;
+  }
+
+  @Override
+  public List<Match> visitGroupRegExp(RegExp regExp) {
+    // if you want to return groups, this is where you'd do stuff
+    return regExp.accept(this);
+  }
+}
