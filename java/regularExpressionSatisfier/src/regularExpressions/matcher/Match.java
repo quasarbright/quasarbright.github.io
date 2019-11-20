@@ -18,7 +18,7 @@ public final class Match {
    * @param regExp the regular expression that was matched in the target string
    */
   public Match(int start, int end, String targetString, RegExp regExp) {
-    if(start < 0 || start >= targetString.length()) {
+    if(start < 0 || (targetString.length() > 0 && start >= targetString.length())) {
       throw new IllegalArgumentException("invalid start");
     } else if(end < start || end > targetString.length()) {
       throw new IllegalArgumentException("invalid end");

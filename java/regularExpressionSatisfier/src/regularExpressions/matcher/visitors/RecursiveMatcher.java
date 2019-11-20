@@ -3,14 +3,17 @@ package regularExpressions.matcher.visitors;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import regularExpressions.matcher.Match;
 import regularExpressions.regexp.CharacterRegExp;
 import regularExpressions.regexp.ConcatenationRegExp;
 import regularExpressions.regexp.EmptyRegExp;
+import regularExpressions.regexp.GroupRegExp;
 import regularExpressions.regexp.RegExp;
 import regularExpressions.regexp.RegexpVisitor;
+import regularExpressions.regexp.RepeaterRegExp;
 import regularExpressions.visitors.ConcatenateWith;
 
 /**
@@ -96,7 +99,7 @@ public class RecursiveMatcher implements RegexpVisitor<List<Match>> {
         // this takes restMatches and replaces the rest's start, end, and regexp with the combined version
         // assumes matches always start at 0
         List<Match> concatenatedMatches = restMatches.stream()
-                .map((Match match) -> new Match(firstMatch.start, firstMatch.start + match.end, string, oldConcatenation))
+                .map((Match match) -> new Match(firstMatch.start, firstMatch.end + match.end, string, oldConcatenation))
                 .collect(Collectors.toList());
         ans.addAll(concatenatedMatches);
       }
@@ -122,22 +125,40 @@ public class RecursiveMatcher implements RegexpVisitor<List<Match>> {
   @Override
   public List<Match> visitRepeaterRegExp(RegExp regExp) {
     // relies on concat, not or
-    List<Match> allMatches = new ArrayList<>();
+    /*
+    let x = regExp
+    start with () and try to match
+    then try (x)
+    then try (xx)
+    then try (xxx)
+    keep trying with another x until it stops matching
+    keep track of all these matches and make the matches' regexps this repeater
+     */
+    RegExp oldRepeater = new RepeaterRegExp(regExp);
     RegExp currentExpansion = new EmptyRegExp();
     List<Match> currentMatches = currentExpansion.accept(this);
-    allMatches.addAll(currentMatches);
+    List<Match> allMatches = new ArrayList<>(currentMatches);
     RegexpVisitor<RegExp> concatenator = new ConcatenateWith(regExp);
     while(!currentMatches.isEmpty()) {
       currentExpansion = currentExpansion.accept(concatenator);
       currentMatches = currentExpansion.accept(this);
+      // replace the regexp of each match with this repeater
       allMatches.addAll(currentMatches);
     }
-    return allMatches;
+    List<Match> updatedMatches = allMatches.stream()
+            .map((Match match) -> new Match(match.start, match.end, string, oldRepeater))
+            .collect(Collectors.toList());
+    return updatedMatches;
   }
 
   @Override
   public List<Match> visitGroupRegExp(RegExp regExp) {
     // if you want to return groups, this is where you'd do stuff
-    return regExp.accept(this);
+    RegExp oldGroup = new GroupRegExp(regExp);
+    List<Match> matches = regExp.accept(this);
+    List<Match> updatedMatches = matches.stream()
+            .map((Match match) -> new Match(match.start, match.end, string, oldGroup))
+            .collect(Collectors.toList());
+    return updatedMatches;
   }
 }
