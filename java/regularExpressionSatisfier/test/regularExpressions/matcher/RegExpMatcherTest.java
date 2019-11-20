@@ -6,6 +6,9 @@ import java.util.Optional;
 
 import regularExpressions.parsing.Parser;
 import regularExpressions.regexp.RegExp;
+import regularExpressions.regexp.RegexpVisitor;
+import regularExpressions.satisfier.visitors.RandomSatisfier;
+import regularExpressions.satisfier.visitors.SimpleSatisfier;
 
 import static org.junit.Assert.*;
 
@@ -22,6 +25,23 @@ public class RegExpMatcherTest {
 
   private void failMatch(String target, String re) {
     assertTrue(RegExpMatcher.match(target, re).isEmpty());
+  }
+
+  /**
+   * Uses satisfiers to auto test matcher.
+   *
+   * @param re the regular expression to test
+   */
+  private void autoTest(String re) {
+    RegExp regExp = Parser.parse(re);
+    RegexpVisitor<String> simpleSatisfier = new SimpleSatisfier();
+    String target = regExp.accept(simpleSatisfier);
+    passFullMatch(target, re);
+    RegexpVisitor<String> randomSatisfier = new RandomSatisfier(1,5);
+    for(int i = 0; i < 10000; i++) {
+      target = regExp.accept(randomSatisfier);
+      passFullMatch(target, re);
+    }
   }
 
   @Test
@@ -59,14 +79,6 @@ public class RegExpMatcherTest {
 
   @Test
   public void emptyRepeater() {
-    // WARNING may infinite loop
-    // currently infinite looping
-    // you need some mechanism for detecting if a regex is EQUIVALENT to empty before concatenating
-    // maybe check that the match spans grow as you concat
-    // or even better, check that you're not adding the same array of matches each loop
-    // one option is generating a satisfier and seeing if it's empty, but that has A LOT of problems
-
-    // maybe just make an isEmpty visitor
     passFullMatch("", "*");
     passFullMatch("", "()*");
     passFullMatch("", "(()())*");
@@ -80,6 +92,10 @@ public class RegExpMatcherTest {
   public void startStar() {
     // WARNING may infinite loop
     passFullMatch("aaaa", "a**");
+    passFullMatch("a", "a**");
+    passFullMatch("", "**");
+    passFullMatch("", "()**");
+    passFullMatch("", "(|)**");
   }
 
   @Test
@@ -99,4 +115,20 @@ public class RegExpMatcherTest {
     passFullMatch("yoshikage.k@husky", emailRE);
   }
 
+  @Test
+  public void emptyStarChar() {
+    passFullMatch("abc", "*abc");
+    passFullMatch("abc", "()*abc");
+    passFullMatch("abc", "()()*abc");
+    passFullMatch("abc", "(()())*abc");
+    passFullMatch("abc", "((|)(|))*abc");
+    passFullMatch("abc", "(|)*abc");
+  }
+
+  @Test
+  public void autos() {
+    autoTest("**");
+//    autoTest("a**");
+    autoTest("a*(sb|vfd(sdfd|4*)*)|asdfd**\\w\\w*.");
+  }
 }

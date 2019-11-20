@@ -11,6 +11,7 @@ import regularExpressions.regexp.CharacterRegExp;
 import regularExpressions.regexp.ConcatenationRegExp;
 import regularExpressions.regexp.EmptyRegExp;
 import regularExpressions.regexp.GroupRegExp;
+import regularExpressions.regexp.OrRegExp;
 import regularExpressions.regexp.RegExp;
 import regularExpressions.regexp.RegexpVisitor;
 import regularExpressions.regexp.RepeaterRegExp;
@@ -114,10 +115,12 @@ public class RecursiveMatcher implements RegexpVisitor<List<Match>> {
 
   @Override
   public List<Match> visitOrRegexp(List<RegExp> regExps) {
+    RegExp oldOr = new OrRegExp(regExps);
     // for each regexp get all matches and append everything into allMatches
     List<Match> allMatches = regExps.stream()
             .map((RegExp regExp) -> regExp.accept(this))
             .flatMap((List<Match> matches) -> matches.stream())
+            .map((Match match) -> new Match(match.start, match.end, string, oldOr))
             .collect(Collectors.toList());
     return allMatches;
   }
@@ -139,11 +142,14 @@ public class RecursiveMatcher implements RegexpVisitor<List<Match>> {
     List<Match> currentMatches = currentExpansion.accept(this);
     List<Match> allMatches = new ArrayList<>(currentMatches);
     RegexpVisitor<RegExp> concatenator = new ConcatenateWith(regExp);
-    while(!currentMatches.isEmpty()) {
+    int maxIter = string.length();
+    int numIter = 0;
+    while(numIter < maxIter && !currentMatches.isEmpty()) {
       currentExpansion = currentExpansion.accept(concatenator);
       currentMatches = currentExpansion.accept(this);
       // replace the regexp of each match with this repeater
       allMatches.addAll(currentMatches);
+      numIter++;
     }
     List<Match> updatedMatches = allMatches.stream()
             .map((Match match) -> new Match(match.start, match.end, string, oldRepeater))
