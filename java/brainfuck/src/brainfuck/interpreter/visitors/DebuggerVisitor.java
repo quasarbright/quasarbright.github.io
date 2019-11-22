@@ -10,8 +10,9 @@ import java.util.List;
 public class DebuggerVisitor extends InterpreterVisitor implements ParseTreeVisitor<Void> {
     private final String sourceCode;
 
+
     public DebuggerVisitor(String sourceCode) {
-        super(new BrainfuckState());
+        super(new StringBuilder());
         // only works when minified
         this.sourceCode = sourceCode;
     }
@@ -21,23 +22,29 @@ public class DebuggerVisitor extends InterpreterVisitor implements ParseTreeVisi
         int position = state.getPosition();
         List<String> tapeStrings = new ArrayList<>();
         for(int i = 0; i < tape.size(); i++) {
-            int current = tape.get(position);
+            int current = tape.get(i);
             if(i == position) {
                 tapeStrings.add("("+current+")");
             } else {
                 tapeStrings.add(""+current);
             }
         }
+
         String tapeString = String.join(" ", tapeStrings);
 
-        String highlightedCode = sourceCode.substring(0, codePosition) + "("+sourceCode.charAt(codePosition)+")";
+        String highlightedCode = sourceCode.substring(0, codePosition) + "█"+sourceCode.charAt(codePosition)+"█";
         if(codePosition < sourceCode.length()-1) {
             highlightedCode += sourceCode.substring(codePosition+1);
         }
-        System.out.println("=====");
         System.out.println(tapeString);
         System.out.println(highlightedCode);
+        System.out.println("output: "+output.toString());
         System.out.println("=====");
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -63,19 +70,19 @@ public class DebuggerVisitor extends InterpreterVisitor implements ParseTreeVisi
     @Override
     public Void visitMoveLeft(int position) {
         printState(position);
-        return super.visitDecrement(position);
+        return super.visitMoveLeft(position);
     }
 
     @Override
     public Void visitMoveRight(int position) {
         printState(position);
-        return super.visitDecrement(position);
+        return super.visitMoveRight(position);
     }
 
     @Override
     public Void visitInput(int position) {
         printState(position);
-        return super.visitDecrement(position);
+        return super.visitInput(position);
     }
 
     @Override

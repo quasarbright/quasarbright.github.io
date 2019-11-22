@@ -9,12 +9,25 @@ import java.util.List;
 
 public class InterpreterVisitor implements ParseTreeVisitor<Void> {
     final BrainfuckState state;
+    final Appendable output;
+
     public InterpreterVisitor() {
-        this(new BrainfuckState());
+        this(System.out);
     }
 
+
+
     public InterpreterVisitor(BrainfuckState state) {
+        this(state, System.out);
+    }
+
+    public InterpreterVisitor(Appendable output) {
+        this(new BrainfuckState(output), output);
+    }
+
+    public InterpreterVisitor(BrainfuckState state, Appendable output) {
         this.state = state;
+        this.output = output;
     }
 
     @Override

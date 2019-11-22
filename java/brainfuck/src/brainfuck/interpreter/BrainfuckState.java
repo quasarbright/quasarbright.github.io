@@ -1,5 +1,6 @@
 package brainfuck.interpreter;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -11,13 +12,15 @@ public class BrainfuckState {
     private final List<Integer> tape;
     private int position;
     private final Scanner in;
+    private final Appendable output;
 
-    public BrainfuckState() {
+    public BrainfuckState(Appendable output) {
         tape = new ArrayList<>();
         tape.add(0);
         position = 0;
         in = new Scanner(System.in);
         in.useDelimiter("");
+        this.output = output;
     }
 
     private void fillTo() {
@@ -74,7 +77,11 @@ public class BrainfuckState {
      */
     public void output() {
         fillTo();
-        System.out.print((char) (int) tape.get(position));
+        try {
+            output.append((char) (int) tape.get(position));
+        } catch (IOException e) {
+            throw new IllegalStateException("unable to append to output");
+        }
     }
 
     /**
