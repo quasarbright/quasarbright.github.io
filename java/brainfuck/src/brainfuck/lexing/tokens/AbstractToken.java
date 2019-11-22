@@ -2,14 +2,11 @@ package brainfuck.lexing.tokens;
 
 import java.util.Objects;
 
-public class Decrement extends AbstractToken implements Token {
-    public Decrement(int position) {
-        super(position);
-    }
+public abstract class AbstractToken implements Token {
+    private final int position;
 
-    @Override
-    public <R> R accept(TokenVisitor<R> visitor) {
-        return visitor.visitDecrement(getPosition());
+    public AbstractToken(int position) {
+        this.position = position;
     }
 
     @Override
@@ -23,7 +20,7 @@ public class Decrement extends AbstractToken implements Token {
     }
 
     @Override
-    public String toString() {
-        return "-";
+    public int getPosition() {
+        return this.position;
     }
 }

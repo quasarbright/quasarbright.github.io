@@ -1,9 +1,14 @@
 package brainfuck.parsing.parseTree;
 
 public class OutputStatement implements ParseTree {
+    private final int position;
+
+    public OutputStatement(int position) {
+        this.position = position;
+    }
     @Override
     public <R> R accept(ParseTreeVisitor<R> visitor) {
-        return visitor.visitOutput();
+        return visitor.visitOutput(position);
     }
 
     @Override

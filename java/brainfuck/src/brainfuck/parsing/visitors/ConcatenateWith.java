@@ -14,38 +14,38 @@ public class ConcatenateWith implements ParseTreeVisitor<ParseTree> {
     }
 
     @Override
-    public ParseTree visitGroup(List<ParseTree> children) {
-        return new Concatenation(Arrays.asList(new GroupStatement(children), next));
+    public ParseTree visitGroup(int start, int end, List<ParseTree> children) {
+        return new Concatenation(Arrays.asList(new GroupStatement(start, end, children), next));
     }
 
     @Override
-    public ParseTree visitIncrement() {
-        return new Concatenation(Arrays.asList(new IncrementStatement(), next));
+    public ParseTree visitIncrement(int position) {
+        return new Concatenation(Arrays.asList(new IncrementStatement(position), next));
     }
 
     @Override
-    public ParseTree visitDecrement() {
-        return new Concatenation(Arrays.asList(new DecrementStatement(), next));
+    public ParseTree visitDecrement(int position) {
+        return new Concatenation(Arrays.asList(new DecrementStatement(position), next));
     }
 
     @Override
-    public ParseTree visitMoveLeft() {
-        return new Concatenation(Arrays.asList(new MoveLeftStatement(), next));
+    public ParseTree visitMoveLeft(int position) {
+        return new Concatenation(Arrays.asList(new MoveLeftStatement(position), next));
     }
 
     @Override
-    public ParseTree visitMoveRight() {
-        return new Concatenation(Arrays.asList(new MoveRightStatement(), next));
+    public ParseTree visitMoveRight(int position) {
+        return new Concatenation(Arrays.asList(new MoveRightStatement(position), next));
     }
 
     @Override
-    public ParseTree visitInput() {
-        return new Concatenation(Arrays.asList(new InputStatement(), next));
+    public ParseTree visitInput(int position) {
+        return new Concatenation(Arrays.asList(new InputStatement(position), next));
     }
 
     @Override
-    public ParseTree visitOutput() {
-        return new Concatenation(Arrays.asList(new OutputStatement(), next));
+    public ParseTree visitOutput(int position) {
+        return new Concatenation(Arrays.asList(new OutputStatement(position), next));
     }
 
     @Override

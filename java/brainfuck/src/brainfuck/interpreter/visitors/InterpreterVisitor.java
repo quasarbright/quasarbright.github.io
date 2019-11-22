@@ -8,7 +8,7 @@ import brainfuck.parsing.parseTree.ParseTreeVisitor;
 import java.util.List;
 
 public class InterpreterVisitor implements ParseTreeVisitor<Void> {
-    private final BrainfuckState state;
+    final BrainfuckState state;
     public InterpreterVisitor() {
         this(new BrainfuckState());
     }
@@ -18,7 +18,7 @@ public class InterpreterVisitor implements ParseTreeVisitor<Void> {
     }
 
     @Override
-    public Void visitGroup(List<ParseTree> children) {
+    public Void visitGroup(int start, int end, List<ParseTree> children) {
         while(state.getValue() != 0) {
             new Concatenation(children).accept(this);
         }
@@ -26,37 +26,37 @@ public class InterpreterVisitor implements ParseTreeVisitor<Void> {
     }
 
     @Override
-    public Void visitIncrement() {
+    public Void visitIncrement(int position) {
         state.increment();
         return null;
     }
 
     @Override
-    public Void visitDecrement() {
+    public Void visitDecrement(int position) {
         state.decrement();
         return null;
     }
 
     @Override
-    public Void visitMoveLeft() {
+    public Void visitMoveLeft(int position) {
         state.moveLeft();
         return null;
     }
 
     @Override
-    public Void visitMoveRight() {
+    public Void visitMoveRight(int position) {
         state.moveRight();
         return null;
     }
 
     @Override
-    public Void visitInput() {
+    public Void visitInput(int position) {
         state.input();
         return null;
     }
 
     @Override
-    public Void visitOutput() {
+    public Void visitOutput(int position) {
         state.output();
         return null;
     }

@@ -4,15 +4,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class GroupStatement implements ParseTree {
+    private final int start, end;
     private final List<ParseTree> children;
 
-    public GroupStatement(List<ParseTree> children) {
+    public GroupStatement(int start, int end, List<ParseTree> children) {
+        this.start = start;
+        this.end = end;
         this.children = children;
     }
 
     @Override
     public <R> R accept(ParseTreeVisitor<R> visitor) {
-        return visitor.visitGroup(children);
+        return visitor.visitGroup(start, end, children);
     }
 
     @Override

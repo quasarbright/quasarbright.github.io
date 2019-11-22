@@ -2,10 +2,14 @@ package brainfuck.lexing.tokens;
 
 import java.util.Objects;
 
-public class MoveRight implements Token {
+public class MoveRight extends AbstractToken implements Token {
+    public MoveRight(int position) {
+        super(position);
+    }
+
     @Override
     public <R> R accept(TokenVisitor<R> visitor) {
-        return visitor.visitMoveRight();
+        return visitor.visitMoveRight(getPosition());
     }
 
     @Override

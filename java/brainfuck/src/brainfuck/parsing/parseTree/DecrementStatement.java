@@ -1,9 +1,15 @@
 package brainfuck.parsing.parseTree;
 
 public class DecrementStatement implements ParseTree {
+    private final int position;
+
+    public DecrementStatement(int position) {
+        this.position = position;
+    }
+
     @Override
     public <R> R accept(ParseTreeVisitor<R> visitor) {
-        return visitor.visitDecrement();
+        return visitor.visitDecrement(position);
     }
 
     @Override

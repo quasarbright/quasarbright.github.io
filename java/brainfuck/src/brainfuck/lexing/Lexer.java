@@ -13,28 +13,28 @@ public class Lexer {
             Token token;
             switch (current) {
                 case '+':
-                    token = new Increment();
+                    token = new Increment(i);
                     break;
                 case '-':
-                    token = new Decrement();
+                    token = new Decrement(i);
                     break;
                 case '<':
-                    token = new MoveLeft();
+                    token = new MoveLeft(i);
                     break;
                 case '>':
-                    token = new MoveRight();
+                    token = new MoveRight(i);
                     break;
                 case '[':
-                    token = new Open();
+                    token = new Open(i);
                     break;
                 case ']':
-                    token = new Close();
+                    token = new Close(i);
                     break;
                 case ',':
-                    token = new Input();
+                    token = new Input(i);
                     break;
                 case '.':
-                    token = new Output();
+                    token = new Output(i);
                     break;
                 default:
                     token = null;

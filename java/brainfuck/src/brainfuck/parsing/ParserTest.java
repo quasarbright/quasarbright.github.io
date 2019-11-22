@@ -9,12 +9,12 @@ public class ParserTest {
 
     @Test
     public void eachToken() {
-        assertEquals(new IncrementStatement(), Parser.parse("+"));
-        assertEquals(new DecrementStatement(), Parser.parse("-"));
-        assertEquals(new MoveLeftStatement(), Parser.parse("<"));
-        assertEquals(new MoveRightStatement(), Parser.parse(">"));
-        assertEquals(new InputStatement(), Parser.parse(","));
-        assertEquals(new OutputStatement(), Parser.parse("."));
+        assertEquals(new IncrementStatement(0), Parser.parse("+"));
+        assertEquals(new DecrementStatement(0), Parser.parse("-"));
+        assertEquals(new MoveLeftStatement(0), Parser.parse("<"));
+        assertEquals(new MoveRightStatement(0), Parser.parse(">"));
+        assertEquals(new InputStatement(0), Parser.parse(","));
+        assertEquals(new OutputStatement(0), Parser.parse("."));
     }
 
 }

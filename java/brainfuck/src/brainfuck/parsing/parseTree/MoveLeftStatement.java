@@ -1,9 +1,14 @@
 package brainfuck.parsing.parseTree;
 
 public class MoveLeftStatement implements ParseTree {
+    private final int position;
+
+    public MoveLeftStatement(int position) {
+        this.position = position;
+    }
     @Override
     public <R> R accept(ParseTreeVisitor<R> visitor) {
-        return visitor.visitMoveLeft();
+        return visitor.visitMoveLeft(position);
     }
 
     @Override

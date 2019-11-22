@@ -2,10 +2,14 @@ package brainfuck.lexing.tokens;
 
 import java.util.Objects;
 
-public class Increment implements Token {
+public class Increment extends AbstractToken implements Token {
+    public Increment(int position) {
+        super(position);
+    }
+
     @Override
     public <R> R accept(TokenVisitor<R> visitor) {
-        return visitor.visitIncrement();
+        return visitor.visitIncrement(getPosition());
     }
 
     @Override

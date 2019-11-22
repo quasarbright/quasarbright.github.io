@@ -5,6 +5,7 @@ import brainfuck.lexing.tokens.Token;
 import brainfuck.lexing.tokens.TokenVisitor;
 import brainfuck.parsing.parseTree.*;
 import brainfuck.parsing.visitors.ConcatenateWith;
+import brainfuck.parsing.visitors.GetEndPosition;
 import brainfuck.parsing.visitors.Groupify;
 import utils.MyStream;
 
@@ -21,34 +22,34 @@ public class Parser {
             Token current = stream.peek();
             ParseTree next = current.accept(new TokenVisitor<ParseTree>() {
                 @Override
-                public ParseTree visitIncrement() {
-                    return new IncrementStatement();
+                public ParseTree visitIncrement(int position) {
+                    return new IncrementStatement(position);
                 }
 
                 @Override
-                public ParseTree visitDecrement() {
-                    return new DecrementStatement();
+                public ParseTree visitDecrement(int position) {
+                    return new DecrementStatement(position);
                 }
 
                 @Override
-                public ParseTree visitMoveLeft() {
-                    return new MoveLeftStatement();
+                public ParseTree visitMoveLeft(int position) {
+                    return new MoveLeftStatement(position);
                 }
 
                 @Override
-                public ParseTree visitMoveRight() {
-                    return new MoveRightStatement();
+                public ParseTree visitMoveRight(int position) {
+                    return new MoveRightStatement(position);
                 }
 
                 @Override
-                public ParseTree visitOpen() {
+                public ParseTree visitOpen(int position) {
                     stream.advance();
                     ParseTree children = parse(stream, parenDepth+1);
-                    return children.accept(new Groupify());
+                    return children.accept(new Groupify(position));
                 }
 
                 @Override
-                public ParseTree visitClose() {
+                public ParseTree visitClose(int position) {
                     if(parenDepth < 1) {
                         throw new IllegalStateException("unexpected close");
                     }
@@ -56,13 +57,13 @@ public class Parser {
                 }
 
                 @Override
-                public ParseTree visitInput() {
-                    return new InputStatement();
+                public ParseTree visitInput(int position) {
+                    return new InputStatement(position);
                 }
 
                 @Override
-                public ParseTree visitOutput() {
-                    return new OutputStatement();
+                public ParseTree visitOutput(int position) {
+                    return new OutputStatement(position);
                 }
             });
 
