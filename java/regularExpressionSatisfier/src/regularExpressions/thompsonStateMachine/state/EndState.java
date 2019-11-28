@@ -3,15 +3,10 @@ package regularExpressions.thompsonStateMachine.state;
 import java.util.HashSet;
 import java.util.Set;
 
-public class EndState implements State {
+public class EndState extends AbstractState implements State {
   @Override
   public <R> R accept(StateVisitor<R> visitor) {
     return visitor.visitEndState(this);
-  }
-
-  @Override
-  public Set<State> getNextNonemptyStates() {
-    return new HashSet<>();
   }
 
   @Override
@@ -32,5 +27,10 @@ public class EndState implements State {
   @Override
   public boolean replaceNextState(State target, State newState) {
     return false;
+  }
+
+  @Override
+  public EndState getEnd() {
+    return this;
   }
 }

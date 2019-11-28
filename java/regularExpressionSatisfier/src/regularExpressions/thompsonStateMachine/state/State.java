@@ -52,4 +52,11 @@ public interface State {
    * @return whether the replacement occurred
    */
   boolean replaceNextState(State target, State newState);
+
+  /**
+   * Get the end state reachable from this state.
+   *
+   * @return the end state reachable from this state
+   */
+  EndState getEnd();
 }

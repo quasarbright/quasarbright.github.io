@@ -1,13 +1,14 @@
 package regularExpressions.thompsonStateMachine.state;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class EmptyState implements State {
+public class EmptyState extends AbstractState implements State {
   private Set<State> nextStates;
 
   public EmptyState() {
-    nextStates = new HashSet<>();
+    nextStates = new HashSet<>(Collections.singleton(new EndState()));
   }
 
   @Override
@@ -23,10 +24,6 @@ public class EmptyState implements State {
   @Override
   public Set<State> getNextStates() {
     return new HashSet<>(nextStates);
-  }
-
-  @Override
-  public void setEnd(State newEnd) {
   }
 
   @Override

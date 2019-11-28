@@ -9,7 +9,7 @@ import java.util.Set;
 /**
  * A Finite State Automaton state with a single outgoing character transition.
  */
-public class CharacterState implements State {
+public class CharacterState extends AbstractState implements State {
   private State nextState;
   private final char c;
 
@@ -18,9 +18,6 @@ public class CharacterState implements State {
     nextState = new EndState();
   }
 
-  private Set<State> singlet(State s) {
-    return new HashSet<>(Collections.singletonList(s));
-  }
 
   @Override
   public <R> R accept(StateVisitor<R> visitor) {
@@ -28,18 +25,8 @@ public class CharacterState implements State {
   }
 
   @Override
-  public Set<State> getNextNonemptyStates() {
-    return null;
-  }
-
-  @Override
   public Set<State> getNextStates() {
-    return singlet(nextState);
-  }
-
-  @Override
-  public void setEnd(State newEnd) {
-    nextState = newEnd;
+    return Collections.singleton(nextState);
   }
 
   @Override

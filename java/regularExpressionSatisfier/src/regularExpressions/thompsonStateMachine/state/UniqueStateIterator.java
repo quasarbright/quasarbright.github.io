@@ -25,16 +25,21 @@ public class UniqueStateIterator implements Iterator<State> {
   @Override
   public State next() {
     if(!hasNext()) {
-      throw new IllegalStateException("called next with no next");
+      throw new IllegalStateException();
     }
-    State next = workList.peek();
-    seenStates.add(next);
-    Set<State> nextStates = next.getNextStates();
-    Set<State> unseenStates = nextStates.stream()
-            .filter((State s) -> !seenStates.contains(s))
-            .collect(Collectors.toSet());
-    workList.addAll(unseenStates);
-    return next;
+
+    // get next state and note that we've seen it
+    State ans = workList.pop();
+    seenStates.add(ans);
+
+    // add child states if we haven't already seen them
+    ans.getNextStates().forEach((State child) -> {
+      if(!seenStates.contains(child)) {
+        workList.add(child);
+      }
+    });
+
+    return ans;
   }
 
   @Override
