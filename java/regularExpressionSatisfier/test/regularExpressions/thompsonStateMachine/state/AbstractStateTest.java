@@ -25,7 +25,7 @@ public class AbstractStateTest {
     try {
       state.setEnd(newEnd);
       fail();
-    } catch(UnsupportedOperationException e) {}
+    } catch(UnsupportedOperationException ignored) {}
   }
 
   @Test
@@ -48,8 +48,8 @@ public class AbstractStateTest {
 
     Set<State> actual = new HashSet<>();
     new UniqueStateIterator(a).forEachRemaining(actual::add);
-    assertEquals(new HashSet<State>(Arrays.asList(a, repeater, b, afterB, c, end)), actual);
-    
+    assertEquals(new HashSet<>(Arrays.asList(a, repeater, b, afterB, c, end)), actual);
+
     assertEquals(end, a.getEnd());
     assertEquals(end, repeater.getEnd());
     assertEquals(end, b.getEnd());
