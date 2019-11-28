@@ -17,11 +17,6 @@ public class EmptyState extends AbstractState implements State {
   }
 
   @Override
-  public Set<State> getNextNonemptyStates() {
-    return null;
-  }
-
-  @Override
   public Set<State> getNextStates() {
     return new HashSet<>(nextStates);
   }

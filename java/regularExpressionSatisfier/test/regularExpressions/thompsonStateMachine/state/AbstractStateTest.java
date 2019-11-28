@@ -57,4 +57,49 @@ public class AbstractStateTest {
     assertEquals(end, c.getEnd());
     assertEquals(end, end.getEnd());
   }
+
+  @Test
+  public void nextNonemptySimple() {
+    State state = new CharacterState('a');
+    State empty = new EmptyState();
+    State end = new EndState();
+    state.setEnd(empty);
+    empty.setEnd(end);
+    assertEquals(new HashSet<>(Collections.singletonList(end)), state.getNextNonemptyStates());
+    assertEquals(new HashSet<>(Collections.singletonList(end)), empty.getNextNonemptyStates());
+    assertEquals(new HashSet<>(), end.getNextNonemptyStates());
+  }
+
+  @Test
+  public void nextNonemptyComplex() {
+    State state = new EmptyState();
+    State a = new CharacterState('a');
+    State b = new CharacterState('b');
+    State c = new CharacterState('c');
+    State d = new CharacterState('d');
+    State empty = new EmptyState();
+    State e = new CharacterState('e');
+    State end = new EndState();
+
+    state.setEnd(a);
+    state.addNextState(b);
+    state.addNextState(c);
+    state.addNextState(empty);
+    empty.setEnd(d);
+
+    a.setEnd(e);
+    b.setEnd(end);
+    c.setEnd(end);
+    d.setEnd(end);
+    e.setEnd(end);
+
+    assertEquals(new HashSet<>(Arrays.asList(a, b, c, d)), state.getNextNonemptyStates());
+    assertEquals(new HashSet<>(Collections.singleton(e)), a.getNextNonemptyStates());
+    assertEquals(new HashSet<>(Collections.singleton(end)), b.getNextNonemptyStates());
+    assertEquals(new HashSet<>(Collections.singleton(end)), c.getNextNonemptyStates());
+    assertEquals(new HashSet<>(Collections.singleton(end)), d.getNextNonemptyStates());
+    assertEquals(new HashSet<>(Collections.singleton(end)), e.getNextNonemptyStates());
+    assertEquals(new HashSet<>(Collections.singleton(d)), empty.getNextNonemptyStates());
+    assertEquals(new HashSet<>(), end.getNextNonemptyStates());
+  }
 }

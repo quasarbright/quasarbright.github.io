@@ -15,6 +15,11 @@ public class EndState extends AbstractState implements State {
   }
 
   @Override
+  public Set<State> getNextNonemptyStates() {
+    return new HashSet<>();
+  }
+
+  @Override
   public void setEnd(State newEnd) {
     throw new UnsupportedOperationException("Cannot set end of end state");
   }
