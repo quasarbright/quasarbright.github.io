@@ -3,34 +3,44 @@ package regularExpressions.thompsonStateMachine.state;
 import java.util.HashSet;
 import java.util.Set;
 
-public class EndState implements State {
+public class EmptyState implements State {
+  private Set<State> nextStates;
+
+  public EmptyState() {
+    nextStates = new HashSet<>();
+  }
+
   @Override
   public <R> R accept(StateVisitor<R> visitor) {
-    return visitor.visitEndState(this);
+    return visitor.visitEmptyState(this);
   }
 
   @Override
   public Set<State> getNextNonemptyStates() {
-    return new HashSet<>();
+    return null;
   }
 
   @Override
   public Set<State> getNextStates() {
-    return new HashSet<>();
+    return new HashSet<>(nextStates);
   }
 
   @Override
   public void setEnd(State newEnd) {
-    throw new UnsupportedOperationException("Cannot set end of end state");
   }
 
   @Override
   public void addNextState(State s) {
-    throw new UnsupportedOperationException("Cannot add state to end state");
+    nextStates.add(s);
   }
 
   @Override
   public boolean replaceNextState(State target, State newState) {
-    return false;
+    if(nextStates.remove(target)) {
+      nextStates.add(newState);
+      return true;
+    } else {
+      return false;
+    }
   }
 }
