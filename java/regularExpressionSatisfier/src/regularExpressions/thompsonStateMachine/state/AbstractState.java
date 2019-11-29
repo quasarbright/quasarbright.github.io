@@ -50,11 +50,11 @@ public abstract class AbstractState implements State {
         emptiesSeen.add(nextEmpty);
         // only add children if they are not seen empty states
         // prevents infinite looping
-        next.getNextStates().forEach((State child) -> {
-          if(!emptiesSeen.contains(child)) {
+        for (State child : next.getNextStates()) {
+          if (!emptiesSeen.contains(child)) {
             workList.add(child);
           }
-        });
+        }
       } else {
         // next is non-empty
         // add it to ans and don't push its children on the stack
@@ -69,8 +69,8 @@ public abstract class AbstractState implements State {
   public void setEnd(State newEnd) {
     Iterator<State> iterator = new UniqueStateIterator(this);
     iterator.forEachRemaining((State s) -> {
-      s.getNextStates().forEach((State child) -> {
-        boolean childIsEnd = child.accept(new StateVisitor<Boolean>() {
+      for (State child : s.getNextStates()) {
+        boolean childIsEnd = child.accept(new StateVisitor<>() {
           @Override
           public Boolean visitCharacterState(CharacterState s, char c) {
             return false;
@@ -86,10 +86,10 @@ public abstract class AbstractState implements State {
             return true;
           }
         });
-        if(childIsEnd) {
+        if (childIsEnd) {
           s.replaceNextState(child, newEnd);
         }
-      });
+      }
     });
   }
 

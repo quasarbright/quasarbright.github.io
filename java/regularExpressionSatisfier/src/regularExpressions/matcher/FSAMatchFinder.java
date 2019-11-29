@@ -140,7 +140,9 @@ public class FSAMatchFinder implements MatchFinder {
 
     // if we can finish a match right now by transitioning to an end state, add it to the matches
     Set<EndState> endStates = endStates(currentNonemptyStates);
-    endStates.forEach((EndState s) -> matches.add(new Match(start, end, target, regExp)));
+    for (EndState s : endStates) {
+      matches.add(new Match(start, end, target, regExp));
+    }
 
     return matches;
   }

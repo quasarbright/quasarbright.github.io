@@ -33,19 +33,12 @@ public class UniqueStateIterator implements Iterator<State> {
     seenStates.add(ans);
 
     // add child states if we haven't already seen them
-    ans.getNextStates().forEach((State child) -> {
-      if(!seenStates.contains(child)) {
+    for (State child : ans.getNextStates()) {
+      if (!seenStates.contains(child)) {
         workList.add(child);
       }
-    });
+    }
 
     return ans;
-  }
-
-  @Override
-  public void forEachRemaining(Consumer<? super State> action) {
-    while(hasNext()) {
-      action.accept(next());
-    }
   }
 }

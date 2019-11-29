@@ -18,7 +18,7 @@ public abstract class RegExpMatcherTest {
 
   private void passMatch(int start, int end, String target, String re) {
     RegExp regExp = Parser.parse(re);
-    assertEquals(""+start+" "+end+" "+target+" "+re, Optional.of(new Match(start, end, target, regExp)), factory().match(target, regExp));
+    assertEquals(""+start+" "+end+" "+target+" "+regExp, Optional.of(new Match(start, end, target, regExp)), factory().match(target, regExp));
   }
 
   private void passFullMatch(String target, String re) {
@@ -102,6 +102,8 @@ public abstract class RegExpMatcherTest {
 
   @Test
   public void big() {
+    String re = "a*@a*";
+    passFullMatch("aaaaaa@aaa", re);
     String emailRE = "\\w*@\\w*.com";
     passFullMatch("kyoshikage@gmail.com", emailRE);
     passFullMatch("@.com", emailRE);
@@ -128,9 +130,14 @@ public abstract class RegExpMatcherTest {
   }
 
   @Test
+  public void testFromAuto() {
+    passFullMatch("aasb", "a*(sb|vfd(sdfd|4*)*)|asdfd**w*.");
+  }
+
+  @Test
   public void autos() {
     autoTest("**");
 //    autoTest("a**");
-    autoTest("a*(sb|vfd(sdfd|4*)*)|asdfd**\\w\\w*.");
+    autoTest("a*(sb|vfd(sdfd|4*)*)|asdfd**w*.");
   }
 }

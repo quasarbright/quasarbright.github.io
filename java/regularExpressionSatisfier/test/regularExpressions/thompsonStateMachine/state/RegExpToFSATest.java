@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import regularExpressions.parsing.Parser;
@@ -20,6 +21,7 @@ public class RegExpToFSATest {
    */
   State fromRE(String re) {
     RegExp regExp = Parser.parse(re);
+    System.out.println(regExp);
     return regExp.accept(new RegExpToFSA());
   }
 
@@ -31,8 +33,24 @@ public class RegExpToFSATest {
    */
   Set<State> allStates(State state) {
     Set<State> ans = new HashSet<>();
-    new UniqueStateIterator(state).forEachRemaining(ans::add);
+
+    Iterator<State> iterator = new UniqueStateIterator(state);
+    while(iterator.hasNext()) {
+      ans.add(iterator.next());
+    }
     return ans;
+  }
+
+  /**
+   * Make sure all states in the FSA have the same end.
+   *
+   * @param state the starting state
+   */
+  private void assertAllSameEnd(State state) {
+    EndState end = state.getEnd();
+    for(State s: allStates(state)) {
+      assertSame(s.toString(), s.getEnd(), end);
+    }
   }
 
   /**
@@ -51,6 +69,7 @@ public class RegExpToFSATest {
     assertEquals(new HashSet<>(Arrays.asList(state, state.getEnd())), allStates(state));
     assertTrue(state instanceof CharacterState);
     assertEquals(1, numEdges(state));
+    assertAllSameEnd(state);
   }
 
   @Test
@@ -59,6 +78,7 @@ public class RegExpToFSATest {
     assertEquals(new HashSet<>(Arrays.asList(state, state.getEnd())), allStates(state));
     assertTrue(state instanceof EmptyState);
     assertEquals(1, numEdges(state));
+    assertAllSameEnd(state);
   }
 
   @Test
@@ -67,7 +87,7 @@ public class RegExpToFSATest {
     assertEquals(4, state.getNextStates().size());
     assertEquals(10, allStates(state).size());
     assertEquals(12, numEdges(state));
-    System.out.println("breakpoint");
+    assertAllSameEnd(state);
   }
 
   @Test
@@ -76,7 +96,7 @@ public class RegExpToFSATest {
     assertEquals(2, state.getNextStates().size());
     assertEquals(4, allStates(state).size());
     assertEquals(5, numEdges(state));
-    System.out.println("breakpoint");
+    assertAllSameEnd(state);
   }
 
   @Test
@@ -85,7 +105,7 @@ public class RegExpToFSATest {
     assertEquals(1, state.getNextStates().size());
     assertEquals(4, allStates(state).size());
     assertEquals(3, numEdges(state));
-    System.out.println("breakpoint");
+    assertAllSameEnd(state);
   }
 
   @Test
@@ -96,7 +116,9 @@ public class RegExpToFSATest {
     State state2 = fromRE("(a|b)*");
     assertEquals(8, allStates(state2).size());
     assertEquals(10, numEdges(state2));
-    System.out.println("breakpoint");
+    assertAllSameEnd(state);
+    assertAllSameEnd(state2);
+
   }
 
   @Test
@@ -104,7 +126,7 @@ public class RegExpToFSATest {
     State state = fromRE("a**");
     assertEquals(6, allStates(state).size());
     assertEquals(9, numEdges(state));
-    System.out.println("breakpoint");
+    assertAllSameEnd(state);
   }
 
   @Test
@@ -112,8 +134,49 @@ public class RegExpToFSATest {
     State state = fromRE("(a*b|c)*d*");
     assertEquals(14, allStates(state).size());
     assertEquals(20, numEdges(state));
-    EndState end = state.getEnd();
-    allStates(state).forEach((State s) -> assertSame(s.getEnd(), end));
-    System.out.println("breakpoint");
+    assertAllSameEnd(state);
+  }
+
+  @Test
+  public void repeaterConcatenation() {
+    State state1 = fromRE("a*@");
+    assertEquals(5, allStates(state1).size());
+    assertEquals(6, numEdges(state1));
+    assertAllSameEnd(state1);
+  }
+
+  @Test
+  public void repeaterConcatenation2() {
+    State state2 = fromRE("a*@b*");
+    assertEquals(8, allStates(state2).size());
+    assertEquals(11, numEdges(state2));
+    assertAllSameEnd(state2);
+  }
+
+  @Test
+  public void repeaterConcatenation3() {
+
+    State state3 = fromRE("a*@b*c");
+    assertEquals(9, allStates(state3).size());
+    assertEquals(12, numEdges(state3));
+    assertAllSameEnd(state3);
+  }
+
+  @Test
+  public void repeaterConcatenation4() {
+    State state4 = fromRE("\\w*@\\w*.com");
+    assertAllSameEnd(state4);
+  }
+
+  @Test
+  public void weirdRegexFromAuto() {
+    State state = fromRE("a*(sb|vfd(sdfd|4*)*)|asdfd**w*.");
+    assertAllSameEnd(state);
+  }
+
+  @Test
+  public void repeaterConcatenation5() {
+    State state5 = fromRE("()*abc");
+    assertAllSameEnd(state5);
   }
 }

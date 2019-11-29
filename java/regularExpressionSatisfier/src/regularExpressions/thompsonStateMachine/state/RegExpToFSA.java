@@ -17,9 +17,11 @@ public class RegExpToFSA implements RegexpVisitor<State> {
       return new EmptyState();
     } else {
       State state = regExps.get(0).accept(this);
+      State lastState = state;
       for(int i = 1; i < regExps.size(); i++) {
         State nextState = regExps.get(i).accept(this);
-        state.setEnd(nextState);
+        lastState.setEnd(nextState);
+        lastState = nextState;
       }
       return state;
     }
@@ -38,16 +40,16 @@ public class RegExpToFSA implements RegexpVisitor<State> {
       return state;
     } else {
       State current = regExps.get(0).accept(this);
-      State endEmpty = new EmptyState();
-      endEmpty.setEnd(end);
       state.setEnd(current);
+      State endEmpty = new EmptyState();
       current.setEnd(endEmpty);
+      endEmpty.setEnd(end);
       for(int i = 1; i < regExps.size(); i++) {
         current = regExps.get(i).accept(this);
         endEmpty = new EmptyState();
+        current.setEnd(endEmpty);
         endEmpty.setEnd(end);
         state.addNextState(current);
-        current.setEnd(endEmpty);
       }
       return state;
     }
@@ -62,6 +64,7 @@ public class RegExpToFSA implements RegexpVisitor<State> {
 
     start.setEnd(content);
     content.setEnd(after);
+    after.setEnd(end);
     after.addNextState(content);
     start.addNextState(end);
 

@@ -5,25 +5,39 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import static org.junit.Assert.*;
 
 public class AbstractStateTest {
+  private void allSameEnd(State state) {
+    EndState end = state.getEnd();
+    Iterator<State> iterator = new UniqueStateIterator(state);
+    while(iterator.hasNext()) {
+      State s = iterator.next();
+      assertEquals(s.getEnd(), end);
+    }
+  }
+
   @Test
   public void setEndSimple() {
     State state = new CharacterState('a');
     State newEnd = new CharacterState('b');
     state.setEnd(newEnd);
     assertEquals(Collections.singleton(newEnd), state.getNextStates());
+    allSameEnd(state);
 
-    state = new EmptyState();
-    state.setEnd(newEnd);
-    assertEquals(Collections.singleton(newEnd), state.getNextStates());
+    State state1 = new EmptyState();
+    State newEnd1 = new CharacterState('c');
+    state1.setEnd(newEnd1);
+    assertEquals(Collections.singleton(newEnd1), state1.getNextStates());
+    allSameEnd(state1);
 
-    state = new EndState();
+    State state2 = new EndState();
+    allSameEnd(state2);
     try {
-      state.setEnd(newEnd);
+      state2.setEnd(newEnd);
       fail();
     } catch(UnsupportedOperationException ignored) {}
   }
@@ -56,6 +70,8 @@ public class AbstractStateTest {
     assertEquals(end, afterB.getEnd());
     assertEquals(end, c.getEnd());
     assertEquals(end, end.getEnd());
+    allSameEnd(a);
+
   }
 
   @Test
@@ -68,6 +84,7 @@ public class AbstractStateTest {
     assertEquals(new HashSet<>(Collections.singletonList(end)), state.getNextNonemptyStates());
     assertEquals(new HashSet<>(Collections.singletonList(end)), empty.getNextNonemptyStates());
     assertEquals(new HashSet<>(), end.getNextNonemptyStates());
+    allSameEnd(state);
   }
 
   @Test
@@ -101,5 +118,6 @@ public class AbstractStateTest {
     assertEquals(new HashSet<>(Collections.singleton(end)), e.getNextNonemptyStates());
     assertEquals(new HashSet<>(Collections.singleton(d)), empty.getNextNonemptyStates());
     assertEquals(new HashSet<>(), end.getNextNonemptyStates());
+    allSameEnd(state);
   }
 }
