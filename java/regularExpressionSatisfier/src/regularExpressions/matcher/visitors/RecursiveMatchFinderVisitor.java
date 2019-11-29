@@ -3,7 +3,6 @@ package regularExpressions.matcher.visitors;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import regularExpressions.matcher.Match;
@@ -20,10 +19,10 @@ import regularExpressions.visitors.ConcatenateWith;
 /**
  * Return all possible matches.
  */
-public class RecursiveMatcher implements RegexpVisitor<List<Match>> {
+public class RecursiveMatchFinderVisitor implements RegexpVisitor<List<Match>> {
   private final String string;
 
-  public RecursiveMatcher(String string) {
+  public RecursiveMatchFinderVisitor(String string) {
     this.string = string;
   }
 
@@ -96,7 +95,7 @@ public class RecursiveMatcher implements RegexpVisitor<List<Match>> {
         String newString = afterMatch(firstMatch);
         // this is all the matches that can follow first match
         // TODO get rid of this hard-coded constructor
-        List<Match> restMatches = new ConcatenationRegExp(rest).accept(new RecursiveMatcher(newString));
+        List<Match> restMatches = new ConcatenationRegExp(rest).accept(new RecursiveMatchFinderVisitor(newString));
         // this takes restMatches and replaces the rest's start, end, and regexp with the combined version
         // assumes matches always start at 0
         List<Match> concatenatedMatches = restMatches.stream()

@@ -12,11 +12,13 @@ import regularExpressions.satisfier.visitors.SimpleSatisfier;
 
 import static org.junit.Assert.*;
 
-public class RegExpMatcherTest {
+public abstract class RegExpMatcherTest {
+
+  protected abstract RegExpMatcher factory();
 
   private void passMatch(int start, int end, String target, String re) {
     RegExp regExp = Parser.parse(re);
-    assertEquals(Optional.of(new Match(start, end, target, regExp)), RegExpMatcher.match(target, regExp));
+    assertEquals(""+start+" "+end+" "+target+" "+re, Optional.of(new Match(start, end, target, regExp)), factory().match(target, regExp));
   }
 
   private void passFullMatch(String target, String re) {
@@ -24,7 +26,7 @@ public class RegExpMatcherTest {
   }
 
   private void failMatch(String target, String re) {
-    assertTrue(RegExpMatcher.match(target, re).isEmpty());
+    assertTrue(factory().match(target, re).isEmpty());
   }
 
   /**
