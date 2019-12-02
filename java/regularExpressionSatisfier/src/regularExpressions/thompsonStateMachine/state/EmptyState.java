@@ -8,7 +8,7 @@ public class EmptyState extends AbstractState implements State {
   private Set<State> nextStates;
 
   public EmptyState() {
-    nextStates = new HashSet<>(Collections.singleton(new EndState()));
+    nextStates = new HashSet<>();
   }
 
   @Override
