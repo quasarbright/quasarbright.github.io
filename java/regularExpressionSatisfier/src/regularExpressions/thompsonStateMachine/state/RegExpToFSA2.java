@@ -12,6 +12,7 @@ public class RegExpToFSA2 implements RegexpVisitor<FiniteStateAutomaton> {
     start.setEnd(end);
     return new FiniteStateAutomaton(start, end);
   }
+
   @Override
   public FiniteStateAutomaton visitCharacterRegExp(char c) {
     State start = new CharacterState(c);
@@ -62,7 +63,14 @@ public class RegExpToFSA2 implements RegexpVisitor<FiniteStateAutomaton> {
 
   @Override
   public FiniteStateAutomaton visitRepeaterRegExp(RegExp regExp) {
-    /// left off here
+    FiniteStateAutomaton content = regExp.accept(this);
+    State start = new EmptyState();
+    start.addNextState(content.start);
+    EmptyState end = new EmptyState();
+    content.end.addNextState(end);
+    content.end.addNextState(content.start);
+    start.addNextState(end);
+    return new FiniteStateAutomaton(start, end);
   }
 
   @Override
