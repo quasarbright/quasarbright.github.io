@@ -88,7 +88,6 @@ public class Parser {
       RegExp finalRegExp = regExp;
       final Boolean[] encounteredClose = {false};
       final Boolean[] shouldAdvance = {true};
-      /// left off here investigating big fail
 
       regExp = token.accept(new TokenVisitor<RegExp>() {
         private RegExp concat(RegExp next) {
