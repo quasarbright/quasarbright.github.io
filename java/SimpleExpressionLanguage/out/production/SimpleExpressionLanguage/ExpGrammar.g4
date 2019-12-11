@@ -16,13 +16,22 @@ options {
 
 expr: '('
     op=OPERATOR
-    left=expr
-    right=expr
+    args=exprList
     ')' # Call
-    | val=INT # Atomic;
+    | val=NUMBER # Atomic;
 
-INT : DIGIT+;
-fragment DIGIT : [0-9];
+exprList: first=expr rest=exprList # Cons
+    | # Empty
+    ;
+
+NUMBER:
+    INT
+    | '-'? INT+ '.' INT+
+    ;
+
+INT: DIGIT+;
+
+DIGIT: [0-9]+;
 
 OPERATOR: ADD | SUB | MUL | DIV;
 ADD: '+';

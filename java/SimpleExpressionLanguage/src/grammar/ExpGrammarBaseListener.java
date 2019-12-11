@@ -39,6 +39,30 @@ public class ExpGrammarBaseListener implements ExpGrammarListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitAtomic(ExpGrammarParser.AtomicContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCons(ExpGrammarParser.ConsContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCons(ExpGrammarParser.ConsContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterEmpty(ExpGrammarParser.EmptyContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitEmpty(ExpGrammarParser.EmptyContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

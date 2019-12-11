@@ -28,4 +28,18 @@ public interface ExpGrammarVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitAtomic(ExpGrammarParser.AtomicContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code Cons}
+	 * labeled alternative in {@link ExpGrammarParser#exprList}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCons(ExpGrammarParser.ConsContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code Empty}
+	 * labeled alternative in {@link ExpGrammarParser#exprList}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitEmpty(ExpGrammarParser.EmptyContext ctx);
 }

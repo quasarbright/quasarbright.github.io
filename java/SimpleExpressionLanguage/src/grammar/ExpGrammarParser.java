@@ -21,25 +21,27 @@ public class ExpGrammarParser extends Parser {
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		T__0=1, T__1=2, INT=3, OPERATOR=4, ADD=5, SUB=6, MUL=7, DIV=8, WHITESPACE=9;
+		T__0=1, T__1=2, NUMBER=3, INT=4, DIGIT=5, OPERATOR=6, ADD=7, SUB=8, MUL=9, 
+		DIV=10, WHITESPACE=11;
 	public static final int
-		RULE_expr = 0;
+		RULE_expr = 0, RULE_exprList = 1;
 	private static String[] makeRuleNames() {
 		return new String[] {
-			"expr"
+			"expr", "exprList"
 		};
 	}
 	public static final String[] ruleNames = makeRuleNames();
 
 	private static String[] makeLiteralNames() {
 		return new String[] {
-			null, "'('", "')'", null, null, "'+'", "'-'", "'*'", "'/'"
+			null, "'('", "')'", null, null, null, null, "'+'", "'-'", "'*'", "'/'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
-			null, null, null, "INT", "OPERATOR", "ADD", "SUB", "MUL", "DIV", "WHITESPACE"
+			null, null, null, "NUMBER", "INT", "DIGIT", "OPERATOR", "ADD", "SUB", 
+			"MUL", "DIV", "WHITESPACE"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -109,14 +111,10 @@ public class ExpGrammarParser extends Parser {
 	}
 	public static class CallContext extends ExprContext {
 		public Token op;
-		public ExprContext left;
-		public ExprContext right;
+		public ExprListContext args;
 		public TerminalNode OPERATOR() { return getToken(ExpGrammarParser.OPERATOR, 0); }
-		public List<ExprContext> expr() {
-			return getRuleContexts(ExprContext.class);
-		}
-		public ExprContext expr(int i) {
-			return getRuleContext(ExprContext.class,i);
+		public ExprListContext exprList() {
+			return getRuleContext(ExprListContext.class,0);
 		}
 		public CallContext(ExprContext ctx) { copyFrom(ctx); }
 		@Override
@@ -135,7 +133,7 @@ public class ExpGrammarParser extends Parser {
 	}
 	public static class AtomicContext extends ExprContext {
 		public Token val;
-		public TerminalNode INT() { return getToken(ExpGrammarParser.INT, 0); }
+		public TerminalNode NUMBER() { return getToken(ExpGrammarParser.NUMBER, 0); }
 		public AtomicContext(ExprContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
@@ -156,31 +154,120 @@ public class ExpGrammarParser extends Parser {
 		ExprContext _localctx = new ExprContext(_ctx, getState());
 		enterRule(_localctx, 0, RULE_expr);
 		try {
-			setState(9);
+			setState(10);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case T__0:
 				_localctx = new CallContext(_localctx);
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(2);
-				match(T__0);
-				setState(3);
-				((CallContext)_localctx).op = match(OPERATOR);
 				setState(4);
-				((CallContext)_localctx).left = expr();
+				match(T__0);
 				setState(5);
-				((CallContext)_localctx).right = expr();
+				((CallContext)_localctx).op = match(OPERATOR);
 				setState(6);
+				((CallContext)_localctx).args = exprList();
+				setState(7);
 				match(T__1);
 				}
 				break;
-			case INT:
+			case NUMBER:
 				_localctx = new AtomicContext(_localctx);
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(8);
-				((AtomicContext)_localctx).val = match(INT);
+				setState(9);
+				((AtomicContext)_localctx).val = match(NUMBER);
+				}
+				break;
+			default:
+				throw new NoViableAltException(this);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class ExprListContext extends ParserRuleContext {
+		public ExprListContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_exprList; }
+	 
+		public ExprListContext() { }
+		public void copyFrom(ExprListContext ctx) {
+			super.copyFrom(ctx);
+		}
+	}
+	public static class ConsContext extends ExprListContext {
+		public ExprContext first;
+		public ExprListContext rest;
+		public ExprContext expr() {
+			return getRuleContext(ExprContext.class,0);
+		}
+		public ExprListContext exprList() {
+			return getRuleContext(ExprListContext.class,0);
+		}
+		public ConsContext(ExprListContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ExpGrammarListener ) ((ExpGrammarListener)listener).enterCons(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ExpGrammarListener ) ((ExpGrammarListener)listener).exitCons(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof ExpGrammarVisitor ) return ((ExpGrammarVisitor<? extends T>)visitor).visitCons(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	public static class EmptyContext extends ExprListContext {
+		public EmptyContext(ExprListContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ExpGrammarListener ) ((ExpGrammarListener)listener).enterEmpty(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ExpGrammarListener ) ((ExpGrammarListener)listener).exitEmpty(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof ExpGrammarVisitor ) return ((ExpGrammarVisitor<? extends T>)visitor).visitEmpty(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+
+	public final ExprListContext exprList() throws RecognitionException {
+		ExprListContext _localctx = new ExprListContext(_ctx, getState());
+		enterRule(_localctx, 2, RULE_exprList);
+		try {
+			setState(16);
+			_errHandler.sync(this);
+			switch (_input.LA(1)) {
+			case T__0:
+			case NUMBER:
+				_localctx = new ConsContext(_localctx);
+				enterOuterAlt(_localctx, 1);
+				{
+				setState(12);
+				((ConsContext)_localctx).first = expr();
+				setState(13);
+				((ConsContext)_localctx).rest = exprList();
+				}
+				break;
+			case T__1:
+				_localctx = new EmptyContext(_localctx);
+				enterOuterAlt(_localctx, 2);
+				{
 				}
 				break;
 			default:
@@ -199,10 +286,12 @@ public class ExpGrammarParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\13\16\4\2\t\2\3\2"+
-		"\3\2\3\2\3\2\3\2\3\2\3\2\5\2\f\n\2\3\2\2\2\3\2\2\2\2\r\2\13\3\2\2\2\4"+
-		"\5\7\3\2\2\5\6\7\6\2\2\6\7\5\2\2\2\7\b\5\2\2\2\b\t\7\4\2\2\t\f\3\2\2\2"+
-		"\n\f\7\5\2\2\13\4\3\2\2\2\13\n\3\2\2\2\f\3\3\2\2\2\3\13";
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\r\25\4\2\t\2\4\3"+
+		"\t\3\3\2\3\2\3\2\3\2\3\2\3\2\5\2\r\n\2\3\3\3\3\3\3\3\3\5\3\23\n\3\3\3"+
+		"\2\2\4\2\4\2\2\2\24\2\f\3\2\2\2\4\22\3\2\2\2\6\7\7\3\2\2\7\b\7\b\2\2\b"+
+		"\t\5\4\3\2\t\n\7\4\2\2\n\r\3\2\2\2\13\r\7\5\2\2\f\6\3\2\2\2\f\13\3\2\2"+
+		"\2\r\3\3\2\2\2\16\17\5\2\2\2\17\20\5\4\3\2\20\23\3\2\2\2\21\23\3\2\2\2"+
+		"\22\16\3\2\2\2\22\21\3\2\2\2\23\5\3\2\2\2\4\f\22";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

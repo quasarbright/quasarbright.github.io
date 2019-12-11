@@ -35,4 +35,28 @@ public interface ExpGrammarListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitAtomic(ExpGrammarParser.AtomicContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code Cons}
+	 * labeled alternative in {@link ExpGrammarParser#exprList}.
+	 * @param ctx the parse tree
+	 */
+	void enterCons(ExpGrammarParser.ConsContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code Cons}
+	 * labeled alternative in {@link ExpGrammarParser#exprList}.
+	 * @param ctx the parse tree
+	 */
+	void exitCons(ExpGrammarParser.ConsContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code Empty}
+	 * labeled alternative in {@link ExpGrammarParser#exprList}.
+	 * @param ctx the parse tree
+	 */
+	void enterEmpty(ExpGrammarParser.EmptyContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code Empty}
+	 * labeled alternative in {@link ExpGrammarParser#exprList}.
+	 * @param ctx the parse tree
+	 */
+	void exitEmpty(ExpGrammarParser.EmptyContext ctx);
 }
