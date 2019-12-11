@@ -9,6 +9,9 @@ import org.antlr.v4.runtime.TokenStream;
 
 import java.util.Scanner;
 
+/**
+ * A prefix calculator REPL.
+ */
 public class Interpreter {
     public static Double eval(String source) {
         CharStream stream = CharStreams.fromString(source);
@@ -22,6 +25,7 @@ public class Interpreter {
         System.out.println("prefix calculator REPL");
         System.out.println("(+ 1 2 3 (* -3.5 4))");
         System.out.println("-8.0");
+
         Scanner in = new Scanner(System.in);
         while(in.hasNextLine()) {
             // read
