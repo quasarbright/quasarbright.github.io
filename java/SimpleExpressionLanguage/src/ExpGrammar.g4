@@ -29,9 +29,9 @@ NUMBER:
     | '-'? INT+ '.' INT+
     ;
 
-INT: DIGIT+;
+fragment INT: DIGIT+;
 
-DIGIT: [0-9]+;
+fragment DIGIT: [0-9]+;
 
 OPERATOR: ADD | SUB | MUL | DIV;
 ADD: '+';
