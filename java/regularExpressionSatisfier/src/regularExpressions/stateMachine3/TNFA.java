@@ -16,14 +16,14 @@ import java.util.function.Supplier;
  * @param <S> state type
  * @param <E> symbol type
  */
-public class ThompsonNonDeterministicFiniteStateAutomaton<S, E> extends NonDeterministicFiniteStateAutomaton<S, E> {
+public class TNFA<S, E> extends NonDeterministicFiniteStateAutomaton<S, E> {
   /**
    * @param states          all states (including start and final states)
    * @param start           the start state
    * @param acceptingState the final state
    * @param transitions     state transitions
    */
-  private ThompsonNonDeterministicFiniteStateAutomaton(Set<S> states, S start, S acceptingState, Set<Transition<S, E>> transitions) {
+  private TNFA(Set<S> states, S start, S acceptingState, Set<Transition<S, E>> transitions) {
     super(states, start, new HashSet<>(Collections.singleton(acceptingState)), transitions);
     assertThompson();
   }
@@ -106,7 +106,7 @@ public class ThompsonNonDeterministicFiniteStateAutomaton<S, E> extends NonDeter
    * @param <S> State type
    * @param <E> Symbol Type
    */
-  public static class ThompsonNFABuilder<S, E> {
+  public static class TNFABuilder<S, E> {
     private final Supplier<S> stateSupplier;
 
     /**
@@ -115,26 +115,26 @@ public class ThompsonNonDeterministicFiniteStateAutomaton<S, E> extends NonDeter
      *
      * @param stateSupplier state factory. Each state generated should be UNIQUE!
      */
-    public ThompsonNFABuilder(Supplier<S> stateSupplier) {
+    public TNFABuilder(Supplier<S> stateSupplier) {
       this.stateSupplier = new UniqueSupplier<>(stateSupplier);
     }
 
-    public ThompsonNonDeterministicFiniteStateAutomaton<S, E> fromEmpty() {
+    public TNFA<S, E> fromEmpty() {
       S state = stateSupplier.get();
       Set<S> states = new HashSet<>(Collections.singleton(state));
-      return new ThompsonNonDeterministicFiniteStateAutomaton<>(states, state, state, new HashSet<>());
+      return new TNFA<>(states, state, state, new HashSet<>());
     }
 
-    public ThompsonNonDeterministicFiniteStateAutomaton<S, E> fromSymbol(E symbol) {
+    public TNFA<S, E> fromSymbol(E symbol) {
       S start = stateSupplier.get();
       S end = stateSupplier.get();
       Transition<S, E> transition = new Transition<>(start, end, Optional.of(symbol));
       Set<Transition<S, E>> transitions = new HashSet<>(Collections.singleton(transition));
       Set<S> states = new HashSet<>(Arrays.asList(start, end));
-      return new ThompsonNonDeterministicFiniteStateAutomaton<>(states, start, end, transitions);
+      return new TNFA<>(states, start, end, transitions);
     }
 
-    public ThompsonNonDeterministicFiniteStateAutomaton<S, E> star(ThompsonNonDeterministicFiniteStateAutomaton<S, E> machine) {
+    public TNFA<S, E> star(TNFA<S, E> machine) {
       S newStart = stateSupplier.get();
       S oldStart = machine.getStartState();
       S newEnd = stateSupplier.get();
@@ -142,6 +142,8 @@ public class ThompsonNonDeterministicFiniteStateAutomaton<S, E> extends NonDeter
 
       Set<S> states = new HashSet<>(machine.getAllStates());
       states.addAll(Arrays.asList(newStart, newEnd));
+
+      // newStart oldStart oldEnd newEnd
 
       Set<Transition<S, E>> transitions = new HashSet<>(machine.transitions);
       // go from start to old machine
@@ -153,18 +155,18 @@ public class ThompsonNonDeterministicFiniteStateAutomaton<S, E> extends NonDeter
       // repeat old machine
       transitions.add(new Transition<>(oldEnd, oldStart, Optional.empty()));
 
-      return new ThompsonNonDeterministicFiniteStateAutomaton<>(states, newStart, newEnd, transitions);
+      return new TNFA<>(states, newStart, newEnd, transitions);
     }
 
-    public ThompsonNonDeterministicFiniteStateAutomaton<S, E> concatenate(List<ThompsonNonDeterministicFiniteStateAutomaton<S, E>> machines) {
+    public TNFA<S, E> concatenate(List<TNFA<S, E>> machines) {
       if(machines.size() == 0) {
         return fromEmpty();
       } else if(machines.size() == 1) {
         return machines.get(0);
       } else {
-        ThompsonNonDeterministicFiniteStateAutomaton<S, E> machine = machines.get(0);
+        TNFA<S, E> machine = machines.get(0);
         for(int i = 1; i < machines.size(); i++) {
-          ThompsonNonDeterministicFiniteStateAutomaton<S, E> current = machines.get(i);
+          TNFA<S, E> current = machines.get(i);
           // assumes associativity
           // foldl's it
           machine = concatenate(machine, current);
@@ -173,12 +175,12 @@ public class ThompsonNonDeterministicFiniteStateAutomaton<S, E> extends NonDeter
       }
     }
 
-    public ThompsonNonDeterministicFiniteStateAutomaton<S, E> concatenate(ThompsonNonDeterministicFiniteStateAutomaton<S, E>... machines) {
+    public TNFA<S, E> concatenate(TNFA<S, E>... machines) {
       return concatenate(Arrays.asList(machines));
     }
 
 
-      private ThompsonNonDeterministicFiniteStateAutomaton<S, E> concatenate(ThompsonNonDeterministicFiniteStateAutomaton<S, E> a, ThompsonNonDeterministicFiniteStateAutomaton<S, E> b) {
+      private TNFA<S, E> concatenate(TNFA<S, E> a, TNFA<S, E> b) {
       S start = a.start;
       S end = b.getAcceptingState();
       Set<S> states = new HashSet<>(a.getAllStates());
@@ -191,26 +193,26 @@ public class ThompsonNonDeterministicFiniteStateAutomaton<S, E> extends NonDeter
       // replace a's end with b's start or vise versa. That would be prone to error
       transitions.add(new Transition<>(a.getAcceptingState(), b.getStartState(), Optional.empty()));
 
-      return new ThompsonNonDeterministicFiniteStateAutomaton<>(states, start, end, transitions);
+      return new TNFA<>(states, start, end, transitions);
     }
 
-    public ThompsonNonDeterministicFiniteStateAutomaton<S, E> or(List<ThompsonNonDeterministicFiniteStateAutomaton<S, E>> machines) {
+    public TNFA<S, E> or(List<TNFA<S, E>> machines) {
       S start = stateSupplier.get();
       S end = stateSupplier.get();
 
-      Set<S> states = new HashSet<>();
+      Set<S> states = new HashSet<>(Arrays.asList(start, end));
       Set<Transition<S, E>> transitions = new HashSet<>();
-      for(ThompsonNonDeterministicFiniteStateAutomaton<S, E> machine: machines) {
+      for(TNFA<S, E> machine: machines) {
         states.addAll(machine.getAllStates());
         transitions.addAll(machine.transitions);
         transitions.add(new Transition<>(start, machine.getStartState(), Optional.empty()));
         transitions.add(new Transition<>(machine.getAcceptingState(), end, Optional.empty()));
       }
 
-      return new ThompsonNonDeterministicFiniteStateAutomaton<>(states, start, end, transitions);
+      return new TNFA<>(states, start, end, transitions);
     }
 
-    public ThompsonNonDeterministicFiniteStateAutomaton<S, E> or(ThompsonNonDeterministicFiniteStateAutomaton<S, E>... machines) {
+    public TNFA<S, E> or(TNFA<S, E>... machines) {
       return or(Arrays.asList(machines));
     }
   }

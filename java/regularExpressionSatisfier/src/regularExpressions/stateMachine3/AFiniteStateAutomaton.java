@@ -1,6 +1,7 @@
 package regularExpressions.stateMachine3;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -131,12 +132,17 @@ public abstract class AFiniteStateAutomaton<StateType, SymbolType> implements Fi
     }
   }
 
+  
+
+  private List<Transition> sortedTransitions() {
+    return transitions.stream().sorted(Comparator.comparingInt(o -> o.start.hashCode())).collect(Collectors.toList());
+  }
+
   @Override
   public String toString() {
-    List<String> strings = new ArrayList<>();
-    for(Transition transition: transitions) {
-      strings.add(transition.toString());
-    }
+    List<String> strings = sortedTransitions().stream()
+            .map(Object::toString).collect(Collectors.toList());
+
     List<String> acceptStrings = acceptingStates.stream().map(Object::toString).collect(Collectors.toList());
     return String.join("\n", strings)
             + "\nstart["+start+"]"
