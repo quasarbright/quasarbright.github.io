@@ -26,14 +26,4 @@ public abstract class NonDeterministicFiniteStateAutomaton<StateType, SymbolType
    * @return DFA-equivalent of this NFA
    */
   protected abstract DeterministicFiniteStateAutomaton<StateType, SymbolType> getDeterministicVersion();
-
-  @Override
-  public Optional<StateType> runUsingSomeSymbols(List<SymbolType> symbols) {
-    return deterministicVersion.runUsingSomeSymbols(symbols);
-  }
-
-  @Override
-  public Optional<StateType> runUsingAllSymbols(List<SymbolType> symbols) {
-    return deterministicVersion.runUsingAllSymbols(symbols);
-  }
 }
