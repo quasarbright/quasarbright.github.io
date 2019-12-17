@@ -31,4 +31,9 @@ public class GroupRegExpOfCharacters implements RegExpOfCharacters {
   public String toString() {
     return "group("+regExp.toString()+")";
   }
+
+  @Override
+  public <R> R accept(RegExpVisitor<Character, R> visitor) {
+    return visitor.visitGroup(regExp);
+  }
 }

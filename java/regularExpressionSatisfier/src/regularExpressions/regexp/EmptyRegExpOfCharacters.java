@@ -25,4 +25,9 @@ public class EmptyRegExpOfCharacters implements RegExpOfCharacters {
     public String toString() {
         return "empty()";
     }
+
+    @Override
+    public <R> R accept(RegExpVisitor<Character, R> visitor) {
+        return visitor.visitEmpty();
+    }
 }

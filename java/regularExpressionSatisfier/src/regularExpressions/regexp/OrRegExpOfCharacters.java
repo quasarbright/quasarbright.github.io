@@ -53,4 +53,9 @@ public class OrRegExpOfCharacters implements RegExpOfCharacters {
         ans.append(String.join(", ", strings)).append(")");
         return ans.toString();
     }
+
+    @Override
+    public <R> R accept(RegExpVisitor<Character, R> visitor) {
+        return visitor.visitOr(regExps);
+    }
 }

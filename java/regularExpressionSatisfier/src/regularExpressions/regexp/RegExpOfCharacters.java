@@ -3,7 +3,7 @@ package regularExpressions.regexp;
 /**
  * Regular expression object
  */
-public interface RegExpOfCharacters {
+public interface RegExpOfCharacters extends RegExp<Character> {
   /**
    * Accept the given visitor.
    *

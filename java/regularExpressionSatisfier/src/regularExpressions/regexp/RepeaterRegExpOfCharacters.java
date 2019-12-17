@@ -38,4 +38,9 @@ public class RepeaterRegExpOfCharacters implements RegExpOfCharacters {
   public String toString() {
     return "repeat("+regExp.toString()+")";
   }
+
+  @Override
+  public <R> R accept(RegExpVisitor<Character, R> visitor) {
+    return visitor.visitStar(regExp);
+  }
 }

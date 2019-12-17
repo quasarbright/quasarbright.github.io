@@ -38,4 +38,9 @@ public class CharacterRegExpOfCharacters implements RegExpOfCharacters {
     public String toString() {
         return "char("+c+")";
     }
+
+    @Override
+    public <R> R accept(RegExpVisitor<Character, R> visitor) {
+        return visitor.visitSymbol(c);
+    }
 }

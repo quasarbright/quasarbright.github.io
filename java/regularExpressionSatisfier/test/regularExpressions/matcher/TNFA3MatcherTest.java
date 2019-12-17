@@ -29,7 +29,7 @@ public class TNFA3MatcherTest extends RegExpMatcherTest {
   protected void failMatch(String target, String re) {
     RegExpOfCharacters regExp = Parser.parse(re);
     TNFA.TNFABuilder<Integer, Character> builder = new TNFA.TNFABuilder<>(new CounterStateSupplier());
-    TNFA<Integer, Character> tnfa = regExp.accept(new RegExpToTNFA<Integer>(builder));
+    TNFA<Integer, Character> tnfa = regExp.accept(new RegExpToTNFA<Integer, Character>(builder));
     List<Character> symbols = getSymbols(target);
     assertTrue(tnfa.runUsingSomeSymbols(symbols).isEmpty());
   }
@@ -38,7 +38,7 @@ public class TNFA3MatcherTest extends RegExpMatcherTest {
   protected void passMatch(String target, String re) {
     RegExpOfCharacters regExp = Parser.parse(re);
     TNFA.TNFABuilder<Integer, Character> builder = new TNFA.TNFABuilder<>(new CounterStateSupplier());
-    TNFA<Integer, Character> tnfa = regExp.accept(new RegExpToTNFA<Integer>(builder));
+    TNFA<Integer, Character> tnfa = regExp.accept(new RegExpToTNFA<Integer, Character>(builder));
     List<Character> symbols = getSymbols(target);
     assertTrue(tnfa.runUsingSomeSymbols(symbols).isPresent());
   }
@@ -47,7 +47,7 @@ public class TNFA3MatcherTest extends RegExpMatcherTest {
   protected void passFullMatch(String target, String re) {
     RegExpOfCharacters regExp = Parser.parse(re);
     TNFA.TNFABuilder<Integer, Character> builder = new TNFA.TNFABuilder<>(new CounterStateSupplier());
-    TNFA<Integer, Character> tnfa = regExp.accept(new RegExpToTNFA<Integer>(builder));
+    TNFA<Integer, Character> tnfa = regExp.accept(new RegExpToTNFA<Integer, Character>(builder));
     List<Character> symbols = getSymbols(target);
     assertTrue(tnfa.runUsingAllSymbols(symbols).isPresent());
   }
