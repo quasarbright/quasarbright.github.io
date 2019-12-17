@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import regularExpressions.matcher.GenericMatch;
+
 /**
  * Represents a deterministic finite state automaton.
  */
@@ -78,20 +80,23 @@ public class DeterministicFiniteStateAutomaton<StateType, SymbolType> extends AF
   }
 
   @Override
-  public Optional<StateType> runUsingSomeSymbols(List<SymbolType> symbols) {
+  public Optional<GenericMatch<SymbolType>> runUsingSomeSymbols(List<SymbolType> symbols) {
     StateType currentState = start;
     if(acceptingStates.contains(currentState)) {
-      return Optional.of(currentState);
+      return Optional.of(new GenericMatch<>(symbols, 0,0));
     }
 
     // try consuming each symbol
-    for(SymbolType symbol: symbols) {
+    for(int i = 0; i < symbols.size(); i++) {
+      SymbolType symbol = symbols.get(i);
+
       Optional<StateType> maybeNextState = deterministicTransition(currentState, symbol);
       if(maybeNextState.isPresent()) {
         StateType nextState = maybeNextState.get();
         if(acceptingStates.contains(nextState)) {
           // this is an accepting state. We're done
-          return Optional.of(nextState);
+          // we just consumed the ith symbol, so the end is i+1
+          return Optional.of(new GenericMatch<>(symbols, 0, i+1));
         }
         // the symbol was consumed, but we aren't in an end state
         currentState = nextState;
@@ -104,7 +109,7 @@ public class DeterministicFiniteStateAutomaton<StateType, SymbolType> extends AF
   }
 
   @Override
-  public Optional<StateType> runUsingAllSymbols(List<SymbolType> symbols) {
+  public Optional<GenericMatch<SymbolType>> runUsingAllSymbols(List<SymbolType> symbols) {
     StateType currentState = start;
 
     // try consuming each symbol
@@ -122,7 +127,7 @@ public class DeterministicFiniteStateAutomaton<StateType, SymbolType> extends AF
     // at this point, all symbols have been consumed
     // now it's a matter of whether the state we're on is an accepting state
     if(acceptingStates.contains(currentState)) {
-      return Optional.of(currentState);
+      return Optional.of(new GenericMatch<>(symbols, 0, symbols.size()));
     } else {
       return Optional.empty();
     }

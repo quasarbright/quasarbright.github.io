@@ -9,10 +9,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import regularExpressions.matcher.GenericMatch;
 
 /**
  * Abstract finite state automaton
@@ -214,39 +214,9 @@ public abstract class AFiniteStateAutomaton<S, E> implements FiniteStateAutomato
    *                          acceptingStrategy => return Optional.of(currentState)
    * @return the accepting state of the run, if any
    */
-  private Optional<S> runGeneric(List<E> symbols, AcceptingStrategy<S, E> acceptingStrategy) {
-    return runGenericHelp(start, symbols, acceptingStrategy, new HashSet<>(), new HashMap<>());
-  }
-
-  private static class RuntimeState<S, E> {
-    public final S state;
-    public final List<E> remainingSymbols;
-
-    public RuntimeState(S state, List<E> remainingSymbols) {
-      this.state = state;
-      this.remainingSymbols = remainingSymbols;
-    }
-
-    @Override
-    public int hashCode() {
-      // assume that we only see suffixes of the list
-      // avoids hashing symbols, which is unreliable
-      return Objects.hash(state, remainingSymbols.size());
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      // assume that we only see suffixes of the list
-      // avoids hashing symbols, which is unreliable
-      if(this == obj) {
-        return true;
-      }
-      if(obj == null || getClass() != obj.getClass()) {
-        return false;
-      }
-      RuntimeState<?,?> other = (RuntimeState<?,?>) obj;
-      return state.equals(other.state) && remainingSymbols.size() == other.remainingSymbols.size();
-    }
+  private Optional<GenericMatch<E>> runGeneric(List<E> symbols, AcceptingStrategy<S, E> acceptingStrategy) {
+    Optional<List<E>> result = runGenericHelp(start, symbols, acceptingStrategy, new HashSet<>(), new HashMap<>());
+    return result.map(remainingSymbols -> new GenericMatch<>(symbols, 0, symbols.size() - remainingSymbols.size()));
   }
 
   /**
@@ -263,7 +233,7 @@ public abstract class AFiniteStateAutomaton<S, E> implements FiniteStateAutomato
    *                            Adds this runtime state to the set if it's not there
    * @return the accepting state of the run, if any
    */
-  private Optional<S> runGenericHelp(S currentState, List<E> remainingSymbols, AcceptingStrategy<S, E> acceptingStrategy, Set<RuntimeState<S, E>> currentlyEvaluating, Map<RuntimeState<S, E>, Optional<S>> cache) {
+  private Optional<List<E>> runGenericHelp(S currentState, List<E> remainingSymbols, AcceptingStrategy<S, E> acceptingStrategy, Set<RuntimeState<S, E>> currentlyEvaluating, Map<RuntimeState<S, E>, Optional<List<E>>> cache) {
     // TODO cache this for dynamic progamming. Will speed up ambiguous regexp matching
     // really only need to keep track of failed runtimes, since a succeeded runtime will get returned
     RuntimeState<S, E> currentRuntimeState = new RuntimeState<>(currentState, remainingSymbols);
@@ -281,7 +251,7 @@ public abstract class AFiniteStateAutomaton<S, E> implements FiniteStateAutomato
     // For a minute, I was worried about removing the current state from the currently
     // evaluating set, but this function only gets called once ans is resolved, so the child
     // call will still think we're evaluating, which is perfect
-    Function<Optional<S>, Optional<S>> cacheAndReturn = (Optional<S> ans) -> {
+    Function<Optional<List<E>>, Optional<List<E>>> cacheAndReturn = (Optional<List<E>> ans) -> {
       currentlyEvaluating.remove(currentRuntimeState);
       cache.put(currentRuntimeState, ans);
       return ans;
@@ -299,14 +269,14 @@ public abstract class AFiniteStateAutomaton<S, E> implements FiniteStateAutomato
     // recursive base cases:
     if(acceptingStrategy.shouldAccept(currentState, remainingSymbols)) {
       // We found a match. we're done
-      return cacheAndReturn.apply(Optional.of(currentState));
+      return cacheAndReturn.apply(Optional.of(remainingSymbols));
     } else if (availableTransitions.isEmpty() && currentStateAccepted) {
       // we can't accept this runtime and there are no transitions. abort.
       return cacheAndReturn.apply(Optional.empty());
     } else if(remainingSymbols.isEmpty() && currentStateAccepted) {
       // there are no more symbols and we are in an accepting state. Accept.
       // should be redundant with a valid strategy, but it's easy to double check
-      return cacheAndReturn.apply(Optional.of(currentState));
+      return cacheAndReturn.apply(Optional.of(remainingSymbols));
     }
 
     // try each transition. If any end up working, it's a match! return the accepting state it finished at
@@ -328,7 +298,7 @@ public abstract class AFiniteStateAutomaton<S, E> implements FiniteStateAutomato
         throw new IllegalStateException("available transitions should all be usable");
       }
       // recurse
-      Optional<S> result = runGenericHelp(nextState, nextRemainingSymbols, acceptingStrategy, currentlyEvaluating, cache);
+      Optional<List<E>> result = runGenericHelp(nextState, nextRemainingSymbols, acceptingStrategy, currentlyEvaluating, cache);
       if(result.isPresent()) {
         // that worked! return the final state it ended up in
         return cacheAndReturn.apply(result);
@@ -340,12 +310,12 @@ public abstract class AFiniteStateAutomaton<S, E> implements FiniteStateAutomato
   }
 
   @Override
-  public Optional<S> runUsingSomeSymbols(List<E> symbols) {
+  public Optional<GenericMatch<E>> runUsingSomeSymbols(List<E> symbols) {
     return runGeneric(symbols, (S currentState, List<E> remainingSymbols) -> acceptingStates.contains(currentState));
   }
 
   @Override
-  public Optional<S> runUsingAllSymbols(List<E> symbols) {
+  public Optional<GenericMatch<E>> runUsingAllSymbols(List<E> symbols) {
     return runGeneric(symbols, (S currentState, List<E> remainingSymbols) -> acceptingStates.contains(currentState) && remainingSymbols.isEmpty());
   }
 
@@ -362,5 +332,36 @@ public abstract class AFiniteStateAutomaton<S, E> implements FiniteStateAutomato
     return String.join("\n", strings)
             + "\nstart["+start+"]"
             +"\nends["+String.join(", ", acceptStrings)+"]";
+  }
+}
+
+class RuntimeState<S, E> {
+  public final S state;
+  public final List<E> remainingSymbols;
+
+  public RuntimeState(S state, List<E> remainingSymbols) {
+    this.state = state;
+    this.remainingSymbols = remainingSymbols;
+  }
+
+  @Override
+  public int hashCode() {
+    // assume that we only see suffixes of the list
+    // avoids hashing symbols, which is unreliable
+    return Objects.hash(state, remainingSymbols.size());
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    // assume that we only see suffixes of the list
+    // avoids hashing symbols, which is unreliable
+    if(this == obj) {
+      return true;
+    }
+    if(obj == null || getClass() != obj.getClass()) {
+      return false;
+    }
+    RuntimeState<?,?> other = (RuntimeState<?,?>) obj;
+    return state.equals(other.state) && remainingSymbols.size() == other.remainingSymbols.size();
   }
 }

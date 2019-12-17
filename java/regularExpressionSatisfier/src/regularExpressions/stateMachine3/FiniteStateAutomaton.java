@@ -5,6 +5,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 
+import regularExpressions.matcher.GenericMatch;
+
 
 /**
  * Represents a finite state automaton.
@@ -60,7 +62,7 @@ public interface FiniteStateAutomaton<StateType, SymbolType> {
    * @param symbols the sequence of symbols to feed to the finite state machine.
    * @return the accepting state reached, if any.
    */
-  Optional<StateType> runUsingSomeSymbols(List<SymbolType> symbols);
+  Optional<GenericMatch<SymbolType>> runUsingSomeSymbols(List<SymbolType> symbols);
 
   /**
    * Run the given symbols through this finite state machine. Only stops at accepting state if it consumes all symbols.
@@ -68,5 +70,5 @@ public interface FiniteStateAutomaton<StateType, SymbolType> {
    * @param symbols the sequence of symbols to feed to the finite state machine.
    * @return the accepting state reached after all symbols are consumed, if any.
    */
-  Optional<StateType> runUsingAllSymbols(List<SymbolType> symbols);
+  Optional<GenericMatch<SymbolType>> runUsingAllSymbols(List<SymbolType> symbols);
 }
