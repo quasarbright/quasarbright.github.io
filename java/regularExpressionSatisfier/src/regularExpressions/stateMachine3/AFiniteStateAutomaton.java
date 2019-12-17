@@ -299,14 +299,12 @@ public abstract class AFiniteStateAutomaton<S, E> implements FiniteStateAutomato
       S nextState = transition.end;
       List<E> nextRemainingSymbols;
       Optional<E> transitionSymbol = transition.symbol;
+
       // check if we can use this transition
-      if(remainingSymbols.isEmpty()) {
-        if (!transition.isEmpty()) {
-          throw new IllegalArgumentException("available transitions should all be empty if there are no more symbols");
-        }
+      if(transition.isEmpty()) {
         nextRemainingSymbols = remainingSymbols;
-      } else if(transition.isEmpty()) {
-        nextRemainingSymbols = remainingSymbols;
+      } else if(remainingSymbols.isEmpty()) {
+        throw new IllegalArgumentException("available transitions should all be empty if there are no more symbols");
       } else if(transitionSymbol.isPresent() && transitionSymbol.get().equals(first(remainingSymbols))) {
         // consume a symbol
         nextRemainingSymbols = rest(remainingSymbols);
