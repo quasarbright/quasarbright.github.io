@@ -1,13 +1,17 @@
 package regularExpressions.stateMachine3;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -211,7 +215,7 @@ public abstract class AFiniteStateAutomaton<S, E> implements FiniteStateAutomato
    * @return the accepting state of the run, if any
    */
   private Optional<S> runGeneric(List<E> symbols, AcceptingStrategy<S, E> acceptingStrategy) {
-    return runGenericHelp(start, symbols, acceptingStrategy, new HashSet<>());
+    return runGenericHelp(start, symbols, acceptingStrategy, new HashSet<>(), new HashMap<>());
   }
 
   private static class RuntimeState<S, E> {
@@ -259,7 +263,7 @@ public abstract class AFiniteStateAutomaton<S, E> implements FiniteStateAutomato
    *                            Adds this runtime state to the set if it's not there
    * @return the accepting state of the run, if any
    */
-  private Optional<S> runGenericHelp(S currentState, List<E> remainingSymbols, AcceptingStrategy<S, E> acceptingStrategy, Set<RuntimeState<S, E>> currentlyEvaluating) {
+  private Optional<S> runGenericHelp(S currentState, List<E> remainingSymbols, AcceptingStrategy<S, E> acceptingStrategy, Set<RuntimeState<S, E>> currentlyEvaluating, Map<RuntimeState<S, E>, Optional<S>> cache) {
     // TODO cache this for dynamic progamming. Will speed up ambiguous regexp matching
     // really only need to keep track of failed runtimes, since a succeeded runtime will get returned
     RuntimeState<S, E> currentRuntimeState = new RuntimeState<>(currentState, remainingSymbols);
@@ -267,10 +271,21 @@ public abstract class AFiniteStateAutomaton<S, E> implements FiniteStateAutomato
       // we are currently running from this exact runtime state outside of this call
       // the outer attempt will do the work. Just abort so you don't infinite loop
       return Optional.empty();
+    } else if(cache.containsKey(currentRuntimeState)) {
+      return cache.get(currentRuntimeState);
     } else {
       // let future calls know we're currently evaluating this runtime state
       currentlyEvaluating.add(currentRuntimeState);
     }
+
+    // For a minute, I was worried about removing the current state from the currently
+    // evaluating set, but this function only gets called once ans is resolved, so the child
+    // call will still think we're evaluating, which is perfect
+    Function<Optional<S>, Optional<S>> cacheAndReturn = (Optional<S> ans) -> {
+      currentlyEvaluating.remove(currentRuntimeState);
+      cache.put(currentRuntimeState, ans);
+      return ans;
+    };
 
 
     Set<Transition<S, E>> availableTransitions;
@@ -284,14 +299,14 @@ public abstract class AFiniteStateAutomaton<S, E> implements FiniteStateAutomato
     // recursive base cases:
     if(acceptingStrategy.shouldAccept(currentState, remainingSymbols)) {
       // We found a match. we're done
-      return Optional.of(currentState);
+      return cacheAndReturn.apply(Optional.of(currentState));
     } else if (availableTransitions.isEmpty() && currentStateAccepted) {
       // we can't accept this runtime and there are no transitions. abort.
-      return Optional.empty();
+      return cacheAndReturn.apply(Optional.empty());
     } else if(remainingSymbols.isEmpty() && currentStateAccepted) {
       // there are no more symbols and we are in an accepting state. Accept.
       // should be redundant with a valid strategy, but it's easy to double check
-      return Optional.of(currentState);
+      return cacheAndReturn.apply(Optional.of(currentState));
     }
 
     // try each transition. If any end up working, it's a match! return the accepting state it finished at
@@ -313,15 +328,15 @@ public abstract class AFiniteStateAutomaton<S, E> implements FiniteStateAutomato
         throw new IllegalStateException("available transitions should all be usable");
       }
       // recurse
-      Optional<S> result = runGenericHelp(nextState, nextRemainingSymbols, acceptingStrategy, currentlyEvaluating);
+      Optional<S> result = runGenericHelp(nextState, nextRemainingSymbols, acceptingStrategy, currentlyEvaluating, cache);
       if(result.isPresent()) {
         // that worked! return the final state it ended up in
-        return result;
+        return cacheAndReturn.apply(result);
       }
     }
 
     // none of our transitions ended up working. no match here.
-    return Optional.empty();
+    return cacheAndReturn.apply(Optional.empty());
   }
 
   @Override

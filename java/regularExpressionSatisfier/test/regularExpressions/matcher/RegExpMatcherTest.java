@@ -45,7 +45,7 @@ public abstract class RegExpMatcherTest {
     String target = regExp.accept(simpleSatisfier);
     passFullMatch(target, re);
     RegExpOfCharactersVisitor<String> randomSatisfier = new RandomSatisfier(1,5);
-    for(int i = 0; i < 1000; i++) {
+    for(int i = 0; i < 10000; i++) {
       target = regExp.accept(randomSatisfier);
       passFullMatch(target, re);
     }
