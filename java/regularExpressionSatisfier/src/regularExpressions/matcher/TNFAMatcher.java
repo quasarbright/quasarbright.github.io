@@ -1,6 +1,7 @@
 package regularExpressions.matcher;
 
 import java.util.List;
+import java.util.Optional;
 
 import regularExpressions.regexp.RegExp;
 import regularExpressions.stateMachine3.CounterStateSupplier;
@@ -20,11 +21,11 @@ public class TNFAMatcher<S> {
     return tnfa;
   }
 
-  public boolean fullmatch(RegExp<S> regExp, List<S> word) {
-    return regExpToTNFA(regExp).runUsingAllSymbols(word).isPresent();
+  public Optional<GenericMatch<S>> fullmatch(RegExp<S> regExp, List<S> word) {
+    return regExpToTNFA(regExp).runUsingAllSymbols(word);
   }
 
-  public boolean match(RegExp<S> regExp, List<S> word) {
-    return regExpToTNFA(regExp).runUsingSomeSymbols(word).isPresent();
+  public Optional<GenericMatch<S>> match(RegExp<S> regExp, List<S> word) {
+    return regExpToTNFA(regExp).runUsingSomeSymbols(word);
   }
 }
