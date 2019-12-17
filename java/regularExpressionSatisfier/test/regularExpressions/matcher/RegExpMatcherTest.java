@@ -16,16 +16,21 @@ public abstract class RegExpMatcherTest {
 
   protected abstract RegExpMatcher factory();
 
-  private void passMatch(int start, int end, String target, String re) {
+  protected void passMatch(int start, int end, String target, String re) {
     RegExp regExp = Parser.parse(re);
     assertEquals(""+start+" "+end+" "+target+" "+regExp, Optional.of(new Match(start, end, target, regExp)), factory().match(target, regExp));
   }
 
-  private void passFullMatch(String target, String re) {
+  protected void passMatch(String target, String re) {
+    RegExp regExp = Parser.parse(re);
+    assertTrue(factory().match(target, regExp).isPresent());
+  }
+
+  protected void passFullMatch(String target, String re) {
     passMatch(0, target.length(), target, re);
   }
 
-  private void failMatch(String target, String re) {
+  protected void failMatch(String target, String re) {
     assertTrue(factory().match(target, re).isEmpty());
   }
 
@@ -40,7 +45,7 @@ public abstract class RegExpMatcherTest {
     String target = regExp.accept(simpleSatisfier);
     passFullMatch(target, re);
     RegexpVisitor<String> randomSatisfier = new RandomSatisfier(1,5);
-    for(int i = 0; i < 10000; i++) {
+    for(int i = 0; i < 1000; i++) {
       target = regExp.accept(randomSatisfier);
       passFullMatch(target, re);
     }
@@ -48,28 +53,28 @@ public abstract class RegExpMatcherTest {
 
   @Test
   public void character() {
-    passMatch(0, 1, "a", "a");
+    passFullMatch( "a", "a");
     failMatch("b", "a");
   }
 
   @Test
   public void concatSimple() {
-    passMatch(0,2, "ab", "ab");
+    passFullMatch( "ab", "ab");
     failMatch("cab", "ab");
   }
 
   @Test
   public void groupSimple() {
-    passMatch(0,1,"a","(a)");
+    passFullMatch("a","(a)");
   }
 
   @Test
   public void repeaterSimple() {
-    passMatch(0,0,"", "a*");
-    passMatch(0,1,"a", "a*");
-    passMatch(0,2,"aa", "a*");
-    passMatch(0,3,"aaa", "a*");
-    passMatch(0,4,"aaaa", "a*");
+    passFullMatch("", "a*");
+    passFullMatch("a", "a*");
+    passFullMatch("aa", "a*");
+    passFullMatch("aaa", "a*");
+    passFullMatch("aaaa", "a*");
   }
 
   @Test
