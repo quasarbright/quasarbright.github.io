@@ -5,9 +5,9 @@ import java.util.Objects;
 /**
  * Empty regular expression.
  */
-public class EmptyRegExp implements RegExp {
+public class EmptyRegExpOfCharacters implements RegExpOfCharacters {
     @Override
-    public <R> R accept(RegexpVisitor<R> visitor) {
+    public <R> R accept(RegExpOfCharactersVisitor<R> visitor) {
         return visitor.visitEmptyRegExp();
     }
 

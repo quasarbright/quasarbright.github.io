@@ -2,28 +2,28 @@ package regularExpressions.regexp;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * A concatenation of two or more regular expressions.
+ * An or of one ore more {@link RegExpOfCharacters}s.
  */
-public class ConcatenationRegExp implements RegExp {
-    private final List<RegExp> regExps;
+public class OrRegExpOfCharacters implements RegExpOfCharacters {
+    private final List<RegExpOfCharacters> regExps;
 
-    public ConcatenationRegExp(List<RegExp> regExps) {
+    public OrRegExpOfCharacters(List<RegExpOfCharacters> regExps) {
         this.regExps = regExps;
     }
 
-    public ConcatenationRegExp(RegExp... regExps) {
+    public OrRegExpOfCharacters(RegExpOfCharacters... regExps) {
         this.regExps = Arrays.asList(regExps);
     }
 
-
     @Override
-    public <R> R accept(RegexpVisitor<R> visitor) {
-        return visitor.visitConcatenationRegExp(new ArrayList<>(regExps));
+    public <R> R accept(RegExpOfCharactersVisitor<R> visitor) {
+        return visitor.visitOrRegexp(regExps);
     }
 
     @Override
@@ -34,19 +34,19 @@ public class ConcatenationRegExp implements RegExp {
         if(other == null || getClass() != other.getClass()) {
             return false;
         }
-        ConcatenationRegExp concatenationRegExp = (ConcatenationRegExp) other;
-        return new ArrayList<>(regExps).equals(new ArrayList<>(concatenationRegExp.regExps));
+        OrRegExpOfCharacters orRegExp = (OrRegExpOfCharacters) other;
+        return new ArrayList<>(regExps).equals(new ArrayList<>(orRegExp.regExps));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(regExps);
+        return Objects.hashCode(new HashSet<>(regExps));
     }
 
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder();
-        ans.append("concat(");
+        ans.append("or(");
         List<String> strings = regExps.stream()
                 .map(Object::toString)
                 .collect(Collectors.toList());

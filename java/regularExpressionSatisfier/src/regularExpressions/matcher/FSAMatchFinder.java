@@ -1,16 +1,13 @@
 package regularExpressions.matcher;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import regularExpressions.matcher.Match;
-import regularExpressions.regexp.RegExp;
+import regularExpressions.regexp.RegExpOfCharacters;
 import regularExpressions.thompsonStateMachine.state.CharacterState;
 import regularExpressions.thompsonStateMachine.state.EmptyState;
 import regularExpressions.thompsonStateMachine.state.EndState;
@@ -27,10 +24,10 @@ import regularExpressions.thompsonStateMachine.state.StateVisitor;
  * non-empty (character or end) states.
  */
 public class FSAMatchFinder implements MatchFinder {
-  private final RegExp regExp;
+  private final RegExpOfCharacters regExp;
   private final State fsa;
 
-  public FSAMatchFinder(RegExp regExp) {
+  public FSAMatchFinder(RegExpOfCharacters regExp) {
     this.regExp = regExp;
     fsa = regExp.accept(new RegExpToFSA());
   }

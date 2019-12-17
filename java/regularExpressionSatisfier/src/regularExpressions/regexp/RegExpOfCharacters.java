@@ -3,7 +3,7 @@ package regularExpressions.regexp;
 /**
  * Regular expression object
  */
-public interface RegExp {
+public interface RegExpOfCharacters {
   /**
    * Accept the given visitor.
    *
@@ -11,5 +11,5 @@ public interface RegExp {
    * @param <R> the return type of the visitor
    * @return the value returned by the visitor
    */
-  <R> R accept(RegexpVisitor<R> visitor);
+  <R> R accept(RegExpOfCharactersVisitor<R> visitor);
 }

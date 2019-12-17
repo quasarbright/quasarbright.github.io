@@ -3,15 +3,15 @@ package regularExpressions.matcher;
 import java.util.List;
 
 import regularExpressions.matcher.visitors.RecursiveMatchFinderVisitor;
-import regularExpressions.regexp.RegExp;
+import regularExpressions.regexp.RegExpOfCharacters;
 
 /**
  * Uses a regexp visitor to do recursive backtracking on an implicit Finite State Automaton.
  */
 public class RecursiveMatchFinder implements MatchFinder {
-  private final RegExp regExp;
+  private final RegExpOfCharacters regExp;
 
-  public RecursiveMatchFinder(RegExp regExp) {
+  public RecursiveMatchFinder(RegExpOfCharacters regExp) {
     this.regExp = regExp;
   }
 

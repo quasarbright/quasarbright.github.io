@@ -5,10 +5,10 @@ import java.util.List;
 import regularExpressions.lexing.Lexer;
 import regularExpressions.lexing.token.Token;
 import regularExpressions.lexing.token.TokenVisitor;
-import regularExpressions.regexp.CharacterRegExp;
-import regularExpressions.regexp.EmptyRegExp;
-import regularExpressions.regexp.GroupRegExp;
-import regularExpressions.regexp.RegExp;
+import regularExpressions.regexp.CharacterRegExpOfCharacters;
+import regularExpressions.regexp.EmptyRegExpOfCharacters;
+import regularExpressions.regexp.GroupRegExpOfCharacters;
+import regularExpressions.regexp.RegExpOfCharacters;
 import regularExpressions.utils.EscapeRegexUtils;
 import regularExpressions.utils.MyStream;
 import regularExpressions.visitors.ConcatenateWith;
@@ -19,34 +19,34 @@ public class Parser {
 
   private static final EscapeRegexUtils escapeRegexUtils = new EscapeRegexUtils();
 
-  public static RegExp parse(List<Token> tokens) {
+  public static RegExpOfCharacters parse(List<Token> tokens) {
     MyStream<Token> stream = new MyStream<>(tokens);
-    RegExp emptyRegExp = new EmptyRegExp();
+    RegExpOfCharacters emptyRegExp = new EmptyRegExpOfCharacters();
     return parse(emptyRegExp, stream, 0);
-//      RegExp finalRegExp = regExp;
-//      regExp = token.accept(new TokenVisitor<RegExp>() {
+//      RegExpOfCharacters finalRegExp = regExp;
+//      regExp = token.accept(new TokenVisitor<RegExpOfCharacters>() {
 //        @Override
-//        public RegExp visitCharacterToken(char c) {
+//        public RegExpOfCharacters visitCharacterToken(char c) {
 //          return finalRegExp.accept(new ConcatenateWith(parseCharacterRegExp(stream)));
 //        }
 //
 //        @Override
-//        public RegExp visitStartGroupToken() {
+//        public RegExpOfCharacters visitStartGroupToken() {
 //          return finalRegExp.accept(new ConcatenateWith(parseGroup(stream)));
 //        }
 //
 //        @Override
-//        public RegExp visitEndGroupToken() {
+//        public RegExpOfCharacters visitEndGroupToken() {
 //          throw new IllegalStateException();
 //        }
 //
 //        @Override
-//        public RegExp visitOrToken() {
+//        public RegExpOfCharacters visitOrToken() {
 //          return ;
 //        }
 //
 //        @Override
-//        public RegExp visitRepeaterToken() {
+//        public RegExpOfCharacters visitRepeaterToken() {
 //          return null;
 //        }
 //      });
@@ -65,7 +65,7 @@ public class Parser {
        */
   }
 
-  public static RegExp parse(String re) {
+  public static RegExpOfCharacters parse(String re) {
     return parse(Lexer.lex(re));
   }
 
@@ -80,38 +80,38 @@ public class Parser {
    * @param parenthesesDepth current parentheses depth (opens - closes so far)
    * @return the parsed Regex
    */
-  private static RegExp parse(RegExp current, MyStream<Token> stream, int parenthesesDepth) {
-    RegExp regExp = current;
+  private static RegExpOfCharacters parse(RegExpOfCharacters current, MyStream<Token> stream, int parenthesesDepth) {
+    RegExpOfCharacters regExp = current;
     while(!stream.isDone()) {
       Token token = stream.peek();
 
-      RegExp finalRegExp = regExp;
+      RegExpOfCharacters finalRegExp = regExp;
       final Boolean[] encounteredClose = {false};
       final Boolean[] shouldAdvance = {true};
 
-      regExp = token.accept(new TokenVisitor<RegExp>() {
-        private RegExp concat(RegExp next) {
+      regExp = token.accept(new TokenVisitor<RegExpOfCharacters>() {
+        private RegExpOfCharacters concat(RegExpOfCharacters next) {
           return finalRegExp.accept(new ConcatenateWith(next));
         }
         @Override
-        public RegExp visitCharacterToken(char c) {
-          return concat(new CharacterRegExp(c));
+        public RegExpOfCharacters visitCharacterToken(char c) {
+          return concat(new CharacterRegExpOfCharacters(c));
         }
 
         @Override
-        public RegExp visitEscapeCharacterToken(char c) {
+        public RegExpOfCharacters visitEscapeCharacterToken(char c) {
           return concat(escapeRegexUtils.getEscapeRegex(c));
         }
 
         @Override
-        public RegExp visitStartGroupToken() {
+        public RegExpOfCharacters visitStartGroupToken() {
           stream.advance();
-          RegExp groupContents = parse(new EmptyRegExp(), stream, parenthesesDepth+1);
-          return concat(new GroupRegExp(groupContents));
+          RegExpOfCharacters groupContents = parse(new EmptyRegExpOfCharacters(), stream, parenthesesDepth+1);
+          return concat(new GroupRegExpOfCharacters(groupContents));
         }
 
         @Override
-        public RegExp visitEndGroupToken() {
+        public RegExpOfCharacters visitEndGroupToken() {
           if(parenthesesDepth == 0) {
             throw new IllegalStateException("unexpected end group token");
           } else {
@@ -122,16 +122,16 @@ public class Parser {
         }
 
         @Override
-        public RegExp visitOrToken() {
+        public RegExpOfCharacters visitOrToken() {
           stream.advance();
-          RegExp rest = parse(new EmptyRegExp(), stream, parenthesesDepth);
-          RegExp prev = finalRegExp;
+          RegExpOfCharacters rest = parse(new EmptyRegExpOfCharacters(), stream, parenthesesDepth);
+          RegExpOfCharacters prev = finalRegExp;
           shouldAdvance[0] = false;
           return rest.accept(new OrWith(prev));
         }
 
         @Override
-        public RegExp visitRepeaterToken() {
+        public RegExpOfCharacters visitRepeaterToken() {
           return finalRegExp.accept(new RepeatLast());
         }
       });

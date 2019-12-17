@@ -2,17 +2,17 @@ package regularExpressions.thompsonStateMachine.state;
 
 import java.util.List;
 
-import regularExpressions.regexp.RegExp;
-import regularExpressions.regexp.RegexpVisitor;
+import regularExpressions.regexp.RegExpOfCharacters;
+import regularExpressions.regexp.RegExpOfCharactersVisitor;
 
-public class RegExpToFSA implements RegexpVisitor<State> {
+public class RegExpToFSA implements RegExpOfCharactersVisitor<State> {
   @Override
   public State visitCharacterRegExp(char c) {
     return new CharacterState(c);
   }
 
   @Override
-  public State visitConcatenationRegExp(List<RegExp> regExps) {
+  public State visitConcatenationRegExp(List<RegExpOfCharacters> regExps) {
     if(regExps.isEmpty()) {
       return new EmptyState();
     } else {
@@ -33,7 +33,7 @@ public class RegExpToFSA implements RegexpVisitor<State> {
   }
 
   @Override
-  public State visitOrRegexp(List<RegExp> regExps) {
+  public State visitOrRegexp(List<RegExpOfCharacters> regExps) {
     State state = new EmptyState();
     State end = new EndState();
     if(regExps.isEmpty()) {
@@ -56,7 +56,7 @@ public class RegExpToFSA implements RegexpVisitor<State> {
   }
 
   @Override
-  public State visitRepeaterRegExp(RegExp regExp) {
+  public State visitRepeaterRegExp(RegExpOfCharacters regExp) {
     State start = new EmptyState();
     State content = regExp.accept(this);
     State after = new EmptyState();
@@ -72,7 +72,7 @@ public class RegExpToFSA implements RegexpVisitor<State> {
   }
 
   @Override
-  public State visitGroupRegExp(RegExp regExp) {
+  public State visitGroupRegExp(RegExpOfCharacters regExp) {
     return regExp.accept(this);
   }
 }

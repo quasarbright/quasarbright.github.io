@@ -8,11 +8,11 @@ import java.util.Iterator;
 import java.util.Set;
 
 import regularExpressions.parsing.Parser;
-import regularExpressions.regexp.RegExp;
+import regularExpressions.regexp.RegExpOfCharacters;
 
 import static org.junit.Assert.*;
 
-public class RegExpToFSATest {
+public class RegExpOfCharactersToFSATest {
   /**
    * Convert string to FSA.
    *
@@ -20,7 +20,7 @@ public class RegExpToFSATest {
    * @return FSA
    */
   State fromRE(String re) {
-    RegExp regExp = Parser.parse(re);
+    RegExpOfCharacters regExp = Parser.parse(re);
     System.out.println(regExp);
     return regExp.accept(new RegExpToFSA());
   }

@@ -2,7 +2,7 @@ package regularExpressions.satisfier.visitors;
 
 import java.util.List;
 
-import regularExpressions.regexp.RegExp;
+import regularExpressions.regexp.RegExpOfCharacters;
 
 /**
  * Satisfies regular expression randomly.
@@ -32,17 +32,17 @@ public class RandomSatisfier extends SimpleSatisfier {
     }
   }
   @Override
-  public String visitOrRegexp(List<RegExp> regExps) {
+  public String visitOrRegexp(List<RegExpOfCharacters> regExps) {
     if(regExps.size() == 0) {
       return "";
     } else {
-      RegExp regExp = choose(regExps);
+      RegExpOfCharacters regExp = choose(regExps);
       return regExp.accept(this);
     }
   }
 
   @Override
-  public String visitRepeaterRegExp(RegExp regExp) {
+  public String visitRepeaterRegExp(RegExpOfCharacters regExp) {
     StringBuilder ans = new StringBuilder();
     int numRepetitions = (int) (minRepetitions + Math.random() * (maxRepetitions-minRepetitions));
     for(int i = 0; i < numRepetitions; i++) {

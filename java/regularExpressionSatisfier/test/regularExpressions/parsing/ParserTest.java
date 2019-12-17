@@ -2,37 +2,37 @@ package regularExpressions.parsing;
 
 import org.junit.Test;
 
-import regularExpressions.regexp.CharacterRegExp;
-import regularExpressions.regexp.ConcatenationRegExp;
-import regularExpressions.regexp.EmptyRegExp;
-import regularExpressions.regexp.GroupRegExp;
-import regularExpressions.regexp.OrRegExp;
-import regularExpressions.regexp.RegExp;
-import regularExpressions.regexp.RepeaterRegExp;
+import regularExpressions.regexp.CharacterRegExpOfCharacters;
+import regularExpressions.regexp.ConcatenationRegExpOfCharacters;
+import regularExpressions.regexp.EmptyRegExpOfCharacters;
+import regularExpressions.regexp.GroupRegExpOfCharacters;
+import regularExpressions.regexp.OrRegExpOfCharacters;
+import regularExpressions.regexp.RegExpOfCharacters;
+import regularExpressions.regexp.RepeaterRegExpOfCharacters;
 
 import static org.junit.Assert.*;
 
 public class ParserTest {
 
-  private RegExp parse(String re) {
+  private RegExpOfCharacters parse(String re) {
     return Parser.parse(re);
   }
 
   @Test
   public void simpleRepeat() {
     String re = "a*";
-    RegExp expected = new RepeaterRegExp(new CharacterRegExp('a'));
+    RegExpOfCharacters expected = new RepeaterRegExpOfCharacters(new CharacterRegExpOfCharacters('a'));
     assertEquals(expected, parse(re));
   }
 
   @Test
   public void repeatCapture() {
     // aaab*
-    RegExp expected = new ConcatenationRegExp(
-            new CharacterRegExp('a'),
-            new CharacterRegExp('a'),
-            new CharacterRegExp('a'),
-            new RepeaterRegExp(new CharacterRegExp('b'))
+    RegExpOfCharacters expected = new ConcatenationRegExpOfCharacters(
+            new CharacterRegExpOfCharacters('a'),
+            new CharacterRegExpOfCharacters('a'),
+            new CharacterRegExpOfCharacters('a'),
+            new RepeaterRegExpOfCharacters(new CharacterRegExpOfCharacters('b'))
     );
     assertEquals(expected, parse("aaab*"));
   }
@@ -41,40 +41,40 @@ public class ParserTest {
   public void orCapture() {
     // aaa|b
     String re = "aaa|b";
-    RegExp expected = new OrRegExp(
-            new ConcatenationRegExp(
-                    new CharacterRegExp('a'),
-                    new CharacterRegExp('a'),
-                    new CharacterRegExp('a')
+    RegExpOfCharacters expected = new OrRegExpOfCharacters(
+            new ConcatenationRegExpOfCharacters(
+                    new CharacterRegExpOfCharacters('a'),
+                    new CharacterRegExpOfCharacters('a'),
+                    new CharacterRegExpOfCharacters('a')
             ),
-            new CharacterRegExp('b')
+            new CharacterRegExpOfCharacters('b')
     );
     assertEquals(expected, parse(re));
 
     // (aaa)|b
-    expected = new OrRegExp(
-            new GroupRegExp(
-                    new ConcatenationRegExp(
-                            new CharacterRegExp('a'),
-                            new CharacterRegExp('a'),
-                            new CharacterRegExp('a')
+    expected = new OrRegExpOfCharacters(
+            new GroupRegExpOfCharacters(
+                    new ConcatenationRegExpOfCharacters(
+                            new CharacterRegExpOfCharacters('a'),
+                            new CharacterRegExpOfCharacters('a'),
+                            new CharacterRegExpOfCharacters('a')
                     )
             ),
-            new CharacterRegExp('b')
+            new CharacterRegExpOfCharacters('b')
     );
     assertEquals(expected, parse("(aaa)|b"));
 
     re = "abc|def";
-    expected = new OrRegExp(
-            new ConcatenationRegExp(
-                    new CharacterRegExp('a'),
-                    new CharacterRegExp('b'),
-                    new CharacterRegExp('c')
+    expected = new OrRegExpOfCharacters(
+            new ConcatenationRegExpOfCharacters(
+                    new CharacterRegExpOfCharacters('a'),
+                    new CharacterRegExpOfCharacters('b'),
+                    new CharacterRegExpOfCharacters('c')
             ),
-            new ConcatenationRegExp(
-                    new CharacterRegExp('d'),
-                    new CharacterRegExp('e'),
-                    new CharacterRegExp('f')
+            new ConcatenationRegExpOfCharacters(
+                    new CharacterRegExpOfCharacters('d'),
+                    new CharacterRegExpOfCharacters('e'),
+                    new CharacterRegExpOfCharacters('f')
             )
     );
     assertEquals(expected, parse(re));
@@ -84,47 +84,47 @@ public class ParserTest {
   public void big() {
     String re = "(ab|c*d)|efg";
     // or just captures the beginning and the e, not the efg
-    RegExp expected = new OrRegExp(
-            new GroupRegExp(
-                    new OrRegExp(
-                            new ConcatenationRegExp(
-                                    new CharacterRegExp('a'),
-                                    new CharacterRegExp('b')
+    RegExpOfCharacters expected = new OrRegExpOfCharacters(
+            new GroupRegExpOfCharacters(
+                    new OrRegExpOfCharacters(
+                            new ConcatenationRegExpOfCharacters(
+                                    new CharacterRegExpOfCharacters('a'),
+                                    new CharacterRegExpOfCharacters('b')
                             ),
-                            new ConcatenationRegExp(
-                                    new RepeaterRegExp(new CharacterRegExp('c')),
-                                    new CharacterRegExp('d')
+                            new ConcatenationRegExpOfCharacters(
+                                    new RepeaterRegExpOfCharacters(new CharacterRegExpOfCharacters('c')),
+                                    new CharacterRegExpOfCharacters('d')
                             )
                     )
             ),
-            new ConcatenationRegExp(
-                    new CharacterRegExp('e'),
-                    new CharacterRegExp('f'),
-                    new CharacterRegExp('g')
+            new ConcatenationRegExpOfCharacters(
+                    new CharacterRegExpOfCharacters('e'),
+                    new CharacterRegExpOfCharacters('f'),
+                    new CharacterRegExpOfCharacters('g')
             )
     );
     assertEquals(expected, parse(re));
 
     re = "(abc(de*f)*|g)*h|(ij)*";
-    expected = new OrRegExp(
-            new ConcatenationRegExp(
-                    new RepeaterRegExp(new GroupRegExp(new OrRegExp(
-                            new ConcatenationRegExp(
-                                    new CharacterRegExp('a'),
-                                    new CharacterRegExp('b'),
-                                    new CharacterRegExp('c'),
-                                    new RepeaterRegExp(new GroupRegExp(new ConcatenationRegExp(
-                                            new CharacterRegExp('d'),
-                                            new RepeaterRegExp(new CharacterRegExp('e')),
-                                            new CharacterRegExp('f')
+    expected = new OrRegExpOfCharacters(
+            new ConcatenationRegExpOfCharacters(
+                    new RepeaterRegExpOfCharacters(new GroupRegExpOfCharacters(new OrRegExpOfCharacters(
+                            new ConcatenationRegExpOfCharacters(
+                                    new CharacterRegExpOfCharacters('a'),
+                                    new CharacterRegExpOfCharacters('b'),
+                                    new CharacterRegExpOfCharacters('c'),
+                                    new RepeaterRegExpOfCharacters(new GroupRegExpOfCharacters(new ConcatenationRegExpOfCharacters(
+                                            new CharacterRegExpOfCharacters('d'),
+                                            new RepeaterRegExpOfCharacters(new CharacterRegExpOfCharacters('e')),
+                                            new CharacterRegExpOfCharacters('f')
                                     )))
                             ),
-                            new CharacterRegExp('g')
+                            new CharacterRegExpOfCharacters('g')
                     ))),
-                    new CharacterRegExp('h')),
-            new RepeaterRegExp(new GroupRegExp(new ConcatenationRegExp(
-                    new CharacterRegExp('i'),
-                    new CharacterRegExp('j')
+                    new CharacterRegExpOfCharacters('h')),
+            new RepeaterRegExpOfCharacters(new GroupRegExpOfCharacters(new ConcatenationRegExpOfCharacters(
+                    new CharacterRegExpOfCharacters('i'),
+                    new CharacterRegExpOfCharacters('j')
             )))
     );
   }
@@ -132,15 +132,15 @@ public class ParserTest {
   @Test
   public void testOrInGroup() {
     String re = "(ab|cd)";
-    RegExp expected = new GroupRegExp(
-            new OrRegExp(
-                    new ConcatenationRegExp(
-                            new CharacterRegExp('a'),
-                            new CharacterRegExp('b')
+    RegExpOfCharacters expected = new GroupRegExpOfCharacters(
+            new OrRegExpOfCharacters(
+                    new ConcatenationRegExpOfCharacters(
+                            new CharacterRegExpOfCharacters('a'),
+                            new CharacterRegExpOfCharacters('b')
                     ),
-                    new ConcatenationRegExp(
-                            new CharacterRegExp('c'),
-                            new CharacterRegExp('d')
+                    new ConcatenationRegExpOfCharacters(
+                            new CharacterRegExpOfCharacters('c'),
+                            new CharacterRegExpOfCharacters('d')
                     )
             )
     );
@@ -150,12 +150,12 @@ public class ParserTest {
   @Test
   public void weirdOrNesting() {
     String re = "(a|b)|c";
-    RegExp expected = new OrRegExp(
-            new GroupRegExp(new OrRegExp(
-                    new CharacterRegExp('a'),
-                    new CharacterRegExp('b')
+    RegExpOfCharacters expected = new OrRegExpOfCharacters(
+            new GroupRegExpOfCharacters(new OrRegExpOfCharacters(
+                    new CharacterRegExpOfCharacters('a'),
+                    new CharacterRegExpOfCharacters('b')
             )),
-            new CharacterRegExp('c')
+            new CharacterRegExpOfCharacters('c')
     );
     assertEquals(expected, parse(re));
   }
@@ -163,12 +163,12 @@ public class ParserTest {
   @Test
   public void orCloseGroup() {
     String re = "(a|b)c";
-    RegExp expected = new ConcatenationRegExp(
-            new GroupRegExp(new OrRegExp(
-                    new CharacterRegExp('a'),
-                    new CharacterRegExp('b')
+    RegExpOfCharacters expected = new ConcatenationRegExpOfCharacters(
+            new GroupRegExpOfCharacters(new OrRegExpOfCharacters(
+                    new CharacterRegExpOfCharacters('a'),
+                    new CharacterRegExpOfCharacters('b')
             )),
-            new CharacterRegExp('c')
+            new CharacterRegExpOfCharacters('c')
     );
     assertEquals(expected, parse(re));
   }
@@ -176,12 +176,12 @@ public class ParserTest {
   @Test
   public void groupThenChar() {
     String re = "(ab)c";
-    RegExp expected = new ConcatenationRegExp(
-            new GroupRegExp(new ConcatenationRegExp(
-                    new CharacterRegExp('a'),
-                    new CharacterRegExp('b')
+    RegExpOfCharacters expected = new ConcatenationRegExpOfCharacters(
+            new GroupRegExpOfCharacters(new ConcatenationRegExpOfCharacters(
+                    new CharacterRegExpOfCharacters('a'),
+                    new CharacterRegExpOfCharacters('b')
             )),
-            new CharacterRegExp('c')
+            new CharacterRegExpOfCharacters('c')
     );
     assertEquals(expected, parse(re));
   }
@@ -189,18 +189,18 @@ public class ParserTest {
   @Test
   public void groupInGroup() {
     String re = "(abc(def(ghi)))";
-    RegExp expected = new GroupRegExp(new ConcatenationRegExp(
-            new CharacterRegExp('a'),
-            new CharacterRegExp('b'),
-            new CharacterRegExp('c'),
-            new GroupRegExp(new ConcatenationRegExp(
-                    new CharacterRegExp('d'),
-                    new CharacterRegExp('e'),
-                    new CharacterRegExp('f'),
-                    new GroupRegExp(new ConcatenationRegExp(
-                            new CharacterRegExp('g'),
-                            new CharacterRegExp('h'),
-                            new CharacterRegExp('i')
+    RegExpOfCharacters expected = new GroupRegExpOfCharacters(new ConcatenationRegExpOfCharacters(
+            new CharacterRegExpOfCharacters('a'),
+            new CharacterRegExpOfCharacters('b'),
+            new CharacterRegExpOfCharacters('c'),
+            new GroupRegExpOfCharacters(new ConcatenationRegExpOfCharacters(
+                    new CharacterRegExpOfCharacters('d'),
+                    new CharacterRegExpOfCharacters('e'),
+                    new CharacterRegExpOfCharacters('f'),
+                    new GroupRegExpOfCharacters(new ConcatenationRegExpOfCharacters(
+                            new CharacterRegExpOfCharacters('g'),
+                            new CharacterRegExpOfCharacters('h'),
+                            new CharacterRegExpOfCharacters('i')
                     ))
             ))
     ));
@@ -210,19 +210,19 @@ public class ParserTest {
   @Test
   public void testEmpty() {
     String re = "";
-    RegExp expected = new EmptyRegExp();
+    RegExpOfCharacters expected = new EmptyRegExpOfCharacters();
     assertEquals(expected, parse(re));
   }
 
   @Test
   public void testEmptyGroup() {
     String re = "()";
-    RegExp expected = new GroupRegExp(new EmptyRegExp());
+    RegExpOfCharacters expected = new GroupRegExpOfCharacters(new EmptyRegExpOfCharacters());
     assertEquals(expected, parse(re));
     re = "((()()))";
-    expected = new GroupRegExp(new GroupRegExp(new ConcatenationRegExp(
-            new GroupRegExp(new EmptyRegExp()),
-            new GroupRegExp(new EmptyRegExp())
+    expected = new GroupRegExpOfCharacters(new GroupRegExpOfCharacters(new ConcatenationRegExpOfCharacters(
+            new GroupRegExpOfCharacters(new EmptyRegExpOfCharacters()),
+            new GroupRegExpOfCharacters(new EmptyRegExpOfCharacters())
     )));
     assertEquals(expected, parse(re));
   }
@@ -230,33 +230,33 @@ public class ParserTest {
   @Test
   public void testEmptyOr() {
     String re = "|";
-    RegExp expected = new OrRegExp(new EmptyRegExp(), new EmptyRegExp());
+    RegExpOfCharacters expected = new OrRegExpOfCharacters(new EmptyRegExpOfCharacters(), new EmptyRegExpOfCharacters());
     assertEquals(expected, parse(re));
 
     re = "a|";
-    expected = new OrRegExp(new CharacterRegExp('a'), new EmptyRegExp());
+    expected = new OrRegExpOfCharacters(new CharacterRegExpOfCharacters('a'), new EmptyRegExpOfCharacters());
     assertEquals(expected, parse(re));
 
     re = "|a";
-    expected = new OrRegExp(new EmptyRegExp(), new CharacterRegExp('a'));
+    expected = new OrRegExpOfCharacters(new EmptyRegExpOfCharacters(), new CharacterRegExpOfCharacters('a'));
     assertEquals(expected, parse(re));
   }
 
   @Test
   public void testManyOr() {
     String re = "ab|cd|ef";
-    RegExp expected = new OrRegExp(
-            new ConcatenationRegExp(
-                    new CharacterRegExp('a'),
-                    new CharacterRegExp('b')
+    RegExpOfCharacters expected = new OrRegExpOfCharacters(
+            new ConcatenationRegExpOfCharacters(
+                    new CharacterRegExpOfCharacters('a'),
+                    new CharacterRegExpOfCharacters('b')
             ),
-            new ConcatenationRegExp(
-                    new CharacterRegExp('c'),
-                    new CharacterRegExp('d')
+            new ConcatenationRegExpOfCharacters(
+                    new CharacterRegExpOfCharacters('c'),
+                    new CharacterRegExpOfCharacters('d')
             ),
-            new ConcatenationRegExp(
-                    new CharacterRegExp('e'),
-                    new CharacterRegExp('f')
+            new ConcatenationRegExpOfCharacters(
+                    new CharacterRegExpOfCharacters('e'),
+                    new CharacterRegExpOfCharacters('f')
             )
     );
     assertEquals(expected, parse(re));
@@ -265,15 +265,15 @@ public class ParserTest {
   @Test
   public void testGroup() {
     String re = "abc(def)";
-    RegExp expected = new ConcatenationRegExp(
-            new CharacterRegExp('a'),
-            new CharacterRegExp('b'),
-            new CharacterRegExp('c'),
-            new GroupRegExp(
-                    new ConcatenationRegExp(
-                            new CharacterRegExp('d'),
-                            new CharacterRegExp('e'),
-                            new CharacterRegExp('f')
+    RegExpOfCharacters expected = new ConcatenationRegExpOfCharacters(
+            new CharacterRegExpOfCharacters('a'),
+            new CharacterRegExpOfCharacters('b'),
+            new CharacterRegExpOfCharacters('c'),
+            new GroupRegExpOfCharacters(
+                    new ConcatenationRegExpOfCharacters(
+                            new CharacterRegExpOfCharacters('d'),
+                            new CharacterRegExpOfCharacters('e'),
+                            new CharacterRegExpOfCharacters('f')
                     )
             )
     );

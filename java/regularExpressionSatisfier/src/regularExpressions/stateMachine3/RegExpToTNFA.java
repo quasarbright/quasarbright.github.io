@@ -4,14 +4,14 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import regularExpressions.regexp.RegExp;
-import regularExpressions.regexp.RegexpVisitor;
+import regularExpressions.regexp.RegExpOfCharacters;
+import regularExpressions.regexp.RegExpOfCharactersVisitor;
 
 /**
- * Translates from {@link RegExp} to {@link TNFA}
+ * Translates from {@link RegExpOfCharacters} to {@link TNFA}
  * @param <S>
  */
-public class RegExpToTNFA<S> implements RegexpVisitor<TNFA<S, Character>> {
+public class RegExpToTNFA<S> implements RegExpOfCharactersVisitor<TNFA<S, Character>> {
   private final TNFA.TNFABuilder<S, Character> builder;
 
   public RegExpToTNFA(TNFA.TNFABuilder<S, Character> builder) {
@@ -22,13 +22,13 @@ public class RegExpToTNFA<S> implements RegexpVisitor<TNFA<S, Character>> {
     builder = new TNFA.TNFABuilder<>(stateSupplier);
   }
 
-  private List<TNFA<S, Character>> visitAll(List<RegExp> regExps) {
+  private List<TNFA<S, Character>> visitAll(List<RegExpOfCharacters> regExps) {
     return regExps.stream()
             .map(this::visit)
             .collect(Collectors.toList());
   }
 
-  public TNFA<S, Character> visit(RegExp regExp) {
+  public TNFA<S, Character> visit(RegExpOfCharacters regExp) {
     return regExp.accept(this);
   }
 
@@ -38,7 +38,7 @@ public class RegExpToTNFA<S> implements RegexpVisitor<TNFA<S, Character>> {
   }
 
   @Override
-  public TNFA<S, Character> visitConcatenationRegExp(List<RegExp> regExps) {
+  public TNFA<S, Character> visitConcatenationRegExp(List<RegExpOfCharacters> regExps) {
     return builder.concatenate(visitAll(regExps));
   }
 
@@ -48,17 +48,17 @@ public class RegExpToTNFA<S> implements RegexpVisitor<TNFA<S, Character>> {
   }
 
   @Override
-  public TNFA<S, Character> visitOrRegexp(List<RegExp> regExps) {
+  public TNFA<S, Character> visitOrRegexp(List<RegExpOfCharacters> regExps) {
     return builder.or(visitAll(regExps));
   }
 
   @Override
-  public TNFA<S, Character> visitRepeaterRegExp(RegExp regExp) {
+  public TNFA<S, Character> visitRepeaterRegExp(RegExpOfCharacters regExp) {
     return builder.star(visit(regExp));
   }
 
   @Override
-  public TNFA<S, Character> visitGroupRegExp(RegExp regExp) {
+  public TNFA<S, Character> visitGroupRegExp(RegExpOfCharacters regExp) {
     return visit(regExp);
   }
 }

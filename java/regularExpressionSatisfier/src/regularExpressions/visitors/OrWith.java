@@ -3,57 +3,57 @@ package regularExpressions.visitors;
 import java.util.ArrayList;
 import java.util.List;
 
-import regularExpressions.regexp.CharacterRegExp;
-import regularExpressions.regexp.ConcatenationRegExp;
-import regularExpressions.regexp.EmptyRegExp;
-import regularExpressions.regexp.GroupRegExp;
-import regularExpressions.regexp.OrRegExp;
-import regularExpressions.regexp.RegExp;
-import regularExpressions.regexp.RegexpVisitor;
-import regularExpressions.regexp.RepeaterRegExp;
+import regularExpressions.regexp.CharacterRegExpOfCharacters;
+import regularExpressions.regexp.ConcatenationRegExpOfCharacters;
+import regularExpressions.regexp.EmptyRegExpOfCharacters;
+import regularExpressions.regexp.GroupRegExpOfCharacters;
+import regularExpressions.regexp.OrRegExpOfCharacters;
+import regularExpressions.regexp.RegExpOfCharacters;
+import regularExpressions.regexp.RegExpOfCharactersVisitor;
+import regularExpressions.regexp.RepeaterRegExpOfCharacters;
 
 /**
  * Ors the prev (field) regular expression with the function argument regular expression (right).
- * for a|b, it's {@code new CharacterRegExp('b').accept(new OrWith(new CharacterRegExp('a')}
+ * for a|b, it's {@code new CharacterRegExpOfCharacters('b').accept(new OrWith(new CharacterRegExpOfCharacters('a')}
  * prev should never be an Or.
  */
-public class OrWith implements RegexpVisitor<RegExp> {
-  private final RegExp prev;
+public class OrWith implements RegExpOfCharactersVisitor<RegExpOfCharacters> {
+  private final RegExpOfCharacters prev;
 
-  public OrWith(RegExp prev) {
+  public OrWith(RegExpOfCharacters prev) {
     this.prev = prev;
   }
 
   @Override
-  public RegExp visitCharacterRegExp(char c) {
-    return new OrRegExp(prev, new CharacterRegExp(c));
+  public RegExpOfCharacters visitCharacterRegExp(char c) {
+    return new OrRegExpOfCharacters(prev, new CharacterRegExpOfCharacters(c));
   }
 
   @Override
-  public RegExp visitConcatenationRegExp(List<RegExp> regExps) {
-    return new OrRegExp(prev, new ConcatenationRegExp(regExps));
+  public RegExpOfCharacters visitConcatenationRegExp(List<RegExpOfCharacters> regExps) {
+    return new OrRegExpOfCharacters(prev, new ConcatenationRegExpOfCharacters(regExps));
   }
 
   @Override
-  public RegExp visitEmptyRegExp() {
+  public RegExpOfCharacters visitEmptyRegExp() {
     // I guess this would be like (a|)
-    return new OrRegExp(prev, new EmptyRegExp());
+    return new OrRegExpOfCharacters(prev, new EmptyRegExpOfCharacters());
   }
 
   @Override
-  public RegExp visitOrRegexp(List<RegExp> regExps) {
-    List<RegExp> copy = new ArrayList<>(regExps);
+  public RegExpOfCharacters visitOrRegexp(List<RegExpOfCharacters> regExps) {
+    List<RegExpOfCharacters> copy = new ArrayList<>(regExps);
     copy.add(0, prev);
-    return new OrRegExp(copy);
+    return new OrRegExpOfCharacters(copy);
   }
 
   @Override
-  public RegExp visitRepeaterRegExp(RegExp regExp) {
-    return new OrRegExp(prev, new RepeaterRegExp(regExp));
+  public RegExpOfCharacters visitRepeaterRegExp(RegExpOfCharacters regExp) {
+    return new OrRegExpOfCharacters(prev, new RepeaterRegExpOfCharacters(regExp));
   }
 
   @Override
-  public RegExp visitGroupRegExp(RegExp regExp) {
-    return new OrRegExp(prev, new GroupRegExp(regExp));
+  public RegExpOfCharacters visitGroupRegExp(RegExpOfCharacters regExp) {
+    return new OrRegExpOfCharacters(prev, new GroupRegExpOfCharacters(regExp));
   }
 }

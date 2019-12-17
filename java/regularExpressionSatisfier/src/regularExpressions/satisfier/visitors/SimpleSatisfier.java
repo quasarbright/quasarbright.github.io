@@ -2,15 +2,15 @@ package regularExpressions.satisfier.visitors;
 
 import java.util.List;
 
-import regularExpressions.regexp.RegExp;
-import regularExpressions.regexp.RegexpVisitor;
+import regularExpressions.regexp.RegExpOfCharacters;
+import regularExpressions.regexp.RegExpOfCharactersVisitor;
 
 /**
  * Satisfies regular expressions in the simplest way.
  * Chooses the first in an or.
  * Repeats repeaters the given number times (5 by default).
  */
-public class SimpleSatisfier implements RegexpVisitor<String> {
+public class SimpleSatisfier implements RegExpOfCharactersVisitor<String> {
   private final int numRepetitions;
 
   public SimpleSatisfier(int numRepetitions) {
@@ -28,9 +28,9 @@ public class SimpleSatisfier implements RegexpVisitor<String> {
   }
 
   @Override
-  public String visitConcatenationRegExp(List<RegExp> regExps) {
+  public String visitConcatenationRegExp(List<RegExpOfCharacters> regExps) {
     StringBuilder ans = new StringBuilder();
-    for(RegExp regExp: regExps) {
+    for(RegExpOfCharacters regExp: regExps) {
       ans.append(regExp.accept(this));
     }
     return ans.toString();
@@ -42,7 +42,7 @@ public class SimpleSatisfier implements RegexpVisitor<String> {
   }
 
   @Override
-  public String visitOrRegexp(List<RegExp> regExps) {
+  public String visitOrRegexp(List<RegExpOfCharacters> regExps) {
     if(regExps.size() > 0) {
       return regExps.get(0).accept(this);
     } else {
@@ -51,7 +51,7 @@ public class SimpleSatisfier implements RegexpVisitor<String> {
   }
 
   @Override
-  public String visitRepeaterRegExp(RegExp regExp) {
+  public String visitRepeaterRegExp(RegExpOfCharacters regExp) {
     StringBuilder ans = new StringBuilder();
     for(int i = 0; i < numRepetitions; i++) {
       ans.append(regExp.accept(this));
@@ -60,7 +60,7 @@ public class SimpleSatisfier implements RegexpVisitor<String> {
   }
 
   @Override
-  public String visitGroupRegExp(RegExp regExp) {
+  public String visitGroupRegExp(RegExpOfCharacters regExp) {
     return regExp.accept(this);
   }
 }

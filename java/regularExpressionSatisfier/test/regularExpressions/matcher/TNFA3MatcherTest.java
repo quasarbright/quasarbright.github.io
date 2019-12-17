@@ -2,11 +2,9 @@ package regularExpressions.matcher;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import regularExpressions.parsing.Parser;
-import regularExpressions.regexp.RegExp;
-import regularExpressions.regexp.RegexpVisitor;
+import regularExpressions.regexp.RegExpOfCharacters;
 import regularExpressions.stateMachine3.CounterStateSupplier;
 import regularExpressions.stateMachine3.RegExpToTNFA;
 import regularExpressions.stateMachine3.TNFA;
@@ -29,7 +27,7 @@ public class TNFA3MatcherTest extends RegExpMatcherTest {
 
   @Override
   protected void failMatch(String target, String re) {
-    RegExp regExp = Parser.parse(re);
+    RegExpOfCharacters regExp = Parser.parse(re);
     TNFA.TNFABuilder<Integer, Character> builder = new TNFA.TNFABuilder<>(new CounterStateSupplier());
     TNFA<Integer, Character> tnfa = regExp.accept(new RegExpToTNFA<Integer>(builder));
     List<Character> symbols = getSymbols(target);
@@ -38,7 +36,7 @@ public class TNFA3MatcherTest extends RegExpMatcherTest {
 
   @Override
   protected void passMatch(String target, String re) {
-    RegExp regExp = Parser.parse(re);
+    RegExpOfCharacters regExp = Parser.parse(re);
     TNFA.TNFABuilder<Integer, Character> builder = new TNFA.TNFABuilder<>(new CounterStateSupplier());
     TNFA<Integer, Character> tnfa = regExp.accept(new RegExpToTNFA<Integer>(builder));
     List<Character> symbols = getSymbols(target);
@@ -47,7 +45,7 @@ public class TNFA3MatcherTest extends RegExpMatcherTest {
 
   @Override
   protected void passFullMatch(String target, String re) {
-    RegExp regExp = Parser.parse(re);
+    RegExpOfCharacters regExp = Parser.parse(re);
     TNFA.TNFABuilder<Integer, Character> builder = new TNFA.TNFABuilder<>(new CounterStateSupplier());
     TNFA<Integer, Character> tnfa = regExp.accept(new RegExpToTNFA<Integer>(builder));
     List<Character> symbols = getSymbols(target);

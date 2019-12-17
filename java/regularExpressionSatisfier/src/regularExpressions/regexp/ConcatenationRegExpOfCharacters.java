@@ -2,28 +2,28 @@ package regularExpressions.regexp;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * An or of one ore more {@link RegExp}s.
+ * A concatenation of two or more regular expressions.
  */
-public class OrRegExp implements RegExp {
-    private final List<RegExp> regExps;
+public class ConcatenationRegExpOfCharacters implements RegExpOfCharacters {
+    private final List<RegExpOfCharacters> regExps;
 
-    public OrRegExp(List<RegExp> regExps) {
+    public ConcatenationRegExpOfCharacters(List<RegExpOfCharacters> regExps) {
         this.regExps = regExps;
     }
 
-    public OrRegExp(RegExp... regExps) {
+    public ConcatenationRegExpOfCharacters(RegExpOfCharacters... regExps) {
         this.regExps = Arrays.asList(regExps);
     }
 
+
     @Override
-    public <R> R accept(RegexpVisitor<R> visitor) {
-        return visitor.visitOrRegexp(regExps);
+    public <R> R accept(RegExpOfCharactersVisitor<R> visitor) {
+        return visitor.visitConcatenationRegExp(new ArrayList<>(regExps));
     }
 
     @Override
@@ -34,19 +34,19 @@ public class OrRegExp implements RegExp {
         if(other == null || getClass() != other.getClass()) {
             return false;
         }
-        OrRegExp orRegExp = (OrRegExp) other;
-        return new ArrayList<>(regExps).equals(new ArrayList<>(orRegExp.regExps));
+        ConcatenationRegExpOfCharacters concatenationRegExp = (ConcatenationRegExpOfCharacters) other;
+        return new ArrayList<>(regExps).equals(new ArrayList<>(concatenationRegExp.regExps));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(new HashSet<>(regExps));
+        return Objects.hashCode(regExps);
     }
 
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder();
-        ans.append("or(");
+        ans.append("concat(");
         List<String> strings = regExps.stream()
                 .map(Object::toString)
                 .collect(Collectors.toList());

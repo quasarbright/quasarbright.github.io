@@ -2,11 +2,11 @@ package regularExpressions.stateMachine.matcher;
 
 import java.util.List;
 
-import regularExpressions.regexp.RegExp;
-import regularExpressions.regexp.RegexpVisitor;
+import regularExpressions.regexp.RegExpOfCharacters;
+import regularExpressions.regexp.RegExpOfCharactersVisitor;
 import regularExpressions.stateMachine.State;
 
-public class RegExpToFSM implements RegexpVisitor<State> {
+public class RegExpToFSM implements RegExpOfCharactersVisitor<State> {
   @Override
   public State visitCharacterRegExp(char c) {
     State start = new State();
@@ -16,11 +16,11 @@ public class RegExpToFSM implements RegexpVisitor<State> {
   }
 
   @Override
-  public State visitConcatenationRegExp(List<RegExp> regExps) {
+  public State visitConcatenationRegExp(List<RegExpOfCharacters> regExps) {
     State start = new State();
     State end = new State();
     start.connectTo(end);
-    for(RegExp regExp: regExps) {
+    for(RegExpOfCharacters regExp: regExps) {
       State current = regExp.accept(this);
       State newEnd = current.getEnd();
       end.connectTo(current);
@@ -37,11 +37,11 @@ public class RegExpToFSM implements RegexpVisitor<State> {
   }
 
   @Override
-  public State visitOrRegexp(List<RegExp> regExps) {
+  public State visitOrRegexp(List<RegExpOfCharacters> regExps) {
     State start = new State();
     State end = new State();
     regExps.stream()
-            .map((RegExp regExp) -> regExp.accept(this))
+            .map((RegExpOfCharacters regExp) -> regExp.accept(this))
             .forEach((State s) -> {
               start.connectTo(s);
               s.getEnd().connectTo(end);
@@ -50,7 +50,7 @@ public class RegExpToFSM implements RegexpVisitor<State> {
   }
 
   @Override
-  public State visitRepeaterRegExp(RegExp regExp) {
+  public State visitRepeaterRegExp(RegExpOfCharacters regExp) {
     State start = new State();
     State mid = new State();
     State end = new State();
@@ -64,7 +64,7 @@ public class RegExpToFSM implements RegexpVisitor<State> {
   }
 
   @Override
-  public State visitGroupRegExp(RegExp regExp) {
+  public State visitGroupRegExp(RegExpOfCharacters regExp) {
     return regExp.accept(this);
   }
 }

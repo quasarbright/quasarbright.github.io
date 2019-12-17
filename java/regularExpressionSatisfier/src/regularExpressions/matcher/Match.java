@@ -2,12 +2,12 @@ package regularExpressions.matcher;
 
 import java.util.Objects;
 
-import regularExpressions.regexp.RegExp;
+import regularExpressions.regexp.RegExpOfCharacters;
 
 public final class Match {
   public final int start, end;
   public final String targetString;
-  public final RegExp regExp;
+  public final RegExpOfCharacters regExp;
 
   /**
    * Create a match with the given parameters.
@@ -17,7 +17,7 @@ public final class Match {
    * @param targetString the string this match occurred in
    * @param regExp the regular expression that was matched in the target string
    */
-  public Match(int start, int end, String targetString, RegExp regExp) {
+  public Match(int start, int end, String targetString, RegExpOfCharacters regExp) {
     if(start < 0 || (targetString.length() > 0 && start >= targetString.length())) {
       throw new IllegalArgumentException("invalid start");
     } else if(end < start || end > targetString.length()) {

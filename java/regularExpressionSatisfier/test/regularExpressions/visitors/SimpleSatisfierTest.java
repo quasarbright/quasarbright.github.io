@@ -3,45 +3,45 @@ package regularExpressions.visitors;
 import org.junit.Before;
 import org.junit.Test;
 
-import regularExpressions.regexp.CharacterRegExp;
-import regularExpressions.regexp.ConcatenationRegExp;
-import regularExpressions.regexp.EmptyRegExp;
-import regularExpressions.regexp.OrRegExp;
-import regularExpressions.regexp.RegExp;
-import regularExpressions.regexp.RegexpVisitor;
-import regularExpressions.regexp.RepeaterRegExp;
+import regularExpressions.regexp.CharacterRegExpOfCharacters;
+import regularExpressions.regexp.ConcatenationRegExpOfCharacters;
+import regularExpressions.regexp.EmptyRegExpOfCharacters;
+import regularExpressions.regexp.OrRegExpOfCharacters;
+import regularExpressions.regexp.RegExpOfCharacters;
+import regularExpressions.regexp.RegExpOfCharactersVisitor;
+import regularExpressions.regexp.RepeaterRegExpOfCharacters;
 import regularExpressions.satisfier.visitors.SimpleSatisfier;
 
 import static org.junit.Assert.*;
 
 public class SimpleSatisfierTest {
-  RegExp h;
-  RegExp e;
-  RegExp l;
-  RegExp o;
-  RegExp hello;
-  RegExp llll;
-  RegExp hellllo;
-  RegExp bye;
-  RegExp helllloOrBye;
-  RegexpVisitor visitor;
+  RegExpOfCharacters h;
+  RegExpOfCharacters e;
+  RegExpOfCharacters l;
+  RegExpOfCharacters o;
+  RegExpOfCharacters hello;
+  RegExpOfCharacters llll;
+  RegExpOfCharacters hellllo;
+  RegExpOfCharacters bye;
+  RegExpOfCharacters helllloOrBye;
+  RegExpOfCharactersVisitor visitor;
   @Before
   public void setUp() {
-    h = new CharacterRegExp('h');
-    e = new CharacterRegExp('e');
-    l = new CharacterRegExp('l');
-    o = new CharacterRegExp('o');
-    hello = new ConcatenationRegExp(h, e, l, l, o);
-    llll = new RepeaterRegExp(l);
-    hellllo = new ConcatenationRegExp(h, e, llll, o);
-    RegExp b = new CharacterRegExp('b');
-    RegExp y = new CharacterRegExp('y');
-    bye = new ConcatenationRegExp(b, y, e);
-    helllloOrBye = new OrRegExp(hellllo, bye);
+    h = new CharacterRegExpOfCharacters('h');
+    e = new CharacterRegExpOfCharacters('e');
+    l = new CharacterRegExpOfCharacters('l');
+    o = new CharacterRegExpOfCharacters('o');
+    hello = new ConcatenationRegExpOfCharacters(h, e, l, l, o);
+    llll = new RepeaterRegExpOfCharacters(l);
+    hellllo = new ConcatenationRegExpOfCharacters(h, e, llll, o);
+    RegExpOfCharacters b = new CharacterRegExpOfCharacters('b');
+    RegExpOfCharacters y = new CharacterRegExpOfCharacters('y');
+    bye = new ConcatenationRegExpOfCharacters(b, y, e);
+    helllloOrBye = new OrRegExpOfCharacters(hellllo, bye);
     visitor = new SimpleSatisfier(5);
   }
 
-  private void runTest(String expected, RegExp regExp) {
+  private void runTest(String expected, RegExpOfCharacters regExp) {
     assertEquals(expected, regExp.accept(visitor));
   }
 
@@ -57,7 +57,7 @@ public class SimpleSatisfierTest {
 
   @Test
   public void visitEmptyRegExp() {
-    runTest("", new EmptyRegExp());
+    runTest("", new EmptyRegExpOfCharacters());
   }
 
   @Test

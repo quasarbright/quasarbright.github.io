@@ -7,7 +7,7 @@ import regularExpressions.stateMachine.State;
 
 import static org.junit.Assert.*;
 
-public class RegExpToFSMTest {
+public class RegExpOfCharactersToFSMTest {
 
   private State makeState(String re) {
     return Parser.parse(re).accept(new RegExpToFSM());

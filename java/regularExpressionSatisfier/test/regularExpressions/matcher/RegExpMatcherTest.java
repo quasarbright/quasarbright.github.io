@@ -5,8 +5,8 @@ import org.junit.Test;
 import java.util.Optional;
 
 import regularExpressions.parsing.Parser;
-import regularExpressions.regexp.RegExp;
-import regularExpressions.regexp.RegexpVisitor;
+import regularExpressions.regexp.RegExpOfCharacters;
+import regularExpressions.regexp.RegExpOfCharactersVisitor;
 import regularExpressions.satisfier.visitors.RandomSatisfier;
 import regularExpressions.satisfier.visitors.SimpleSatisfier;
 
@@ -17,12 +17,12 @@ public abstract class RegExpMatcherTest {
   protected abstract RegExpMatcher factory();
 
   protected void passMatch(int start, int end, String target, String re) {
-    RegExp regExp = Parser.parse(re);
+    RegExpOfCharacters regExp = Parser.parse(re);
     assertEquals(""+start+" "+end+" "+target+" "+regExp, Optional.of(new Match(start, end, target, regExp)), factory().match(target, regExp));
   }
 
   protected void passMatch(String target, String re) {
-    RegExp regExp = Parser.parse(re);
+    RegExpOfCharacters regExp = Parser.parse(re);
     assertTrue(factory().match(target, regExp).isPresent());
   }
 
@@ -40,11 +40,11 @@ public abstract class RegExpMatcherTest {
    * @param re the regular expression to test
    */
   private void autoTest(String re) {
-    RegExp regExp = Parser.parse(re);
-    RegexpVisitor<String> simpleSatisfier = new SimpleSatisfier();
+    RegExpOfCharacters regExp = Parser.parse(re);
+    RegExpOfCharactersVisitor<String> simpleSatisfier = new SimpleSatisfier();
     String target = regExp.accept(simpleSatisfier);
     passFullMatch(target, re);
-    RegexpVisitor<String> randomSatisfier = new RandomSatisfier(1,5);
+    RegExpOfCharactersVisitor<String> randomSatisfier = new RandomSatisfier(1,5);
     for(int i = 0; i < 1000; i++) {
       target = regExp.accept(randomSatisfier);
       passFullMatch(target, re);

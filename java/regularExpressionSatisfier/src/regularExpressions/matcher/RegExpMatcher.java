@@ -4,17 +4,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-import regularExpressions.matcher.visitors.RecursiveMatchFinderVisitor;
 import regularExpressions.parsing.Parser;
-import regularExpressions.regexp.RegExp;
+import regularExpressions.regexp.RegExpOfCharacters;
 
 /**
  * Matches regular expressions to strings.
  */
 public class RegExpMatcher {
-  private final Function<RegExp, MatchFinder> finderFactory;
+  private final Function<RegExpOfCharacters, MatchFinder> finderFactory;
 
-  public RegExpMatcher(Function<RegExp, MatchFinder> finderFactory) {
+  public RegExpMatcher(Function<RegExpOfCharacters, MatchFinder> finderFactory) {
     this.finderFactory = finderFactory;
   }
 
@@ -25,7 +24,7 @@ public class RegExpMatcher {
    * @param regExp the pattern
    * @return the largest-spanning match, if any
    */
-  public Optional<Match> match(String string, RegExp regExp) {
+  public Optional<Match> match(String string, RegExpOfCharacters regExp) {
     MatchFinder matchFinder = finderFactory.apply(regExp);
     List<Match> matches = matchFinder.match(string);
     Optional<Match> bestMatch = matches.stream()
@@ -51,7 +50,7 @@ public class RegExpMatcher {
    * @param regExp the pattern
    * @return the match, if any
    */
-  public Optional<Match> fullMatch(String string, RegExp regExp) {
+  public Optional<Match> fullMatch(String string, RegExpOfCharacters regExp) {
     Optional<Match> maybeMatch = match(string, regExp);
     if(maybeMatch.isPresent()) {
       Match match = maybeMatch.get();
@@ -69,7 +68,7 @@ public class RegExpMatcher {
    * @param regExp the pattern
    * @return the first largest-spanning match, if any
    */
-  public Optional<Match> search(String string, RegExp regExp) {
+  public Optional<Match> search(String string, RegExpOfCharacters regExp) {
     for(int i = 0; i < string.length(); i++) {
       String sub = string.substring(i);
       Optional<Match> currMatch = match(sub, regExp);

@@ -5,15 +5,15 @@ import java.util.Objects;
 /**
  * A single character regular expression.
  */
-public class CharacterRegExp implements RegExp {
+public class CharacterRegExpOfCharacters implements RegExpOfCharacters {
     private final char c;
 
-    public CharacterRegExp(char c) {
+    public CharacterRegExpOfCharacters(char c) {
         this.c = c;
     }
 
     @Override
-    public <R> R accept(RegexpVisitor<R> visitor) {
+    public <R> R accept(RegExpOfCharactersVisitor<R> visitor) {
         return visitor.visitCharacterRegExp(c);
     }
 
@@ -25,7 +25,7 @@ public class CharacterRegExp implements RegExp {
         if(other == null || getClass() != other.getClass()) {
             return false;
         }
-        CharacterRegExp characterRegExp = (CharacterRegExp) other;
+        CharacterRegExpOfCharacters characterRegExp = (CharacterRegExpOfCharacters) other;
         return c == characterRegExp.c;
     }
 

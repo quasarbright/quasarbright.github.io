@@ -5,15 +5,15 @@ import java.util.Objects;
 /**
  * Zero or more repetitions of a given regular expression.
  */
-public class RepeaterRegExp implements RegExp {
-  private final RegExp regExp;
+public class RepeaterRegExpOfCharacters implements RegExpOfCharacters {
+  private final RegExpOfCharacters regExp;
 
-  public RepeaterRegExp(RegExp regExp) {
+  public RepeaterRegExpOfCharacters(RegExpOfCharacters regExp) {
     this.regExp = regExp;
   }
 
   @Override
-  public <R> R accept(RegexpVisitor<R> visitor) {
+  public <R> R accept(RegExpOfCharactersVisitor<R> visitor) {
     return visitor.visitRepeaterRegExp(regExp);
   }
 
@@ -25,7 +25,7 @@ public class RepeaterRegExp implements RegExp {
     if(other == null || getClass() != other.getClass()) {
       return false;
     }
-    RepeaterRegExp repeaterRegExp = (RepeaterRegExp) other;
+    RepeaterRegExpOfCharacters repeaterRegExp = (RepeaterRegExpOfCharacters) other;
     return regExp.equals(repeaterRegExp.regExp);
   }
 

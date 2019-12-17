@@ -5,26 +5,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import regularExpressions.regexp.CharacterRegExp;
-import regularExpressions.regexp.GroupRegExp;
-import regularExpressions.regexp.OrRegExp;
-import regularExpressions.regexp.RegExp;
+import regularExpressions.regexp.CharacterRegExpOfCharacters;
+import regularExpressions.regexp.GroupRegExpOfCharacters;
+import regularExpressions.regexp.OrRegExpOfCharacters;
+import regularExpressions.regexp.RegExpOfCharacters;
 
 /**
  *
  */
 public class EscapeRegexUtils {
-  private final Map<Character, RegExp> escapeMap;
+  private final Map<Character, RegExpOfCharacters> escapeMap;
 
-  private static RegExp charset(String chars) {
+  private static RegExpOfCharacters charset(String chars) {
     List<Character> characterList = new ArrayList<>();
     for(char c: chars.toCharArray()){
       characterList.add(c);
     }
-    List<RegExp> characterRegExps = characterList.stream()
-            .map(CharacterRegExp::new)
+    List<RegExpOfCharacters> characterRegExps = characterList.stream()
+            .map(CharacterRegExpOfCharacters::new)
             .collect(Collectors.toList());
-    return new GroupRegExp(new OrRegExp(characterRegExps));
+    return new GroupRegExpOfCharacters(new OrRegExpOfCharacters(characterRegExps));
   }
 
   public EscapeRegexUtils() {
@@ -36,19 +36,19 @@ public class EscapeRegexUtils {
             'd', charset(digits),
             'w', charset(wordChars),
             's', charset(whitespace),
-            'n', new CharacterRegExp('\n'),
-            't', new CharacterRegExp('\t'),
-            'r', new CharacterRegExp('\r'),
-            'f', new CharacterRegExp('\f'),
-            '\\', new CharacterRegExp('\\')
+            'n', new CharacterRegExpOfCharacters('\n'),
+            't', new CharacterRegExpOfCharacters('\t'),
+            'r', new CharacterRegExpOfCharacters('\r'),
+            'f', new CharacterRegExpOfCharacters('\f'),
+            '\\', new CharacterRegExpOfCharacters('\\')
     );
   }
 
-  public RegExp getEscapeRegex(char c) {
+  public RegExpOfCharacters getEscapeRegex(char c) {
     if(escapeMap.containsKey(c)) {
       return escapeMap.get(c);
     } else {
-      return new CharacterRegExp(c);
+      return new CharacterRegExpOfCharacters(c);
     }
   }
 }

@@ -3,54 +3,54 @@ package regularExpressions.visitors;
 import java.util.ArrayList;
 import java.util.List;
 
-import regularExpressions.regexp.CharacterRegExp;
-import regularExpressions.regexp.ConcatenationRegExp;
-import regularExpressions.regexp.GroupRegExp;
-import regularExpressions.regexp.OrRegExp;
-import regularExpressions.regexp.RegExp;
-import regularExpressions.regexp.RegexpVisitor;
-import regularExpressions.regexp.RepeaterRegExp;
+import regularExpressions.regexp.CharacterRegExpOfCharacters;
+import regularExpressions.regexp.ConcatenationRegExpOfCharacters;
+import regularExpressions.regexp.GroupRegExpOfCharacters;
+import regularExpressions.regexp.OrRegExpOfCharacters;
+import regularExpressions.regexp.RegExpOfCharacters;
+import regularExpressions.regexp.RegExpOfCharactersVisitor;
+import regularExpressions.regexp.RepeaterRegExpOfCharacters;
 
 /**
  * Concatenates the function argument regular expression (left) with the next (field) regular expression.
- * for ab, it's {@code new CharacterRegExp('a').accept(new ConcatenateWith(new CharacterRegExp('b')}
+ * for ab, it's {@code new CharacterRegExpOfCharacters('a').accept(new ConcatenateWith(new CharacterRegExpOfCharacters('b')}
  */
-public class ConcatenateWith implements RegexpVisitor<RegExp> {
-  private final RegExp next;
+public class ConcatenateWith implements RegExpOfCharactersVisitor<RegExpOfCharacters> {
+  private final RegExpOfCharacters next;
 
-  public ConcatenateWith(RegExp next) {
+  public ConcatenateWith(RegExpOfCharacters next) {
     this.next = next;
   }
 
   @Override
-  public RegExp visitCharacterRegExp(char c) {
-    return new ConcatenationRegExp(new CharacterRegExp(c), next);
+  public RegExpOfCharacters visitCharacterRegExp(char c) {
+    return new ConcatenationRegExpOfCharacters(new CharacterRegExpOfCharacters(c), next);
   }
 
   @Override
-  public RegExp visitConcatenationRegExp(List<RegExp> regExps) {
-    List<RegExp> recopy = new ArrayList<>(regExps);
+  public RegExpOfCharacters visitConcatenationRegExp(List<RegExpOfCharacters> regExps) {
+    List<RegExpOfCharacters> recopy = new ArrayList<>(regExps);
     recopy.add(next);
-    return new ConcatenationRegExp(recopy);
+    return new ConcatenationRegExpOfCharacters(recopy);
   }
 
   @Override
-  public RegExp visitEmptyRegExp() {
+  public RegExpOfCharacters visitEmptyRegExp() {
     return next;
   }
 
   @Override
-  public RegExp visitOrRegexp(List<RegExp> regExps) {
-    return new ConcatenationRegExp(new OrRegExp(regExps), next);
+  public RegExpOfCharacters visitOrRegexp(List<RegExpOfCharacters> regExps) {
+    return new ConcatenationRegExpOfCharacters(new OrRegExpOfCharacters(regExps), next);
   }
 
   @Override
-  public RegExp visitRepeaterRegExp(RegExp regExp) {
-    return new ConcatenationRegExp(new RepeaterRegExp(regExp), next);
+  public RegExpOfCharacters visitRepeaterRegExp(RegExpOfCharacters regExp) {
+    return new ConcatenationRegExpOfCharacters(new RepeaterRegExpOfCharacters(regExp), next);
   }
 
   @Override
-  public RegExp visitGroupRegExp(RegExp regExp) {
-    return new ConcatenationRegExp(new GroupRegExp(regExp), next);
+  public RegExpOfCharacters visitGroupRegExp(RegExpOfCharacters regExp) {
+    return new ConcatenationRegExpOfCharacters(new GroupRegExpOfCharacters(regExp), next);
   }
 }

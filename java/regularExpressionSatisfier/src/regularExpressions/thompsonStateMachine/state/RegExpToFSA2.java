@@ -2,10 +2,10 @@ package regularExpressions.thompsonStateMachine.state;
 
 import java.util.List;
 
-import regularExpressions.regexp.RegExp;
-import regularExpressions.regexp.RegexpVisitor;
+import regularExpressions.regexp.RegExpOfCharacters;
+import regularExpressions.regexp.RegExpOfCharactersVisitor;
 
-public class RegExpToFSA2 implements RegexpVisitor<OldFiniteStateAutomaton> {
+public class RegExpToFSA2 implements RegExpOfCharactersVisitor<OldFiniteStateAutomaton> {
   private OldFiniteStateAutomaton empty() {
     State start = new EmptyState();
     EmptyState end = new EmptyState();
@@ -22,7 +22,7 @@ public class RegExpToFSA2 implements RegexpVisitor<OldFiniteStateAutomaton> {
   }
 
   @Override
-  public OldFiniteStateAutomaton visitConcatenationRegExp(List<RegExp> regExps) {
+  public OldFiniteStateAutomaton visitConcatenationRegExp(List<RegExpOfCharacters> regExps) {
     if(regExps.isEmpty()) {
       State start = new EmptyState();
       EmptyState end = new EmptyState();
@@ -46,13 +46,13 @@ public class RegExpToFSA2 implements RegexpVisitor<OldFiniteStateAutomaton> {
   }
 
   @Override
-  public OldFiniteStateAutomaton visitOrRegexp(List<RegExp> regExps) {
+  public OldFiniteStateAutomaton visitOrRegexp(List<RegExpOfCharacters> regExps) {
     if(regExps.isEmpty()) {
       return empty();
     } else {
       OldFiniteStateAutomaton start = empty();
       OldFiniteStateAutomaton end = empty();
-      for(RegExp regExp: regExps) {
+      for(RegExpOfCharacters regExp: regExps) {
         OldFiniteStateAutomaton current = regExp.accept(this);
         start.addToEnd(current);
         current.addToEnd(end);
@@ -62,7 +62,7 @@ public class RegExpToFSA2 implements RegexpVisitor<OldFiniteStateAutomaton> {
   }
 
   @Override
-  public OldFiniteStateAutomaton visitRepeaterRegExp(RegExp regExp) {
+  public OldFiniteStateAutomaton visitRepeaterRegExp(RegExpOfCharacters regExp) {
     OldFiniteStateAutomaton content = regExp.accept(this);
     State start = new EmptyState();
     start.addNextState(content.start);
@@ -74,7 +74,7 @@ public class RegExpToFSA2 implements RegexpVisitor<OldFiniteStateAutomaton> {
   }
 
   @Override
-  public OldFiniteStateAutomaton visitGroupRegExp(RegExp regExp) {
+  public OldFiniteStateAutomaton visitGroupRegExp(RegExpOfCharacters regExp) {
     return regExp.accept(this);
   }
 }

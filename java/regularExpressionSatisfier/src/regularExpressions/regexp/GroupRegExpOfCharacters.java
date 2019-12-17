@@ -1,14 +1,14 @@
 package regularExpressions.regexp;
 
-public class GroupRegExp implements RegExp {
-  private final RegExp regExp;
+public class GroupRegExpOfCharacters implements RegExpOfCharacters {
+  private final RegExpOfCharacters regExp;
 
-  public GroupRegExp(RegExp regExp) {
+  public GroupRegExpOfCharacters(RegExpOfCharacters regExp) {
     this.regExp = regExp;
   }
 
   @Override
-  public <R> R accept(RegexpVisitor<R> visitor) {
+  public <R> R accept(RegExpOfCharactersVisitor<R> visitor) {
     return visitor.visitGroupRegExp(regExp);
   }
 
@@ -22,7 +22,7 @@ public class GroupRegExp implements RegExp {
       return false;
     }
 
-    GroupRegExp groupRegExp = (GroupRegExp) other;
+    GroupRegExpOfCharacters groupRegExp = (GroupRegExpOfCharacters) other;
 
     return regExp.equals(groupRegExp.regExp);
   }

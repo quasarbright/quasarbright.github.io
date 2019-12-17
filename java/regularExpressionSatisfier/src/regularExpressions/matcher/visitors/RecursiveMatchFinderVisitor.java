@@ -6,20 +6,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import regularExpressions.matcher.Match;
-import regularExpressions.regexp.CharacterRegExp;
-import regularExpressions.regexp.ConcatenationRegExp;
-import regularExpressions.regexp.EmptyRegExp;
-import regularExpressions.regexp.GroupRegExp;
-import regularExpressions.regexp.OrRegExp;
-import regularExpressions.regexp.RegExp;
-import regularExpressions.regexp.RegexpVisitor;
-import regularExpressions.regexp.RepeaterRegExp;
+import regularExpressions.regexp.CharacterRegExpOfCharacters;
+import regularExpressions.regexp.ConcatenationRegExpOfCharacters;
+import regularExpressions.regexp.EmptyRegExpOfCharacters;
+import regularExpressions.regexp.GroupRegExpOfCharacters;
+import regularExpressions.regexp.OrRegExpOfCharacters;
+import regularExpressions.regexp.RegExpOfCharacters;
+import regularExpressions.regexp.RegExpOfCharactersVisitor;
+import regularExpressions.regexp.RepeaterRegExpOfCharacters;
 import regularExpressions.visitors.ConcatenateWith;
 
 /**
  * Return all possible matches.
  */
-public class RecursiveMatchFinderVisitor implements RegexpVisitor<List<Match>> {
+public class RecursiveMatchFinderVisitor implements RegExpOfCharactersVisitor<List<Match>> {
   private final String string;
 
   public RecursiveMatchFinderVisitor(String string) {
@@ -55,8 +55,8 @@ public class RecursiveMatchFinderVisitor implements RegexpVisitor<List<Match>> {
    * @param n the number of times to repeat it
    * @return a concatenation of n regexps, or empty if n = 0
    */
-  private RegExp fixedSizeRepeater(RegExp regExp, int n) {
-    RegExp ans = new EmptyRegExp();
+  private RegExpOfCharacters fixedSizeRepeater(RegExpOfCharacters regExp, int n) {
+    RegExpOfCharacters ans = new EmptyRegExpOfCharacters();
     for(int i = 0; i < n; i++) {
       ans = ans.accept(new ConcatenateWith(regExp));
     }
@@ -70,20 +70,20 @@ public class RecursiveMatchFinderVisitor implements RegexpVisitor<List<Match>> {
   @Override
   public List<Match> visitCharacterRegExp(char c) {
     if(string.length() > 0 && string.charAt(0) == c) {
-      return singlet(new Match(0,1, string, new CharacterRegExp(c)));
+      return singlet(new Match(0,1, string, new CharacterRegExpOfCharacters(c)));
     }
     return empty();
   }
 
   @Override
-  public List<Match> visitConcatenationRegExp(List<RegExp> regExps) {
-    RegExp oldConcatenation = new ConcatenationRegExp(regExps);
+  public List<Match> visitConcatenationRegExp(List<RegExpOfCharacters> regExps) {
+    RegExpOfCharacters oldConcatenation = new ConcatenationRegExpOfCharacters(regExps);
     if(regExps.isEmpty()) {
       return singlet(new Match(0,0, string, oldConcatenation));
     } else {
-      RegExp first = regExps.get(0);
+      RegExpOfCharacters first = regExps.get(0);
       List<Match> firstMatches = first.accept(this);
-      List<RegExp> rest;
+      List<RegExpOfCharacters> rest;
       if(regExps.size() == 1) {
         rest = new ArrayList<>();
       } else {
@@ -95,7 +95,7 @@ public class RecursiveMatchFinderVisitor implements RegexpVisitor<List<Match>> {
         String newString = afterMatch(firstMatch);
         // this is all the matches that can follow first match
         // TODO get rid of this hard-coded constructor
-        List<Match> restMatches = new ConcatenationRegExp(rest).accept(new RecursiveMatchFinderVisitor(newString));
+        List<Match> restMatches = new ConcatenationRegExpOfCharacters(rest).accept(new RecursiveMatchFinderVisitor(newString));
         // this takes restMatches and replaces the rest's start, end, and regexp with the combined version
         // assumes matches always start at 0
         List<Match> concatenatedMatches = restMatches.stream()
@@ -109,15 +109,15 @@ public class RecursiveMatchFinderVisitor implements RegexpVisitor<List<Match>> {
 
   @Override
   public List<Match> visitEmptyRegExp() {
-    return singlet(new Match(0,0, string, new EmptyRegExp()));
+    return singlet(new Match(0,0, string, new EmptyRegExpOfCharacters()));
   }
 
   @Override
-  public List<Match> visitOrRegexp(List<RegExp> regExps) {
-    RegExp oldOr = new OrRegExp(regExps);
+  public List<Match> visitOrRegexp(List<RegExpOfCharacters> regExps) {
+    RegExpOfCharacters oldOr = new OrRegExpOfCharacters(regExps);
     // for each regexp get all matches and append everything into allMatches
     List<Match> allMatches = regExps.stream()
-            .map((RegExp regExp) -> regExp.accept(this))
+            .map((RegExpOfCharacters regExp) -> regExp.accept(this))
             .flatMap((List<Match> matches) -> matches.stream())
             .map((Match match) -> new Match(match.start, match.end, string, oldOr))
             .collect(Collectors.toList());
@@ -125,7 +125,7 @@ public class RecursiveMatchFinderVisitor implements RegexpVisitor<List<Match>> {
   }
 
   @Override
-  public List<Match> visitRepeaterRegExp(RegExp regExp) {
+  public List<Match> visitRepeaterRegExp(RegExpOfCharacters regExp) {
     // relies on concat, not or
     /*
     let x = regExp
@@ -136,11 +136,11 @@ public class RecursiveMatchFinderVisitor implements RegexpVisitor<List<Match>> {
     keep trying with another x until it stops matching
     keep track of all these matches and make the matches' regexps this repeater
      */
-    RegExp oldRepeater = new RepeaterRegExp(regExp);
-    RegExp currentExpansion = new EmptyRegExp();
+    RegExpOfCharacters oldRepeater = new RepeaterRegExpOfCharacters(regExp);
+    RegExpOfCharacters currentExpansion = new EmptyRegExpOfCharacters();
     List<Match> currentMatches = currentExpansion.accept(this);
     List<Match> allMatches = new ArrayList<>(currentMatches);
-    RegexpVisitor<RegExp> concatenator = new ConcatenateWith(regExp);
+    RegExpOfCharactersVisitor<RegExpOfCharacters> concatenator = new ConcatenateWith(regExp);
     int maxIter = string.length();
     int numIter = 0;
     while(numIter < maxIter && !currentMatches.isEmpty()) {
@@ -157,9 +157,9 @@ public class RecursiveMatchFinderVisitor implements RegexpVisitor<List<Match>> {
   }
 
   @Override
-  public List<Match> visitGroupRegExp(RegExp regExp) {
+  public List<Match> visitGroupRegExp(RegExpOfCharacters regExp) {
     // if you want to return groups, this is where you'd do stuff
-    RegExp oldGroup = new GroupRegExp(regExp);
+    RegExpOfCharacters oldGroup = new GroupRegExpOfCharacters(regExp);
     List<Match> matches = regExp.accept(this);
     List<Match> updatedMatches = matches.stream()
             .map((Match match) -> new Match(match.start, match.end, string, oldGroup))
