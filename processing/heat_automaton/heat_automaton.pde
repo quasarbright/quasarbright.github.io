@@ -1,7 +1,9 @@
 // system parameters/constants
 // 0 no diffusion 1 max diffusion
-float diffusionRate = 0.01;
+float diffusionRate = .1;
+float editRate = 1.00;
 // objects
+boolean go = true;
 Grid g;
 void setup() {
   size(400,400);
@@ -18,7 +20,27 @@ void setup() {
 void draw() {
   background(0);
   drawGrid(g);
-  g.update();
+  if(go) {
+    g.update();
+  }
+  if(mousePressed) {
+    onMouse();
+  }
+}
+
+void onMouse() {
+   int c = mouseX * g.w / width;
+   c = constrain(c, 0, g.w-1);
+   int r = mouseY * g.h / height;
+   r = constrain(r, 0, g.h-1);
+   float value = g.getCell(r, c);
+   float mult = 1;
+   if(mouseButton == RIGHT) {
+     mult = -1;
+   }
+   value = value+mult*editRate;
+   value = constrain(value, 0, 1); 
+   g.setCell(r, c, value);
 }
 
 
