@@ -15,13 +15,25 @@ class Grid {
     float[][] ans = new float[h][w];
     for(int r = 0; r < h; r++) {
       for(int c = 0; c < w; c++) {
-        float avg = avg(getNeighbors(r, c));
-        float oldValue = getCell(r, c);
-        float newValue = lerp(oldValue, avg, diffusionRate);
-        ans[r][c] = newValue;
+        ans[r][c] = getNext(r, c);
       }
     }
     return ans;
+  }
+  
+  float getNext(int r, int c) {
+    // use actual heat equation
+    float val = getCell(r, c);
+    float left = getOrDefault(r, c-1, val);
+    float right = getOrDefault(r, c+1, val);
+    float down = getOrDefault(r+1, c, val);
+    float up = getOrDefault(r-1, c, val);
+    float d2Tdx2 = right + left - 2 * val;
+    float d2Tdy2 = up + down - 2 * val;
+    float dT = diffusionRate * (d2Tdx2 + d2Tdy2) * dt;
+    val += dT;
+    val = constrain(val, 0, 1);
+    return val;
   }
   
   void update() {

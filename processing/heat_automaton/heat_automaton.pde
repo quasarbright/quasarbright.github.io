@@ -1,15 +1,17 @@
 // system parameters/constants
 // 0 no diffusion 1 max diffusion
-float diffusionRate = .1;
+float diffusionRate = 1;
+float dt = 1.0/60.0;
 float editRate = 1.00;
 // objects
 boolean go = true;
 Grid g;
 void setup() {
   size(400,400);
+  colorMode(HSB);
   stroke(255);
   noStroke();
-  g = new Grid(10,10);
+  g = new Grid(20, 20);
   for(int r = 0; r < g.h; r++) {
     for(int c = 0; c < g.w; c++) {
       g.setCell(r, c, initialValue(r, c));
@@ -63,16 +65,14 @@ void drawGrid(Grid g) {
 }
 
 
-color red = color(255,0,0);
-color blue = color(0,0,255);
 color valueToColor(float value) {
-  return lerpColor(blue, red, value);
+  return color(171*(1-value), 255, 255);
 }
 
 float initialValue(int r, int c) {
   if(r == g.h/2 || c == g.w/2) {
     return 1;
   } else {
-    return 0;
+    return .5;
   }
 }
