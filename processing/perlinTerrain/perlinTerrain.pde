@@ -10,7 +10,8 @@ float[][] zarr;
 float pscl = .2;
 float speed = 15;
 void setup() {
-  size(1000, 1000, P3D);
+  //size(1000, 1000, P3D);
+  fullScreen(P3D);
   rows = h/scl;
   cols = w/scl;
   zarr = new float[rows][cols];
@@ -26,10 +27,10 @@ void draw() {
   lights();
   for (int y = 0; y<rows; y++) 
     for (int x = 0; x<cols; x++) {
-      zarr[y][x] = zmax*noise(x*pscl, y*.3-speed*millis()/1000);
+      zarr[y][x] = zmax*noise(x*pscl, y*.3-speed*millis()/100000);
     }
   colorMode(RGB);
-  background(100,150,255);
+  background(153, 6, 158);
   colorMode(HSB);
   translate(width/2, height/2);
   rotateX(PI/3);
