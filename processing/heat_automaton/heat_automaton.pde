@@ -4,14 +4,11 @@ float diffusionRate = 1;
 float dt = 1.0/60.0;
 float editRate = 1.00;
 // objects
-boolean go = true;
 Grid g;
 void setup() {
-  size(400,400);
+  fullScreen();
   colorMode(HSB);
-  stroke(255);
-  noStroke();
-  g = new Grid(20, 20);
+  g = new Grid(width / 50, height / 50);
   for(int r = 0; r < g.h; r++) {
     for(int c = 0; c < g.w; c++) {
       g.setCell(r, c, initialValue(r, c));
@@ -22,9 +19,7 @@ void setup() {
 void draw() {
   background(0);
   drawGrid(g);
-  if(go) {
-    g.update();
-  }
+  g.update();
   if(mousePressed) {
     onMouse();
   }
@@ -57,6 +52,7 @@ void drawGrid(Grid g) {
     for(int c = 0; c < g.w; c++) {
       float value = g.cells[r][c];
       fill(valueToColor(value));
+      stroke(valueToColor(value));
       float x = c * w;
       float y = r * h;
       rect(x, y, w, h);
