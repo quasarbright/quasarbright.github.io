@@ -22,6 +22,9 @@ let t_run name should_run string fsa =
   let symbols = String.fold_right List.cons string [] in
   t_any name should_run (run_symbols symbols fsa) ~cmp:Bool.equal ~printer:string_of_bool
 
+let t_run_regexp name should_run string regexp =
+  t_run name should_run string (fsa_of_regexp regexp)
+
 let make_map (entries : (int * ((char option * int) list)) list) =
   List.fold_right
     (fun (start, transitions_list) result -> StateMap.add start (TransitionSet.of_list transitions_list) result)
@@ -76,6 +79,15 @@ let fsa_a_or_b =
      (4, [(None, 6)]);]))
 let fsa_empty_star = (create 1 (StateSet.singleton 1) (StateSet.singleton 1) (make_map [1, [None, 1]]))
 
+(* ((a*b)*|c)de *)
+let complex_regexp = Concat(
+  Or(
+    Star(Concat(Star(Sym('a')), Sym('b'))),
+    Sym('c')
+  ),
+  Concat(Sym('d'), Sym('e'))
+)
+
 let equal_tests = "equal_tests">:::[
   t_fsa "simple_equality" fsa0 fsa0;
   t_fsa "complex_equality" fsa_a_star fsa_a_star;
@@ -109,7 +121,7 @@ let fsa_of_regexp_tests = "fsa_of_regexp_tests">:::[
 ]
 let () = run_test_tt_main fsa_of_regexp_tests
 
-let run_symbols_test = "run_symbols_test">:::[
+let run_symbols_tests = "run_symbols_tests">:::[
   t_run "run_empty_empty" true "" fsa0_with_acc;
   t_run "run_empty_nonempty" false "a" fsa0_with_acc;
   t_run "run_empty_space" false " " fsa0_with_acc;
@@ -145,7 +157,69 @@ let run_symbols_test = "run_symbols_test">:::[
   t_run "run_a_star_aaab" false "aaab" fsa_a_star;
   t_run "run_a_star_ba" false "ba" fsa_a_star;
 ]
-let () = run_test_tt_main run_symbols_test
+let () = run_test_tt_main run_symbols_tests
+
+let run_regexp_tests = "run_regexp_tests">:::[
+  t_run_regexp "runre_empty_empty" true "" Empty;
+  t_run_regexp "runre_empty_nonempty" false "a" Empty;
+  t_run_regexp "runre_empty_space" false " " Empty;
+  t_run_regexp "runre_a_a" true "a" (Sym('a'));
+  t_run_regexp "runre_a_b" false "b" (Sym('a'));
+  t_run_regexp "runre_a_aa" false "aa" (Sym('a'));
+  t_run_regexp "runre_a_empty" false "" (Sym('a'));
+  t_run_regexp "runre_a_space" false " " (Sym('a'));
+  t_run_regexp "runre_a_or_b_a" true "a" (Or(Sym('a'),Sym('b')));
+  t_run_regexp "runre_a_or_b_b" true "b" (Or(Sym('a'),Sym('b')));
+  t_run_regexp "runre_a_or_b_aa" false "aa" (Or(Sym('a'),Sym('b')));
+  t_run_regexp "runre_a_or_b_bb" false "bb" (Or(Sym('a'),Sym('b')));
+  t_run_regexp "runre_a_or_b_ab" false "ab" (Or(Sym('a'),Sym('b')));
+  t_run_regexp "runre_a_or_b_ba" false "ba" (Or(Sym('a'),Sym('b')));
+  t_run_regexp "runre_a_or_b_empty" false "" (Or(Sym('a'),Sym('b')));
+  t_run_regexp "runre_a_or_b_space" false " " (Or(Sym('a'),Sym('b')));
+  t_run_regexp "runre_a_b_ab" true "ab" (Concat(Sym('a'),Sym('b')));
+  t_run_regexp "runre_a_b_a" false "a" (Concat(Sym('a'),Sym('b')));
+  t_run_regexp "runre_a_b_a" false "a" (Concat(Sym('a'),Sym('b')));
+  t_run_regexp "runre_a_b_empty" false "" (Concat(Sym('a'),Sym('b')));
+  t_run_regexp "runre_a_b_space" false " " (Concat(Sym('a'),Sym('b')));
+  t_run_regexp "runre_a_b_aab" false "aab" (Concat(Sym('a'),Sym('b')));
+  t_run_regexp "runre_a_b_aba" false "aba" (Concat(Sym('a'),Sym('b')));
+  t_run_regexp "runre_a_b_aa" false "aa" (Concat(Sym('a'),Sym('b')));
+  t_run_regexp "runre_a_b_ba" false "ba" (Concat(Sym('a'),Sym('b')));
+  t_run_regexp "runre_a_star_empty" true "" (Star(Sym('a')));
+  t_run_regexp "runre_a_star_a" true "a" (Star(Sym('a')));
+  t_run_regexp "runre_a_star_aa" true "aa" (Star(Sym('a')));
+  t_run_regexp "runre_a_star_aaa" true "aaa" (Star(Sym('a')));
+  t_run_regexp "runre_a_star_aaaaaaaa" true "aaaaaaaa" (Star(Sym('a')));
+  t_run_regexp "runre_a_star_b" false "b" (Star(Sym('a')));
+  t_run_regexp "runre_a_star_space" false " " (Star(Sym('a')));
+  t_run_regexp "runre_a_star_ab" false "ab" (Star(Sym('a')));
+  t_run_regexp "runre_a_star_ba" false "ba" (Star(Sym('a')));
+  t_run_regexp "runre_a_star_star_empty" true "" (Star(Star(Sym('a'))));
+  t_run_regexp "runre_a_star_star_a" true "a" (Star(Star(Sym('a'))));
+  t_run_regexp "runre_a_star_star_aaaaaaaaaaaaaaaaaaa" true "aaaaaaaaaaaaaaaaaaa" (Star(Star(Sym('a'))));
+  (* ( aa|a* )* *)
+  t_run_regexp "runre_slow_ok" true "aaaaaaaaaaaaaaaaaaaaaaaa" (Star(Or((Concat(Sym('a'),Sym('a'))), Star(Sym('a')))));
+  t_run_regexp "runre_a_star_star__star_aaaaaaaaaaaaaaaaaaa" true "aaaaaaaaaaaaaaaaaaa" (Star(Star(Star(Sym('a')))));
+  (* ((a*b)*|c)de *)
+  t_run_regexp "runre_complex1" true "de" complex_regexp;
+  t_run_regexp "runre_complex2" true "cde" complex_regexp;
+  t_run_regexp "runre_complex4" true "bde" complex_regexp;
+  t_run_regexp "runre_complex5" true "bbbbbde" complex_regexp;
+  t_run_regexp "runre_complex6" true "bbbbbabababababababbbabababde" complex_regexp;
+  t_run_regexp "runre_complex7" false "aaaaaaaade" complex_regexp;
+  t_run_regexp "runre_complex8" false "aaaaaaabade" complex_regexp;
+  t_run_regexp "runre_complex9" false "ade" complex_regexp;
+  t_run_regexp "runre_complex10" false "acde" complex_regexp;
+  t_run_regexp "runre_complex11" false "" complex_regexp;
+  t_run_regexp "runre_complex12" false "bcde" complex_regexp;
+  t_run_regexp "runre_complex13" false "bcd" complex_regexp;
+  t_run_regexp "runre_complex14" false "d" complex_regexp;
+  t_run_regexp "runre_complex15" false "e" complex_regexp;
+  t_run_regexp "runre_complex16" false "ed" complex_regexp;
+  t_run_regexp "runre_complex17" false "abbbcde" complex_regexp;
+  t_run_regexp "runre_complex18" true "aaaaaaaaaaaaaaaaaaaaaaaabde" complex_regexp;
+]
+let () = run_test_tt_main run_regexp_tests
 
 (*
 TODO:
