@@ -27,6 +27,10 @@ module Make(St : StateType) = struct
     * StateSet.t (* all states (must include initial state) *)
     * StateSet.t (* final/accepting states (must be subset of all states) *)
     * TransitionSet.t StateMap.t (* transitions between states (must not mention states that aren't in all states) *)
+  
+  (* utilities *)
+  let state_equal s1 s2 = 0 == St.compare s1 s2
+  let symbol_equal s1 s2 = 0 == St.compare_symbols s1 s2
 
   let create (initial_state : St.t) (all_states : StateSet.t) (accepting_states : StateSet.t) (transitions : (TransitionSet.t StateMap.t)) : t =
     (* validate *)
@@ -46,18 +50,6 @@ module Make(St : StateType) = struct
   let equal fsa1 fsa2 : bool =
     let (init1, all1, acc1, tran1) = fsa1 in
     let (init2, all2, acc2, tran2) = fsa2 in
-    let state_equal s1 s2 = 0 == St.compare s1 s2 in
-    (* let compare_maybe_symbol e1 e2 =
-      match (e1, e2) with
-      | (None, None) -> true
-      | (None, Some(_)) -> false
-      | (Some(_), None) -> false
-      | (Some(s1), Some(s2)) -> 0 == (St.compare_symbols s1 s2)
-    in *)
-    (* let compare_edge (maybe_symbol1, state1) (maybe_symbol2, state2) =
-      (compare_maybe_symbol maybe_symbol1 maybe_symbol2)
-      && (state_equal state1 state2)
-    in *)
     (state_equal init1 init2)
     && (StateSet.equal all1 all2)
     && (StateSet.equal acc1 acc2)
@@ -136,8 +128,46 @@ module Make(St : StateType) = struct
       (* TODO rm duplicates here *)
       good_transitions @ empty_good_transitions
     in
-    let good_transitions = aux state in
-    good_transitions
+    aux state
+  
+  (* returns a success state reachable by only empty transitions if one exists *)
+  let free_success state fsa =
+    let seen_states = ref StateSet.empty in
+    let add_seen state = seen_states := (StateSet.add state !seen_states) in
+    let has_been_seen state = StateSet.mem state !seen_states in
+    let is_success state = StateSet.mem state (get_accepting_states fsa) in
+    let rec aux state =
+      if has_been_seen state then None else
+      let () = add_seen state in
+      if is_success state then Some(state) else
+      let transitions = (get_transitions state fsa) in
+      let empty_transitions = TransitionSet.filter (fun (maybe_symbol, _) -> (Option.is_none maybe_symbol)) transitions in
+      let empty_transitions = TransitionSet.fold List.cons empty_transitions [] in
+      let next_states = List.map snd empty_transitions in
+      List.fold_left
+        (fun maybe_acc next_state ->
+          match maybe_acc with
+          | Some(_) -> maybe_acc
+          | None -> aux next_state)
+        None
+        next_states
+    in
+    aux state
+  
+  (* runs the given symbols through the fsa and returns whether they were accepted *)
+  let run_symbols symbols fsa =
+    let rec aux symbols state =
+      match symbols with
+      | [] -> Option.is_some (free_success state fsa)
+      | current_symbol::rest_symbols ->
+        let consumers = (next_consumers state fsa) in
+        (* consumers with current_symbol *)
+        let usable_consumers = List.filter (fun consumer -> (symbol_equal (fst consumer) current_symbol)) consumers in
+        (* states of those consumers *)
+        let next_states = List.map snd usable_consumers in
+        (* whether each states led to success *)
+        let results = List.map (aux rest_symbols) next_states in
+        List.fold_left (||) false results
+    in
+    aux symbols (get_initial_state fsa)
 end
-
-(* TODO remember to try to find an accepting state using only empties if you run out of symbols *)

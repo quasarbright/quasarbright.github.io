@@ -18,6 +18,10 @@ let t_fsa name fsa1 fsa2 =
 let t_fsa_ne name fsa1 fsa2 =
   t_any name false (equal fsa1 fsa2)
 
+let t_run name should_run string fsa =
+  let symbols = String.fold_right List.cons string [] in
+  t_any name should_run (run_symbols symbols fsa) ~cmp:Bool.equal ~printer:string_of_bool
+
 let make_map (entries : (int * ((char option * int) list)) list) =
   List.fold_right
     (fun (start, transitions_list) result -> StateMap.add start (TransitionSet.of_list transitions_list) result)
@@ -82,6 +86,7 @@ let equal_tests = "equal_tests">:::[
   t_fsa_ne "all_states_different" fsa0 fsa0_with_more_states;
   t_fsa_ne "very_different2" fsa0 fsa_a_b
 ]
+let () = run_test_tt_main equal_tests
 
 let next_states_tests = "next_states_tests">:::[
   t_any "next0" [] (next_consumers 1 fsa0);
@@ -104,8 +109,43 @@ let fsa_of_regexp_tests = "fsa_of_regexp_tests">:::[
 ]
 let () = run_test_tt_main fsa_of_regexp_tests
 
-
-let () = run_test_tt_main equal_tests
+let run_symbols_test = "run_symbols_test">:::[
+  t_run "run_empty_empty" true "" fsa0_with_acc;
+  t_run "run_empty_nonempty" false "a" fsa0_with_acc;
+  t_run "run_empty_space" false " " fsa0_with_acc;
+  t_run "run_a_a" true "a" fsa_a;
+  t_run "run_a_b" false "b" fsa_a;
+  t_run "run_a_aa" false "aa" fsa_a;
+  t_run "run_a_empty" false "" fsa_a;
+  t_run "run_a_or_b_a" true "a" fsa_a_or_b;
+  t_run "run_a_or_b_a" true "a" fsa_a_or_b;
+  t_run "run_a_or_b_b" true "b" fsa_a_or_b;
+  t_run "run_a_or_b_empty" false "" fsa_a_or_b;
+  t_run "run_a_or_b_ab" false "ab" fsa_a_or_b;
+  t_run "run_a_or_b_ba" false "ba" fsa_a_or_b;
+  t_run "run_a_or_b_aa" false "aa" fsa_a_or_b;
+  t_run "run_a_or_b_bb" false "bb" fsa_a_or_b;
+  t_run "run_a_b_ab" true "ab" fsa_a_b_regexp;
+  t_run "run_a_b_a" false "a" fsa_a_b_regexp;
+  t_run "run_a_b_empty" false "" fsa_a_b_regexp;
+  t_run "run_a_b_a" false "a" fsa_a_b_regexp;
+  t_run "run_a_b_b" false "b" fsa_a_b_regexp;
+  t_run "run_a_b_aa" false "aa" fsa_a_b_regexp;
+  t_run "run_a_b_bb" false "bb" fsa_a_b_regexp;
+  t_run "run_a_b_aab" false "aab" fsa_a_b_regexp;
+  t_run "run_a_b_aba" false "aba" fsa_a_b_regexp;
+  t_run "run_a_star_empty" true "" fsa_a_star;
+  t_run "run_a_star_a" true "a" fsa_a_star;
+  t_run "run_a_star_aa" true "aa" fsa_a_star;
+  t_run "run_a_star_aaa" true "aaa" fsa_a_star;
+  t_run "run_a_star_aaaaaaaaaaaaaa" true "aaaaaaaaaaaaaa" fsa_a_star;
+  t_run "run_a_star_space" false " " fsa_a_star;
+  t_run "run_a_star_b" false "b" fsa_a_star;
+  t_run "run_a_star_ab" false "ab" fsa_a_star;
+  t_run "run_a_star_aaab" false "aaab" fsa_a_star;
+  t_run "run_a_star_ba" false "ba" fsa_a_star;
+]
+let () = run_test_tt_main run_symbols_test
 
 (*
 TODO:
