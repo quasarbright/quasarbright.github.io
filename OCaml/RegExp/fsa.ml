@@ -36,7 +36,7 @@ module Make(St : StateType) = struct
     (* validate *)
     let () =
       let mem s = (StateSet.mem s all_states) in
-      if not (mem initial_state) then failwith "start not member of all states";
+      if not (mem initial_state) then failwith (Printf.sprintf "start not member of all states: %s" (St.str_of_state initial_state));
       if not (StateSet.subset accepting_states all_states) then failwith "accepting states not a subset of all states";
       StateMap.fold
         (fun (start_state : St.t) (transition_endings : TransitionSet.t) () ->
@@ -89,16 +89,49 @@ module Make(St : StateType) = struct
     
 
   (* getters *)
+  let get_initial_state (ans,_,_,_) = ans
+  let get_all_states (_, ans, _, _) = ans
+  let get_accepting_states (_, _, ans, _) = ans
   let get_transitions state fsa =
     let (_, _, _, tran_map) = fsa in
     let maybe_transitions = (StateMap.find_opt state tran_map) in
     match maybe_transitions with
       | None -> TransitionSet.empty
       | Some(transitions) -> transitions
-  let get_initial_state (ans,_,_,_) = ans
-  let get_all_states (_, ans, _, _) = ans
-  let get_accepting_states (_, _, ans, _) = ans
   let get_transition_map (_,_,_,ans) = ans
+  
+  (* setters *)
+  let set_initial_state state (_,b,c,d) = (state,b,c,d)
+  let set_all_states states (a,_,c,d) = (a,states,c,d)
+  let set_accepting_states states (a,b,_,d) = (a,b,states,d)
+  let set_transitions transitions (a,b,c,_) = (a,b,c,transitions)
+
+  let add_transition start_state maybe_symbol end_state fsa =
+    let all = (get_all_states fsa) in
+    let transitions = (get_transition_map fsa) in
+    (* valiate *)
+    if not ((StateSet.mem start_state all) && (StateSet.mem end_state all)) then failwith "states not in fsa" else
+    let new_transition_ending = (maybe_symbol, end_state) in
+    let old_transition_endings = 
+      if StateMap.mem start_state transitions 
+      then StateMap.find start_state transitions
+      else TransitionSet.empty
+    in 
+    let new_transition_endings = TransitionSet.add new_transition_ending old_transition_endings in
+    let new_transition_map = StateMap.add start_state new_transition_endings transitions in
+    (set_transitions new_transition_map fsa)
+
+
+  let create_list start all accs transitions =
+    let fsa = 
+      (create 
+        start
+        (StateSet.of_list all)
+        (StateSet.of_list accs)
+        StateMap.empty)
+    in 
+    let fsa = List.fold_left (fun fsa (start, maybe_symbol, end_state) -> add_transition start maybe_symbol end_state fsa) fsa transitions in
+    fsa
 
   let next_consumers state fsa : (St.s * St.t) list =
     let seen_states = ref StateSet.empty in
@@ -108,12 +141,6 @@ module Make(St : StateType) = struct
       if has_been_seen state then [] else
       let () = add_seen state in
       let transitions = (get_transitions state fsa) in
-      (* let is_empty transition =
-        let (maybe_symbol, _) = transition in
-        match maybe_symbol with None -> true | Some(_) -> false
-      in *)
-      (* let empty_transitions = TransitionSet.filter is_empty transitions in
-      let nonempty_transitions = TransitionSet.filter (fun e -> not (is_empty e)) transitions in *)
       let (children_of_empties, good_transitions) =
         TransitionSet.fold
           (fun transition (children_of_empties, good_transitions) ->
@@ -170,4 +197,34 @@ module Make(St : StateType) = struct
         List.fold_left (||) false results
     in
     aux symbols (get_initial_state fsa)
+  
+  let semi_determinize fsa =
+    let seen_states = ref [] in
+    let transitions = ref [] in 
+    let accs = ref [] in 
+    let all = ref [] in 
+    let add_to_list ele list = list := ele::!list in
+    let mem ele list = List.mem ele !list in
+    let worklist = Queue.create() in
+    let push state = Queue.push state worklist in
+    let pop() = Queue.pop worklist in
+    push (get_initial_state fsa);
+    let is_worklist_empty() = Queue.is_empty worklist in
+    while not (is_worklist_empty()) do 
+      let current = pop() in
+      add_to_list current seen_states;
+      add_to_list current all;
+      if Option.is_some (free_success current fsa) then add_to_list current accs;
+      let consumer_endings = (next_consumers current fsa) in
+      List.iter (fun transition -> add_to_list transition transitions) (List.map (fun (character, end_state) -> current, character, end_state) consumer_endings);
+      let child_states = List.map snd consumer_endings in 
+      let unseen_child_states = List.filter (fun state -> not (mem state seen_states)) child_states in
+      List.iter push unseen_child_states;
+    done;
+    let transitions = !transitions in
+    let transitions = List.map (fun (start, symbol, end_state) -> (start, Some(symbol), end_state)) transitions in
+    let accs = !accs in 
+    let all = !all in 
+    let start = (get_initial_state fsa) in 
+    (create_list start all accs transitions)
 end

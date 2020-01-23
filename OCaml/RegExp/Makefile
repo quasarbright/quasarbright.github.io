@@ -10,6 +10,9 @@ common: common.ml
 	$(BUILD) -package $(PKGS) common.native
 	mv common.native common
 
+satisfy: common.ml fsa.ml
+	$(BUILD) -package $(PKGS) satisfy.native
+	mv satisfy.native satisfy
 
 regexp: common.ml fsa.ml regexp.ml
 	$(BUILD) -package $(PKGS) regexp.native
@@ -19,7 +22,6 @@ test: common.ml fsa.ml regexp.ml test.ml
 	$(BUILD) -package $(PKGS) test.native
 	mv test.native test
 
-	
 clean:
 	rm -rf output/*.o output/*.s output/*.dSYM output/*.run *.log
 	ocamlbuild -clean

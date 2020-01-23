@@ -32,8 +32,8 @@ let make_map (entries : (int * ((char option * int) list)) list) =
     StateMap.empty
 
 let create_error_tests = "create_error_tests">:::[
-  t_any_err "start_not_in_all" (fun () -> (create 1 StateSet.empty StateSet.empty StateMap.empty)) (Failure "start not member of all states");
-  t_any_err "start_not_in_all_unempty" (fun () -> (create 1 (StateSet.singleton 2) StateSet.empty StateMap.empty)) (Failure "start not member of all states");
+  t_any_err "start_not_in_all" (fun () -> (create 1 StateSet.empty StateSet.empty StateMap.empty)) (Failure "start not member of all states: 1");
+  t_any_err "start_not_in_all_unempty" (fun () -> (create 1 (StateSet.singleton 2) StateSet.empty StateMap.empty)) (Failure "start not member of all states: 1");
   t_any_err "acc_not_subset_of_all" (fun () -> (create 1 (StateSet.singleton 1) (StateSet.singleton 2) StateMap.empty)) (Failure "accepting states not a subset of all states");
   t_any_err "acc_not_subset_of_all2" (fun () -> (create 1 (StateSet.of_list [1;2;3]) (StateSet.of_list [1;2;4]) StateMap.empty)) (Failure "accepting states not a subset of all states");
   t_any_err "bad_transitions" (fun () -> (create 1 (StateSet.of_list [1;2;3]) (StateSet.singleton 2) (make_map [(5, [(Some('a'), 6)])]))) (Failure "transition mentions a state not in all states");
@@ -78,6 +78,19 @@ let fsa_a_or_b =
      (2, [(None, 6)]);
      (4, [(None, 6)]);]))
 let fsa_empty_star = (create 1 (StateSet.singleton 1) (StateSet.singleton 1) (make_map [1, [None, 1]]))
+let fsa_empty_diamond = (create_list 1 [1;2;3;4] [4] [(1, None, 2);(1, None, 3); (2, None, 4); (3, None, 4)])
+let fsa_a_or_aa = 
+  (create_list 7 [1;2;3;4;5;6;7;8] [8]
+    [
+      (7, None, 1);
+      (7, None, 3);
+      (1, Some('a'), 2);
+      (3, Some('a'), 4);
+      (2, None, 8);
+      (4, None, 5);
+      (5, Some('a'), 6);
+      (6, None, 8);
+    ])
 
 (* ((a*b)*|c)de *)
 let complex_regexp = Concat(
@@ -220,6 +233,45 @@ let run_regexp_tests = "run_regexp_tests">:::[
   t_run_regexp "runre_complex18" true "aaaaaaaaaaaaaaaaaaaaaaaabde" complex_regexp;
 ]
 let () = run_test_tt_main run_regexp_tests
+
+let semi_determinize_tests = "semi_determinize_tests">:::[
+  t_fsa "sd_fsa0" fsa0 (semi_determinize fsa0);
+  t_fsa "sd_fsa0acc" fsa0_with_acc (semi_determinize fsa0_with_acc);
+  t_fsa "sd_fsa_tran" fsa0 (semi_determinize fsa0_with_tran);
+  t_fsa "sd_fsa_more" fsa0 (semi_determinize fsa0_with_more_states);
+  t_fsa "sd_fsa_a" fsa_a (semi_determinize fsa_a);
+  t_fsa "sd_fsa_a" fsa_a (semi_determinize fsa_a);
+  t_fsa "sd_fsa_a_star" (create_list 3 [3;2] [3;2] [(3, Some('a'), 2);(2, Some('a'), 2)]) (semi_determinize fsa_a_star);
+  t_fsa "sd_a_or_b" (create_list 5 [5;2;4] [2;4] [(5, Some('a'), 2);(5, Some('b'), 4)]) (semi_determinize fsa_a_or_b);
+  t_fsa "sd_empty_star" (create_list 1 [1] [1] []) (semi_determinize fsa_empty_star);
+  t_fsa "sd_complex" 
+    (create_list 11 [11;10;14;2;6;16] [16]
+      [
+        (11, Some('c'), 10);
+        (11, Some('a'), 2);
+        (11, Some('b'), 6);
+        (11, Some('d'), 14);
+        (2, Some('a'), 2);
+        (2, Some('b'), 6);
+        (10, Some('d'), 14);
+        (6, Some('d'), 14);
+        (6, Some('b'), 6);
+        (6, Some('a'), 2);
+        (14, Some('e'), 16)
+      ])
+    (semi_determinize (fsa_of_regexp complex_regexp));
+  t_fsa "sd_empty_diamond" (create_list 1 [1] [1] []) (semi_determinize fsa_empty_diamond);
+  t_fsa "sd_a_or_aa" 
+    (create_list 7 [7;2;4;6] [2;6] 
+    [
+      (7, Some('a'), 2);
+      (7, Some('a'), 4);
+      (4, Some('a'), 6)
+    ])
+    (semi_determinize fsa_a_or_aa);
+
+]
+let () = run_test_tt_main semi_determinize_tests
 
 (*
 TODO:
