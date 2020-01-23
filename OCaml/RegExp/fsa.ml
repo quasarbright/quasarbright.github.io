@@ -30,7 +30,11 @@ module Make(St : StateType) = struct
   
   (* utilities *)
   let state_equal s1 s2 = 0 == St.compare s1 s2
+  let compare_states = St.compare
+  let string_of_state = St.str_of_state
   let symbol_equal s1 s2 = 0 == St.compare_symbols s1 s2
+  let compare_symbols = St.compare_symbols
+  let string_of_symbol = St.str_of_symbol
 
   let create (initial_state : St.t) (all_states : StateSet.t) (accepting_states : StateSet.t) (transitions : (TransitionSet.t StateMap.t)) : t =
     (* validate *)
@@ -198,6 +202,7 @@ module Make(St : StateType) = struct
     in
     aux symbols (get_initial_state fsa)
   
+  (** simplifies the NFA and imposes an invariant that there are no empty transitions *)
   let semi_determinize fsa =
     let seen_states = ref [] in
     let transitions = ref [] in 

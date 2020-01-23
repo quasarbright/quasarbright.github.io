@@ -3,7 +3,6 @@ open ExtLib
 open Common
 open Common.FSA
 open Regexp
-
 (* let x = FSA.create 1 (FSA.StateSet.singleton 1) (FSA.StateSet.singleton 1) (FSA.StateMap.singleton 1 (Some('a'), 1)) *)
 
 let t_any ?cmp:(cmp=(=)) ?printer:(printer=dump) (name : string) expected value = name>::
@@ -100,6 +99,18 @@ let complex_regexp = Concat(
   ),
   Concat(Sym('d'), Sym('e'))
 )
+
+
+
+let () = Printf.printf "starting\n";;
+
+let () = Satisfy.satisfy (semi_determinize (fsa_of_regexp complex_regexp))
+
+let () = Printf.printf "done\n";;
+
+Stdlib.exit 1;;
+
+
 
 let equal_tests = "equal_tests">:::[
   t_fsa "simple_equality" fsa0 fsa0;
@@ -272,8 +283,3 @@ let semi_determinize_tests = "semi_determinize_tests">:::[
 
 ]
 let () = run_test_tt_main semi_determinize_tests
-
-(*
-TODO:
-make sure the fact that you use next consumer doesn't prevent you from catching empty accepting states
- *)
