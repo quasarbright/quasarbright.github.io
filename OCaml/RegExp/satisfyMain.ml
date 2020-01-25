@@ -28,8 +28,31 @@ let digit =
         Or(Sym('8'), Sym('9'))
     )
 
+let start_digit =
+    Or(
+        Or(
+            Or(
+                Sym('1'),
+                Or(
+                    Sym('2'),
+                    Sym('3')
+                )
+            ),
+            Or(
+                Or(
+                    Sym('4'),
+                    Sym('5')
+                ),
+                Or(
+                    Sym('6'),
+                    Sym('7')
+                )
+            )
+        ),
+        Or(Sym('8'), Sym('9'))
+    )
 
-let nat = Concat(digit, Star(digit))
+let nat = Concat(start_digit, Star(digit))
 (* let () = satisfy (fsa_of_regexp nat) *)
 
 let iter = make_satisfier_iterator (fsa_of_regexp nat)

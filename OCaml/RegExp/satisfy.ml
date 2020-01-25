@@ -61,7 +61,7 @@ let make_satisfier_iterator fsa =
         let succs = (next_consumers curr_state fsa) in
         let succs = List.sort (fun (s1, _) (s2, _) -> compare_symbols s1 s2) succs in
         let rev_word_states_pairs = List.map (fun (s, state) -> s::curr_rev_word, state) succs in
-        let queue = List.fold_right push rev_word_states_pairs queue in
+        let queue = List.fold_left (fun queue ele -> push ele queue) queue rev_word_states_pairs in
         if is_success curr_state then Some(List.rev curr_rev_word), queue else
         get_next queue
     in
