@@ -5,6 +5,9 @@ regexp
 common
 iterator
 satisfymain
+parser
+lexer
+binTree
 *.sw*
 *~
 *.run

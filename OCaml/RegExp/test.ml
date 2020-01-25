@@ -3,6 +3,7 @@ open ExtLib
 open Common
 open Common.FSA
 open Regexp
+open BinTree
 (* let x = FSA.create 1 (FSA.StateSet.singleton 1) (FSA.StateSet.singleton 1) (FSA.StateMap.singleton 1 (Some('a'), 1)) *)
 
 let t_any ?cmp:(cmp=(=)) ?printer:(printer=dump) (name : string) expected value = name>::
@@ -24,8 +25,13 @@ let t_run name should_run string fsa =
 let t_run_regexp name should_run string regexp =
   t_run name should_run string (fsa_of_regexp regexp)
 
-let t_regexp name s re =
-  t_any name re (Parser.program Lexer.token (Lexing.from_string s)) ~printer:repr_of_regexp
+let parse_regexp s = (Parser.program Lexer.token (Lexing.from_string s))
+
+let t_parse_regexp name s re =
+  t_any name re (parse_regexp s) ~printer:repr_of_regexp
+  
+let t_regexp name expected actual =
+  t_any name expected actual ~printer:repr_of_regexp
 
 let t_balance_list name (list : int list) maybe_bt =
   t_any name (maybe_bt) (balanced_bt_of_list list) ~printer:(fun maybe_bt -> match maybe_bt with | Some(bt) -> string_of_bt bt string_of_int | None -> "None")
@@ -281,18 +287,18 @@ let () = run_test_tt_main semi_determinize_tests
 
 
 let parse_regexp_tests = "parse_regexp_tests">:::[
-  t_regexp "pr-empty" "()" (Empty);
-  t_regexp "pr-a" "a" (Sym('a'));
-  t_regexp "pr-aa" "aa" (Concat(Sym('a'), Sym('a')));
-  t_regexp "pr-a-or-b" "a|b" (Or(Sym('a'), Sym('b')));
-  t_regexp "pr-a-star" "a*" (Star(Sym('a')));
-  t_regexp "pr-aab" "aab" (Concat(Sym('a'), Concat(Sym('a'), Sym('b'))));
-  t_regexp "pr-abstar" "ab*" (Concat(Sym('a'), Star(Sym('b'))));
-  t_regexp "pr-ab-or-cd" "ab|cd" (Or(Concat(Sym('a'), Sym('b')), Concat(Sym('c'), Sym('d'))));
-  t_regexp "pr-ab-group-star" "(ab)*" (Star(Concat(Sym('a'), Sym('b'))));
-  t_regexp "pr-a-or-b-group-star" "(a|b)*" (Star(Or(Sym('a'), Sym('b'))));
-  t_regexp "pr-a-or-b-star" "a|b*" (Or(Sym('a'), Star(Sym('b'))));
-  t_regexp "pr-complex"
+  t_parse_regexp "pr-empty" "()" (Empty);
+  t_parse_regexp "pr-a" "a" (Sym('a'));
+  t_parse_regexp "pr-aa" "aa" (Concat(Sym('a'), Sym('a')));
+  t_parse_regexp "pr-a-or-b" "a|b" (Or(Sym('a'), Sym('b')));
+  t_parse_regexp "pr-a-star" "a*" (Star(Sym('a')));
+  t_parse_regexp "pr-aab" "aab" (Concat(Sym('a'), Concat(Sym('a'), Sym('b'))));
+  t_parse_regexp "pr-abstar" "ab*" (Concat(Sym('a'), Star(Sym('b'))));
+  t_parse_regexp "pr-ab-or-cd" "ab|cd" (Or(Concat(Sym('a'), Sym('b')), Concat(Sym('c'), Sym('d'))));
+  t_parse_regexp "pr-ab-group-star" "(ab)*" (Star(Concat(Sym('a'), Sym('b'))));
+  t_parse_regexp "pr-a-or-b-group-star" "(a|b)*" (Star(Or(Sym('a'), Sym('b'))));
+  t_parse_regexp "pr-a-or-b-star" "a|b*" (Or(Sym('a'), Star(Sym('b'))));
+  t_parse_regexp "pr-complex"
     "(ab*c|d)e"
     (Concat(
       Or(
@@ -307,14 +313,14 @@ let parse_regexp_tests = "parse_regexp_tests">:::[
       ),
       Sym('e')
     ));
-  t_regexp "pr-d" "\\d" (Or(Or(Or(Or(Or(Or(Or(Or(Or(Sym('0'), Sym('1')), Sym('2')), Sym('3')), Sym('4')), Sym('5')), Sym('6')), Sym('7')), Sym('8')), Sym('9')));
-  t_regexp "pr-w" "\\w" (Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Sym('0'), Sym('1')), Sym('2')), Sym('3')), Sym('4')), Sym('5')), Sym('6')), Sym('7')), Sym('8')), Sym('9')), Sym('_')), Sym('A')), Sym('B')), Sym('C')), Sym('D')), Sym('E')), Sym('F')), Sym('G')), Sym('H')), Sym('I')), Sym('J')), Sym('K')), Sym('L')), Sym('M')), Sym('N')), Sym('O')), Sym('P')), Sym('Q')), Sym('R')), Sym('S')), Sym('T')), Sym('U')), Sym('V')), Sym('W')), Sym('X')), Sym('Y')), Sym('Z')), Sym('a')), Sym('b')), Sym('c')), Sym('d')), Sym('e')), Sym('f')), Sym('g')), Sym('h')), Sym('i')), Sym('j')), Sym('k')), Sym('l')), Sym('m')), Sym('n')), Sym('o')), Sym('p')), Sym('q')), Sym('r')), Sym('s')), Sym('t')), Sym('u')), Sym('v')), Sym('w')), Sym('x')), Sym('y')), Sym('z')));
-  t_regexp "pr-d-star" "\\d*" (Star(Or(Or(Or(Or(Or(Or(Or(Or(Or(Sym('0'), Sym('1')), Sym('2')), Sym('3')), Sym('4')), Sym('5')), Sym('6')), Sym('7')), Sym('8')), Sym('9'))));
-  t_regexp "pr-d-a" "\\da" (Concat(Or(Or(Or(Or(Or(Or(Or(Or(Or(Sym('0'), Sym('1')), Sym('2')), Sym('3')), Sym('4')), Sym('5')), Sym('6')), Sym('7')), Sym('8')), Sym('9')), Sym('a')));
-  t_regexp "pr-a-d" "a\\d" (Concat(Sym('a'), Or(Or(Or(Or(Or(Or(Or(Or(Or(Sym('0'), Sym('1')), Sym('2')), Sym('3')), Sym('4')), Sym('5')), Sym('6')), Sym('7')), Sym('8')), Sym('9'))));
-  t_regexp "pr-d-or-a" "a|\\d" (Or(Sym('a'), Or(Or(Or(Or(Or(Or(Or(Or(Or(Sym('0'), Sym('1')), Sym('2')), Sym('3')), Sym('4')), Sym('5')), Sym('6')), Sym('7')), Sym('8')), Sym('9'))));
-  t_regexp "pr-a-or-d" "\\d|a" (Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Sym('0'), Sym('1')), Sym('2')), Sym('3')), Sym('4')), Sym('5')), Sym('6')), Sym('7')), Sym('8')), Sym('9')), Sym('a')));
-  t_regexp "pr-bogus-escape" "\\p" (Concat(Sym('\\'), Sym('p')));
+  t_parse_regexp "pr-d" "\\d" (Or(Or(Or(Or(Or(Or(Or(Or(Or(Sym('0'), Sym('1')), Sym('2')), Sym('3')), Sym('4')), Sym('5')), Sym('6')), Sym('7')), Sym('8')), Sym('9')));
+  t_parse_regexp "pr-w" "\\w" (Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Sym('0'), Sym('1')), Sym('2')), Sym('3')), Sym('4')), Sym('5')), Sym('6')), Sym('7')), Sym('8')), Sym('9')), Sym('_')), Sym('A')), Sym('B')), Sym('C')), Sym('D')), Sym('E')), Sym('F')), Sym('G')), Sym('H')), Sym('I')), Sym('J')), Sym('K')), Sym('L')), Sym('M')), Sym('N')), Sym('O')), Sym('P')), Sym('Q')), Sym('R')), Sym('S')), Sym('T')), Sym('U')), Sym('V')), Sym('W')), Sym('X')), Sym('Y')), Sym('Z')), Sym('a')), Sym('b')), Sym('c')), Sym('d')), Sym('e')), Sym('f')), Sym('g')), Sym('h')), Sym('i')), Sym('j')), Sym('k')), Sym('l')), Sym('m')), Sym('n')), Sym('o')), Sym('p')), Sym('q')), Sym('r')), Sym('s')), Sym('t')), Sym('u')), Sym('v')), Sym('w')), Sym('x')), Sym('y')), Sym('z')));
+  t_parse_regexp "pr-d-star" "\\d*" (Star(Or(Or(Or(Or(Or(Or(Or(Or(Or(Sym('0'), Sym('1')), Sym('2')), Sym('3')), Sym('4')), Sym('5')), Sym('6')), Sym('7')), Sym('8')), Sym('9'))));
+  t_parse_regexp "pr-d-a" "\\da" (Concat(Or(Or(Or(Or(Or(Or(Or(Or(Or(Sym('0'), Sym('1')), Sym('2')), Sym('3')), Sym('4')), Sym('5')), Sym('6')), Sym('7')), Sym('8')), Sym('9')), Sym('a')));
+  t_parse_regexp "pr-a-d" "a\\d" (Concat(Sym('a'), Or(Or(Or(Or(Or(Or(Or(Or(Or(Sym('0'), Sym('1')), Sym('2')), Sym('3')), Sym('4')), Sym('5')), Sym('6')), Sym('7')), Sym('8')), Sym('9'))));
+  t_parse_regexp "pr-d-or-a" "a|\\d" (Or(Sym('a'), Or(Or(Or(Or(Or(Or(Or(Or(Or(Sym('0'), Sym('1')), Sym('2')), Sym('3')), Sym('4')), Sym('5')), Sym('6')), Sym('7')), Sym('8')), Sym('9'))));
+  t_parse_regexp "pr-a-or-d" "\\d|a" (Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Sym('0'), Sym('1')), Sym('2')), Sym('3')), Sym('4')), Sym('5')), Sym('6')), Sym('7')), Sym('8')), Sym('9')), Sym('a')));
+  t_parse_regexp "pr-bogus-escape" "\\p" (Concat(Sym('\\'), Sym('p')));
 ]
 let () = run_test_tt_main parse_regexp_tests
 
@@ -328,3 +334,10 @@ let balance_list_tests = "balance_list_tests">:::[
   t_balance_list "123456" [1;2;3;4;5;6] (Some(Node(Node(Node(Leaf(1), Leaf(2)), Node(Leaf(3), Leaf(4))), Node(Leaf(5), Leaf(6)))));
 ]
 let () = run_test_tt_main balance_list_tests
+
+let balanced_re_tests = "balanced_re_tests">:::[
+  t_regexp "or" (Or(Or(Sym('1'), Sym('2')), Or(Sym('3'), Sym('4')))) (balance (Or(Or(Or(Sym('1'), Sym('2')), Sym('3')), Sym('4'))));
+  t_regexp "or-right" (Or(Or(Sym('1'), Sym('2')), Or(Sym('3'), Sym('4')))) (balance (Or(Sym('1'), Or(Sym('2'), Or(Sym('3'), Sym('4'))))));
+  t_regexp "or-w" Empty (balance (Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Or(Sym('0'), Sym('1')), Sym('2')), Sym('3')), Sym('4')), Sym('5')), Sym('6')), Sym('7')), Sym('8')), Sym('9')), Sym('_')), Sym('A')), Sym('B')), Sym('C')), Sym('D')), Sym('E')), Sym('F')), Sym('G')), Sym('H')), Sym('I')), Sym('J')), Sym('K')), Sym('L')), Sym('M')), Sym('N')), Sym('O')), Sym('P')), Sym('Q')), Sym('R')), Sym('S')), Sym('T')), Sym('U')), Sym('V')), Sym('W')), Sym('X')), Sym('Y')), Sym('Z')), Sym('a')), Sym('b')), Sym('c')), Sym('d')), Sym('e')), Sym('f')), Sym('g')), Sym('h')), Sym('i')), Sym('j')), Sym('k')), Sym('l')), Sym('m')), Sym('n')), Sym('o')), Sym('p')), Sym('q')), Sym('r')), Sym('s')), Sym('t')), Sym('u')), Sym('v')), Sym('w')), Sym('x')), Sym('y')), Sym('z'))));
+]
+let () = run_test_tt_main balanced_re_tests

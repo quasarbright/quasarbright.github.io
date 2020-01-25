@@ -2,7 +2,7 @@
 PKGS=oUnit,extlib,unix,str
 BUILD=ocamlbuild -r -use-ocamlfind
 
-all: clean fsa iterator common lexer parser satisfy regexp satisfyMain test
+all: clean fsa iterator common lexer parser binTree satisfy regexp satisfyMain test
 
 fsa: fsa.ml
 	$(BUILD) -package $(PKGS) fsa.native
@@ -28,6 +28,10 @@ parser: parser.mly
 	mv parser.mli _build/
 	$(BUILD) -package $(PKGS) parser.native
 	mv parser.native parser
+
+binTree: binTree.ml
+	$(BUILD) -package $(PKGS) binTree.native
+	mv binTree.native binTree
 
 satisfy: common.ml fsa.ml
 	$(BUILD) -package $(PKGS) satisfy.native
