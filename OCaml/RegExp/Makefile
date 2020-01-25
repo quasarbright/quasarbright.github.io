@@ -2,6 +2,8 @@
 PKGS=oUnit,extlib,unix,str
 BUILD=ocamlbuild -r -use-ocamlfind
 
+all: clean fsa iterator common lexer parser satisfy regexp satisfyMain test
+
 fsa: fsa.ml
 	$(BUILD) -package $(PKGS) fsa.native
 	mv fsa.native fsa
@@ -13,6 +15,19 @@ iterator: iterator.ml
 common: common.ml
 	$(BUILD) -package $(PKGS) common.native
 	mv common.native common
+
+lexer: lexer.mll
+	ocamllex lexer.mll
+	mv lexer.ml _build/
+	$(BUILD) -package $(PKGS) lexer.native
+	mv lexer.native lexer
+
+parser: parser.mly
+	ocamlyacc parser.mly
+	mv parser.ml _build/
+	mv parser.mli _build/
+	$(BUILD) -package $(PKGS) parser.native
+	mv parser.native parser
 
 satisfy: common.ml fsa.ml
 	$(BUILD) -package $(PKGS) satisfy.native

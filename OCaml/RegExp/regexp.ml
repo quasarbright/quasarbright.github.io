@@ -34,6 +34,12 @@ let rec simplify re =
             | _ -> Star(r))
     | Sym(_) | Empty -> re
 
+let symbol_set symbols =
+    simplify (List.fold_left
+        (fun re curr_sym -> Or(re, curr_sym))
+        Empty
+        symbols)
+
 let get_final fsa : int =
     let acc = FSA.get_accepting_states fsa in
     if not (1 == StateSet.cardinal acc) then failwith "|acc| != 1" else
@@ -118,3 +124,34 @@ let fsa_of_regexp regexp =
     in
     aux regexp
 
+let string_of_regexp re =
+
+    let rec aux re in_star in_concat =
+        match re with
+            | Sym(symbol) -> string_of_symbol symbol
+            | Concat(re1, re2) ->
+                let s1 = aux re1 false true in 
+                let s2 = aux re2 false true in 
+                if in_star 
+                then Printf.sprintf "(%s%s)" s1 s2
+                else Printf.sprintf "%s%s" s1 s2
+            | Star(re) ->
+                let s = aux re true false in 
+                Printf.sprintf "%s*" s 
+            | Or(re1, re2) ->
+                let s1 = aux re1 false false in 
+                let s2 = aux re2 false false in 
+                if in_star || in_concat
+                then Printf.sprintf "(%s|%s)" s1 s2
+                else Printf.sprintf "%s|%s" s1 s2
+            | Empty -> "()"
+    in 
+    aux re false false
+
+let rec repr_of_regexp re =
+    match re with
+        | Empty -> "Empty"
+        | Sym(s) -> Printf.sprintf "Sym('%s')" (string_of_symbol s)
+        | Concat(re1, re2) -> Printf.sprintf "Concat(%s, %s)" (repr_of_regexp re1) (repr_of_regexp re2)
+        | Or(re1, re2) -> Printf.sprintf "Or(%s, %s)" (repr_of_regexp re1) (repr_of_regexp re2)
+        | Star(re) -> Printf.sprintf "Star(%s)" (repr_of_regexp re)

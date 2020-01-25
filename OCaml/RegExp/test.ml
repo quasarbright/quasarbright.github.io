@@ -24,6 +24,9 @@ let t_run name should_run string fsa =
 let t_run_regexp name should_run string regexp =
   t_run name should_run string (fsa_of_regexp regexp)
 
+let t_regexp name s re =
+  t_any name re (Parser.program Lexer.token (Lexing.from_string s)) ~printer:repr_of_regexp
+
 let make_map (entries : (int * ((char option * int) list)) list) =
   List.fold_right
     (fun (start, transitions_list) result -> StateMap.add start (TransitionSet.of_list transitions_list) result)
@@ -272,3 +275,35 @@ let semi_determinize_tests = "semi_determinize_tests">:::[
 
 ]
 let () = run_test_tt_main semi_determinize_tests
+
+
+let parse_regexp_tests = "parse_regexp_tests">:::[
+  t_regexp "pr-empty" "()" (Empty);
+  t_regexp "pr-a" "a" (Sym('a'));
+  t_regexp "pr-aa" "aa" (Concat(Sym('a'), Sym('a')));
+  t_regexp "pr-a-or-b" "a|b" (Or(Sym('a'), Sym('b')));
+  t_regexp "pr-a-star" "a*" (Star(Sym('a')));
+  t_regexp "pr-aab" "aab" (Concat(Sym('a'), Concat(Sym('a'), Sym('b'))));
+  t_regexp "pr-abstar" "ab*" (Concat(Sym('a'), Star(Sym('b'))));
+  t_regexp "pr-ab-or-cd" "ab|cd" (Or(Concat(Sym('a'), Sym('b')), Concat(Sym('c'), Sym('d'))));
+  t_regexp "pr-ab-group-star" "(ab)*" (Star(Concat(Sym('a'), Sym('b'))));
+  t_regexp "pr-a-or-b-group-star" "(a|b)*" (Star(Or(Sym('a'), Sym('b'))));
+  t_regexp "pr-a-or-b-star" "a|b*" (Or(Sym('a'), Star(Sym('b'))));
+  t_regexp "pr-complex"
+    "(ab*c|d)e"
+    (Concat(
+      Or(
+        Concat(
+          Sym('a'),
+          Concat(
+            Star(Sym('b')),
+            Sym('c')
+          )
+        ),
+        Sym('d')
+      ),
+      Sym('e')
+    ));
+
+]
+let () = run_test_tt_main parse_regexp_tests
