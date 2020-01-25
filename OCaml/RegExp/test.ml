@@ -27,6 +27,9 @@ let t_run_regexp name should_run string regexp =
 let t_regexp name s re =
   t_any name re (Parser.program Lexer.token (Lexing.from_string s)) ~printer:repr_of_regexp
 
+let t_balance_list name (list : int list) maybe_bt =
+  t_any name (maybe_bt) (balanced_bt_of_list list) ~printer:(fun maybe_bt -> match maybe_bt with | Some(bt) -> string_of_bt bt string_of_int | None -> "None")
+
 let make_map (entries : (int * ((char option * int) list)) list) =
   List.fold_right
     (fun (start, transitions_list) result -> StateMap.add start (TransitionSet.of_list transitions_list) result)
@@ -314,3 +317,14 @@ let parse_regexp_tests = "parse_regexp_tests">:::[
   t_regexp "pr-bogus-escape" "\\p" (Concat(Sym('\\'), Sym('p')));
 ]
 let () = run_test_tt_main parse_regexp_tests
+
+let balance_list_tests = "balance_list_tests">:::[
+  t_balance_list "empty" [] None;
+  t_balance_list "1" [1] (Some(Leaf(1)));
+  t_balance_list "12" [1;2] (Some(Node(Leaf(1), Leaf(2))));
+  t_balance_list "123" [1;2;3] (Some(Node(Node(Leaf(1), Leaf(2)), Leaf(3))));
+  t_balance_list "1234" [1;2;3;4] (Some(Node(Node(Leaf(1), Leaf(2)), Node(Leaf(3), Leaf(4)))));
+  t_balance_list "12345" [1;2;3;4;5] (Some(Node(Node(Node(Leaf(1), Leaf(2)), Node(Leaf(3), Leaf(4))), Leaf(5))));
+  t_balance_list "123456" [1;2;3;4;5;6] (Some(Node(Node(Node(Leaf(1), Leaf(2)), Node(Leaf(3), Leaf(4))), Node(Leaf(5), Leaf(6)))));
+]
+let () = run_test_tt_main balance_list_tests

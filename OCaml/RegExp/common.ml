@@ -47,3 +47,9 @@ let rec balanced_bt_of_list l =
       | _::_ -> aux (treeify trees)
   in
   aux trees
+
+let rec string_of_bt bt string_of_data =
+  match bt with
+    | Leaf(data) -> string_of_data data
+    | Node(left, right) -> 
+      Printf.sprintf "Node(%s, %s)" (string_of_bt left string_of_data) (string_of_bt right string_of_data)
