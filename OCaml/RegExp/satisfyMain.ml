@@ -1,61 +1,20 @@
 open Satisfy
 open Regexp
 
-let digit =
-    Or(
-        Or(
-            Or(
-                Or(
-                    Sym('0'),
-                    Sym('1')
-                ),
-                Or(
-                    Sym('2'),
-                    Sym('3')
-                )
-            ),
-            Or(
-                Or(
-                    Sym('4'),
-                    Sym('5')
-                ),
-                Or(
-                    Sym('6'),
-                    Sym('7')
-                )
-            )
-        ),
-        Or(Sym('8'), Sym('9'))
-    )
+let regexp_of_string s = Parser.program Lexer.token (Lexing.from_string s)
 
-let start_digit =
-    Or(
-        Or(
-            Or(
-                Sym('1'),
-                Or(
-                    Sym('2'),
-                    Sym('3')
-                )
-            ),
-            Or(
-                Or(
-                    Sym('4'),
-                    Sym('5')
-                ),
-                Or(
-                    Sym('6'),
-                    Sym('7')
-                )
-            )
-        ),
-        Or(Sym('8'), Sym('9'))
-    )
+let nat = regexp_of_string "\\d"
 
-let nat = Concat(start_digit, Star(digit))
-(* let () = satisfy (fsa_of_regexp nat) *)
+let () = print_string "starting generating regex\n"
+(* let email = regexp_of_string "\\w\\w*(.\\w\\w*())*@\\w\\w*(.\\w\\w*())*" *)
+(* let email = regexp_of_string "\\w\\w*@\\w\\w*.com" *)
+let email = regexp_of_string "\\w\\w*"
+let () = print_string "finished generating regex\n"
+let () = Printf.printf "%s\n" (repr_of_regexp email)
 
-let iter = make_satisfier_iterator (fsa_of_regexp nat)
+let () = print_string "starting conversion to fsa\n"
+let iter = make_satisfier_iterator (fsa_of_regexp email)
+let () = print_string "finished conversion to fsa\n"
 
 let string_of_word word =
     let strs = List.map ExtLib.string_of_char word in 

@@ -35,10 +35,18 @@ let rec simplify re =
     | Sym(_) | Empty -> re
 
 let symbol_set symbols =
-    simplify (List.fold_left
-        (fun re curr_sym -> Or(re, curr_sym))
-        Empty
-        symbols)
+    match symbols with
+    | [] -> Empty
+    | first_sym::rest_syms ->
+        List.fold_left
+            (fun re curr_sym -> Or(re, Sym(curr_sym)))
+            (Sym(first_sym))
+            rest_syms
+let symbol_set_of_string s =
+    symbol_set (String.explode s)
+
+let word_set = symbol_set_of_string "0123456789_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+let digit_set = symbol_set_of_string "0123456789"
 
 let get_final fsa : int =
     let acc = FSA.get_accepting_states fsa in

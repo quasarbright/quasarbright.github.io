@@ -3,7 +3,7 @@ open Regexp
 %}
 
 %token <char> SYM
-%token LPAREN RPAREN OR STAR EOF
+%token LPAREN RPAREN OR STAR WORDSET DIGITSET EOF
 %left OR
 %left CONCAT
 %nonassoc STAR
@@ -21,6 +21,8 @@ regexp :
   | regexp OR regexp { Or($1, $3) }
   | regexp STAR { Star($1) }
   | SYM { Sym($1) }
+  | WORDSET { word_set }
+  | DIGITSET { digit_set }
 
 
 program :

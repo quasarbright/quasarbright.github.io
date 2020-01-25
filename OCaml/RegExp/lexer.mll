@@ -9,5 +9,7 @@ rule token = parse
   | ")" { RPAREN }
   | "|" { OR }
   | "*" { STAR }
+  | "\\d" { DIGITSET }
+  | "\\w" { WORDSET }
   | eof { EOF }
   | _ as c { SYM c }

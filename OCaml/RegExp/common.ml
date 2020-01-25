@@ -27,3 +27,23 @@ let make_map (entries : (int * ((char option * int) list)) list) =
     (fun (start, transitions_list) result -> StateMap.add start (TransitionSet.of_list transitions_list) result)
     entries
     StateMap.empty
+  
+
+type 'a bt =
+  | Leaf of 'a
+  | Node of 'a bt * 'a bt
+
+let rec balanced_bt_of_list l =
+  let trees = List.map (fun ele -> Leaf(ele)) l in
+  let rec treeify trees = (match trees with
+    | [] -> []
+    | first::[] -> [first]
+    | first::second::rest -> Node(first, second)::(treeify rest))
+  in
+  let rec aux trees =
+    match trees with
+      | [] -> None
+      | first::[] -> Some(first)
+      | _::_ -> aux (treeify trees)
+  in
+  aux trees
