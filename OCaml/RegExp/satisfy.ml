@@ -1,10 +1,6 @@
 open Common
 open Common.FSA
 
-let push ele queue = ele::queue
-let pop queue = (List.hd queue), queue
-let empty = []
-
 let satisfy fsa =
     let fsa = semi_determinize fsa in 
     let accs = (get_accepting_states fsa) in
@@ -17,7 +13,6 @@ let satisfy fsa =
     while not (is_empty())
     do
         let (curr_rev_word, curr_state) = pop() in
-        (* Printf.printf "%s\n" (string_of_state curr_state); *)
         (if (is_success curr_state) 
             then 
                 let word = List.rev curr_rev_word in 
@@ -28,8 +23,56 @@ let satisfy fsa =
             let succs = List.sort (fun (s1, _) (s2, _) -> compare_symbols s1 s2) succs in
             let rev_word_states_pairs = List.map (fun (s, state) -> s::curr_rev_word, state) succs in
             List.iter push rev_word_states_pairs;
-            (* Printf.printf "%s\n" (String.concat " " (List.map (fun (a,b) -> string_of_state b) succs)) *)
-    done;
+    done
+
+
+let push ele queue = ele::queue
+let pop queue = 
+    match List.rev queue with
+    | [] -> failwith "popped empty queue"
+    | last::rev_rest ->
+        (last, List.rev rev_rest)
+let is_empty queue = match queue with | [] -> true | _::_ -> false
+let empty = []
+
+(* (*
+get_next takes an iterator state and returns a tuple containing a value and the next iterator state
+(state -> value * state)
+
+make_iterator should be something like
+    (state -> value option * state) -> (unit -> value option * (unit -> value option * (unit -> value option * (...)))
+I want to wrap this get_next in a function that takes in nothing and returns a tuple
+containing a value and the same kind of function, but that's an infinitely recursive signature.
+I basically want a functional equivalent of a python generator.
+ *)
+let rec make_iterator get_next state =
+    (fun () ->
+        let (current_value, next_state) = (get_next state) in
+        current_value, (fun () -> (make_iterator get_next next_state))) *)
+
+let make_satisfier_iterator fsa =
+    let fsa = semi_determinize fsa in 
+    let accs = (get_accepting_states fsa) in
+    let is_success state = (StateSet.mem state accs) in
+    let queue = push ([], (get_initial_state fsa)) empty in
+    let rec get_next queue =
+        if is_empty queue then None, queue else
+        let (curr_rev_word, curr_state), queue = pop queue in 
+        let succs = (next_consumers curr_state fsa) in
+        let succs = List.sort (fun (s1, _) (s2, _) -> compare_symbols s1 s2) succs in
+        let rev_word_states_pairs = List.map (fun (s, state) -> s::curr_rev_word, state) succs in
+        let queue = List.fold_right push rev_word_states_pairs queue in
+        if is_success curr_state then Some(List.rev curr_rev_word), queue else
+        get_next queue
+    in
+    Iterator.Iter(get_next, queue)
+
+(* adjustment for pausing, stateless search 
+return (word, queue) when you hit a success
+recurse instead of loop. base case is sucess, accumulate and return queue
+*)
+
+
 (*
 pseudocode for non-pausing search:
 queue = queue of (symbol list * state)

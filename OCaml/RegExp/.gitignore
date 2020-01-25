@@ -3,6 +3,8 @@ test
 fsa
 regexp
 common
+iterator
+satisfymain
 *.sw*
 *~
 *.run

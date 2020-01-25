@@ -4,5 +4,5 @@ make iterator
 make common
 make satisfy
 make regexp
-make test
-./test
+make satisfyMain
+./satisfyMain

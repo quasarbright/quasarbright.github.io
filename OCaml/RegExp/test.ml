@@ -101,17 +101,6 @@ let complex_regexp = Concat(
 )
 
 
-
-let () = Printf.printf "starting\n";;
-
-let () = Satisfy.satisfy (semi_determinize (fsa_of_regexp complex_regexp))
-
-let () = Printf.printf "done\n";;
-
-Stdlib.exit 1;;
-
-
-
 let equal_tests = "equal_tests">:::[
   t_fsa "simple_equality" fsa0 fsa0;
   t_fsa "complex_equality" fsa_a_star fsa_a_star;
