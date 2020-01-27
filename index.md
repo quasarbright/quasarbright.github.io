@@ -9,7 +9,7 @@ These are some interesting things I did with neural networks, which are my favor
 This is a programming language I am currently making. It is a functional programming language based on Python and Scheme. It has scheme-like expression syntax, but python-like function definitions and variable assignments. I like scheme and pure functional programming, but there are just so many parentheses in scheme that it's not pleasant to read. I really like python and its syntax, so I tried to get the best of both worlds.
 # [Unity projects](https://quasarbright.github.io/UnityProjects/)
 These are some webgl games I made in the Unity game engine. Since they run on webgl, they can run right from your browser. The code is stored in its own repository, UnityProjects
-# [UpDown](https://quasarbright.github.io/UpDownPages/) . 
+# [UpDown](https://quasarbright.github.io/UpDownPages/)  
 UpDown is a 2D puzzle platformer video game based on switching the direction of gravity. I made it with two other students in a game design course as our final project.
 # [Processing projects](https://quasarbright.github.io/processing/)
 This is a collection of my most interesting Processing sketches. Since Processing is in Java, these can't run in browser. So I made some videos and screenshots of them running. These are stored in the quasarbright repository.
