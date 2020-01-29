@@ -8,7 +8,7 @@ let tok_span(start, endtok) = (Parsing.rhs_start_pos start, Parsing.rhs_end_pos 
 
 %token PLUS MINUS LEFT RIGHT INPUT OUTPUT OPEN CLOSE EOF
 
-%type <(Lexing.position * Lexing.position) Ast.ast> program
+%type <(Lexing.position * Lexing.position) Ast.sequence> program
 
 %start program
 
@@ -34,6 +34,6 @@ sequence :
   | element sequence { $1::$2 }
 
 program :
-  | element EOF { $1 }
+  | sequence EOF { $1 }
 
 %%

@@ -1,0 +1,5 @@
+probably have to zero out the stack before you run everything (otherwise, you'll start with random values)
+
+should do some checking to make sure you don't overwrite RSP or generally go out of bounds
+
+I/O
