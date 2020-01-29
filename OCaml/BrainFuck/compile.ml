@@ -56,8 +56,18 @@ let rec compile_program sequence =
   (* TODO mov RDI rsp first *)
   let rec compile_element element =
   match element with
-    | Increment(_) -> [IAdd(RegOffset(RDI, 0), Const(1L))]
-    | Decrement(_) -> [IAdd(RegOffset(RDI, 0), Const(-1L))]
+    | Increment(_) -> 
+      [
+        IMov(Reg(RAX), RegOffset(RDI, 0));
+        IAdd(Reg(RAX), Const(1L));
+        IMov(RegOffset(RDI, 0), Reg(RAX));
+      ]
+    | Decrement(_) -> 
+      [
+        IMov(Reg(RAX), RegOffset(RDI, 0));
+        IAdd(Reg(RAX), Const(-1L));
+        IMov(RegOffset(RDI, 0), Reg(RAX));
+      ]
     | Left(_) -> [IAdd(Reg(RDI), Const(word_long))] (* that seems backwards, but it's not *)
     | Right(_) -> [IAdd(Reg(RDI), Const(Int64.neg word_long))]
     | Input(_) -> failwith "Not yet implemented"
@@ -68,7 +78,8 @@ let rec compile_program sequence =
       let done_loop_label = Printf.sprintf "done_loop_%d" tag in
       [
         ILabel(check_loop_label);
-          ICmp(RegOffset(RDI, 0), Const(0L));
+          IMov(Reg(RAX), RegOffset(RDI, 0));
+          ICmp(Reg(RAX), Const(0L));
           IJe(done_loop_label);
         ] @ seq_instruction_list @ [
           IJmp(check_loop_label);
@@ -150,6 +161,6 @@ let compile_program_to_string prog =
   let prelude = "section .text\nglobal our_code_starts_here" in
   Printf.sprintf "%s%s\n" prelude as_assembly_string
 
-let () = 
-  printf "%s\n" (compile_program_to_string "[+>-<]+")
+(* let () = 
+  printf "%s\n" (compile_program_to_string "[+>-<]+") *)
   

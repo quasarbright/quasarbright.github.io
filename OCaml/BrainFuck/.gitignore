@@ -3,3 +3,4 @@ runnables/
 *.sw*
 *~
 *.run
+output/
