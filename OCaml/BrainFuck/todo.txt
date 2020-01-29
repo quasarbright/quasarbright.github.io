@@ -2,4 +2,7 @@ probably have to zero out the stack before you run everything (otherwise, you'll
 
 should do some checking to make sure you don't overwrite RSP or generally go out of bounds
 
+need to make the numbers smaller so you can loop around. +[+] takes O(2^word) which is like 9 quintillion
+make it like ascii character size or something
+
 I/O
