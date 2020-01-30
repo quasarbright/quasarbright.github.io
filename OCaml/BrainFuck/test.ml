@@ -47,6 +47,9 @@ let integration_tests = "integration_tests">:::[
   t "plusminus" "+-" "0";
   t "right" ">" "0";
   t "skip_loop" "[+]" "0";
+  t "around-the-world" "+[+]" "0";
+  t "move-and-add" "----[+>+<]> should be 4" "4";
+  t "minusplus" "-+" "0";
 ]
 
 let () = 

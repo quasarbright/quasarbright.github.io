@@ -18,6 +18,8 @@ type instruction =
   | ICmp of arg * arg
   | IJne of string
   | IJe of string
+  | IJg of string
+  | IJl of string
   | IJmp of string
   | IRet
 
@@ -53,21 +55,48 @@ let tag sequence =
 
 let rec compile_program sequence =
 
+  (* checks value in RAX and corrects it if over/underflows *)
+  let check_value tag =
+    let overflow_check = sprintf "%s_%d" "overflow_check" tag in 
+    let did_overflow = sprintf "%s_%d" "did_overflow" tag in
+    let underflow_check = sprintf "%s_%d" "underflow_check" tag in 
+    let did_underflow = sprintf "%s_%d" "did_underflow" tag in 
+    let done_label = sprintf "%s_%d" "done" tag in
+    [
+      ILabel(overflow_check);
+        ICmp(Reg(RAX), Const(255L));
+        IJg(did_overflow);
+        IJmp(underflow_check);
+      ILabel(did_overflow);
+        IMov(Reg(RAX), Const(0L));
+        IJmp(done_label);
+      ILabel(underflow_check);
+        ICmp(Reg(RAX), Const(0L));
+        IJl(did_underflow);
+        IJmp(done_label);
+      ILabel(did_underflow);
+        IMov(Reg(RAX), Const(255L));
+      ILabel(done_label);
+    ]
+  in
+
   (* TODO mov RDI rsp first *)
   let rec compile_element element =
   match element with
-    | Increment(_) -> 
-      [
-        IMov(Reg(RAX), RegOffset(RDI, 0));
-        IAdd(Reg(RAX), Const(1L));
-        IMov(RegOffset(RDI, 0), Reg(RAX));
-      ]
-    | Decrement(_) -> 
-      [
-        IMov(Reg(RAX), RegOffset(RDI, 0));
-        IAdd(Reg(RAX), Const(-1L));
-        IMov(RegOffset(RDI, 0), Reg(RAX));
-      ]
+    | Increment(tag) -> 
+        [
+          IMov(Reg(RAX), RegOffset(RDI, 0));
+          IAdd(Reg(RAX), Const(1L));
+        ] @ (check_value tag) @ [
+          IMov(RegOffset(RDI, 0), Reg(RAX))
+        ]
+    | Decrement(tag) -> 
+        [
+          IMov(Reg(RAX), RegOffset(RDI, 0));
+          IAdd(Reg(RAX), Const(Int64.neg 1L));
+        ] @ (check_value tag) @ [
+          IMov(RegOffset(RDI, 0), Reg(RAX))
+        ]
     | Left(_) -> [IAdd(Reg(RDI), Const(word_long))] (* that seems backwards, but it's not *)
     | Right(_) -> [IAdd(Reg(RDI), Const(Int64.neg word_long))]
     | Input(_) -> failwith "Not yet implemented"
@@ -99,23 +128,25 @@ let rec compile_program sequence =
     ]
 
 (*
->++<-
-mov RDI RSP # literally put the value of rsp (the location of the stack pointer) in RDI
-> add RDI -8 # move the pointer to the right (increment stack index)
-+ add [RDI] 1 # go to the address specified in RDI and increment it
-+ add [RDI] 1 # go to the address specified in RDI and increment it
-< add RDI 8 # move head left (decrement stack index)
-- add [RDI] -1 # go to the address specified in RDI and decrement it
-
-[-]>
-check_loop:
-  cmp [RDI], 0
-  jne done
-do_loop:
-  add [RDI] -1
-  jmp check_loop
-done_loop:
-  add RDI -8
++
+  mov rax [rdi]
+  add rax 1
+overflow_check:
+  cmp rax, 255
+  jg did_overflow
+  jmp underflow_check
+did_overflow:
+  mov rax 0
+  jmp done
+underflow_check:
+  cmp rax, 0
+  jl did_underflow
+  jmp done
+did_underflow:
+  mov rax 255
+  ; don't need it, but jmp done
+done:
+  mov [rdi] rax
 *)
 
 let r_to_asm (r : reg) : string =
@@ -147,6 +178,8 @@ let i_to_asm (i : instruction) : string =
   | IJmp(label_name) -> sprintf "  jmp %s" label_name
   | IJne(label_name) -> sprintf "  jne %s" label_name
   | IJe(label_name) -> sprintf "  je %s" label_name
+  | IJg(label_name) -> sprintf "  jg %s" label_name
+  | IJl(label_name) -> sprintf "  jl %s" label_name
   | ICmp(left, right) ->
     sprintf "  cmp %s, %s" (arg_to_asm left) (arg_to_asm right)
 

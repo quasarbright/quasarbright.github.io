@@ -6,3 +6,14 @@ need to make the numbers smaller so you can loop around. +[+] takes O(2^word) op
 make it like ascii character size or something
 
 I/O
+
+
+after lecture:
+only allocate like 1 million for the tape
+blast it to 0s in the beginning???
+set rsp to the upper bound
+every <>, check bounds of rdi vs 0,rsp with cmp
+every +-, check bounds of [rdi] vs 0,256 with cmp
+for IO, use the calling convention to call c printf and stuff
+    save and restore rdi
+are you going to care about 64bit vs 32bit calling convention?

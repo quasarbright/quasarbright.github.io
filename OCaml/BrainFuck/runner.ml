@@ -135,7 +135,7 @@ let run_asm (asm_string : string) (out : string) (runner : string -> string list
 
 let run p out runner args std_input =
   try 
-    let asm_string = to_asm (compile_program p) in
+    let asm_string = compile_sequence_to_string p in
     run_asm asm_string out runner args std_input
   with err -> Error(Printexc.to_string err)
 
