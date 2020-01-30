@@ -153,13 +153,12 @@ let i_to_asm (i : instruction) : string =
 let to_asm (is : instruction list) : string =
   List.fold_left (fun s i -> Printf.sprintf "%s\n%s" s (i_to_asm i)) "" is
 
-let compile_program_to_string prog =
-  let pos_sequence = (Runner.parse_string prog) in
-  let tagged_sequence = (tag pos_sequence) in 
+let compile_sequence_to_string sequence =
+  let tagged_sequence = (tag sequence) in 
   let compiled = (compile_program tagged_sequence) in 
   let as_assembly_string = to_asm compiled in 
   let prelude = "section .text\nglobal our_code_starts_here" in
-  Printf.sprintf "%s%s\n" prelude as_assembly_string
+  Printf.sprintf "%s%s\n" prelude as_assembly_string  
 
 (* let () = 
   printf "%s\n" (compile_program_to_string "[+>-<]+") *)

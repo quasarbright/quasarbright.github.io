@@ -7,6 +7,12 @@ open Lexing
 open Runner
 open Compile
 
+(* Runs a program, given as a source string, and compares its output to expected *)
+let t (name : string) (program : string) (expected : string) = name>::test_run program name expected
+
+(* Runs a program, given as a source string, and compares its error to expected *)
+let te (name : string) (program : string) (expected_err : string) = name>::test_err program name expected_err;;
+
 let t_any ?cmp:(cmp=(=)) ?printer:(printer=dump) (name : string) expected value = name>::
   (fun _ -> assert_equal expected value ~printer:printer ~cmp:cmp);;
 
@@ -14,10 +20,10 @@ let t_any_err (name : string) (runnable : unit -> 'a) (expected_err : exn) = nam
   (fun _ -> assert_raises expected_err runnable)
 
 let t_parser name s expected =
-  t_any name expected (parse_string s) ~cmp:sequence_equal_no_info ~printer:string_of_sequence
+  t_any name expected (parse_string (name ^ ".bf") s) ~cmp:sequence_equal_no_info ~printer:string_of_sequence
 
 let t_tag name prog expected =
-  t_any name (tag (parse_string prog)) expected ~printer:repr_of_tag_sequence
+  t_any name (tag (parse_string (name ^ ".bf") prog)) expected ~printer:repr_of_tag_sequence
 
 
 let dummy_pos = (dummy_pos, dummy_pos)
@@ -35,10 +41,14 @@ let parser_tests = "parser_tests">:::[
   t_parser "block2" "[+][-]" [Block([Increment(dummy_pos)], dummy_pos); Block([Decrement(dummy_pos)], dummy_pos)];
 ]
 
-let tag_tests = "tag_tests">:::[
-
+let integration_tests = "integration_tests">:::[
+  t "plus" "+" "1";
+  t "minus" "-" "255";
+  t "plusminus" "+-" "0";
+  t "right" ">" "0";
+  t "skip_loop" "[+]" "0";
 ]
 
 let () = 
     run_test_tt_main parser_tests;
-    run_test_tt_main tag_tests
+    run_test_tt_main integration_tests;
