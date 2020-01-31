@@ -42,14 +42,9 @@ let parser_tests = "parser_tests">:::[
 ]
 
 let integration_tests = "integration_tests">:::[
-  t "plus" "+" "1";
-  t "minus" "-" "255";
-  t "plusminus" "+-" "0";
-  t "right" ">" "0";
-  t "skip_loop" "[+]" "0";
-  t "around-the-world" "+[+]" "0";
-  t "move-and-add" "----[+>+<]> should be 4" "4";
-  t "minusplus" "-+" "0";
+  t "hello-world" "+[-[<<[+[--->]-[<<<]]]>>>-]>-.---.>..>.<<<<-.<+.>>>>>.>.<<.<-." "hello world";
+  t "should-be-h" "[+-]++++++++++[>>+>+>++++++[<<+<+++>>>-]<<<<-]
+\"A*$\";?@![#>>+<<]>[>>]<<<<[>++<[-]]>.>." "H"
 ]
 
 let () = 

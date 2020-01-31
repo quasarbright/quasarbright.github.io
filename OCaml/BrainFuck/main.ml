@@ -9,7 +9,7 @@ let string_of_file (file_name : string) : string =
   ans
 
 let compile_file_to_string (input_file : string) : string =
-  Compile.compile_program_to_string (string_of_file input_file)
+  Runner.compile_string_to_string input_file (string_of_file input_file)
 
 let () =
   let name = Sys.argv.(1) in

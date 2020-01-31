@@ -1,10 +1,20 @@
+(*
+RDI holds the address of the head in memory
+RDX holds the furthest address reached so far (to the right)
+the stack is the tape
+the tape is "infinite" only in one direction
+
+*)
+
 open Ast
 open Printf
 
 let word_size = 8
+let tape_size = 128
+let stack_align_parity = tape_size mod 2 == 0 (* assumes 64 bit *)
 let word_long = Int64.of_int word_size
 
-type reg = RAX | RSP | RDI
+type reg = RAX | RSP | RDI | RBP | RDX
 
 type arg =
   | Reg of reg
@@ -21,6 +31,9 @@ type instruction =
   | IJg of string
   | IJl of string
   | IJmp of string
+  | IPush of arg
+  | IPop of arg
+  | ICall of string
   | IRet
 
 let tag sequence =
@@ -55,13 +68,16 @@ let tag sequence =
 
 let rec compile_program sequence =
 
-  (* checks value in RAX and corrects it if over/underflows *)
+  (**
+  checks value in RAX and corrects it if over/underflows
+  is NOT responsible for moving it back to [rdi]
+  *)
   let check_value tag =
     let overflow_check = sprintf "%s_%d" "overflow_check" tag in 
     let did_overflow = sprintf "%s_%d" "did_overflow" tag in
     let underflow_check = sprintf "%s_%d" "underflow_check" tag in 
     let did_underflow = sprintf "%s_%d" "did_underflow" tag in 
-    let done_label = sprintf "%s_%d" "done" tag in
+    let done_label = sprintf "%s_%d" "done_check" tag in
     [
       ILabel(overflow_check);
         ICmp(Reg(RAX), Const(255L));
@@ -80,6 +96,20 @@ let rec compile_program sequence =
     ]
   in
 
+  let print arg =
+    let need_garbage = not stack_align_parity in
+      (* 64 bit only *)
+      (if need_garbage then [IPush(Const(69L))] else [])
+      @
+      [
+        IPush(Reg(RDI)); (* save RDI *)
+        IPush(Reg(RDX)); (* save RDX *)
+        IMov(Reg(RDI), arg);
+        ICall("_output");
+        IPop(Reg(RDX)); (* restore RDX *)
+        IPop(Reg(RDI)); (* restore RDI *)
+      ] (*@ (if need_garbage then [IMov(Reg(RSP), Const(word_long))] else [])*)
+    in
   (* TODO mov RDI rsp first *)
   let rec compile_element element =
   match element with
@@ -98,9 +128,35 @@ let rec compile_program sequence =
           IMov(RegOffset(RDI, 0), Reg(RAX))
         ]
     | Left(_) -> [IAdd(Reg(RDI), Const(word_long))] (* that seems backwards, but it's not *)
-    | Right(_) -> [IAdd(Reg(RDI), Const(Int64.neg word_long))]
-    | Input(_) -> failwith "Not yet implemented"
-    | Output(_) -> failwith "Not yet implemented"
+    | Right(tag) ->
+        let do_clear = sprintf "do_clear_%d" tag in 
+        let done_clear = sprintf "done_clear_%d" tag in 
+        [
+            IAdd(Reg(RDI), Const(Int64.neg word_long));
+            ICmp(Reg(RDI), Reg(RDX));
+            IJl(do_clear); (* want jl, not jg. It's because lower address is more to the right *)
+            IJmp(done_clear);
+          ILabel(do_clear); (* we've never been this far *)
+            IMov(Reg(RAX), Const(0L));
+            IMov(RegOffset(RDI, 0), Reg(RAX)); (* zero out new memory *)
+            IMov(Reg(RDX), Reg(RDI)); (* update rdx to new max *)
+          ILabel(done_clear);
+            (* rest of program *)
+        ]
+    | Input(_) -> 
+        (if not stack_align_parity then [IPush(Const(69L))] else [])
+        @
+        [
+          IPush(Reg(RDX));
+          IPush(Reg(RDI));
+          ICall("_input"); (* the ascii value of the input character is now in RAX *)
+          IPop(Reg(RDI));
+          IPop(Reg(RDX));
+          IMov(RegOffset(RDI, 0), Reg(RAX)); (* update the cell under the head with the character's value *)
+        ]
+    | Output(_) -> 
+        print (RegOffset(RDI, 0))
+        (* @ print (Reg(RDI)) *)
     | Block(sequence, tag) ->
       let seq_instruction_list = compile_sequence sequence in
       let check_loop_label = Printf.sprintf "check_loop_%d" tag in
@@ -117,14 +173,29 @@ let rec compile_program sequence =
   and compile_sequence sequence =
     List.concat (List.map compile_element sequence)
   in
+  let prologue = [
+    ILabel("our_code_starts_here");
+    (* begin callee responsibilities *)
+    IPush(Reg(RBP)); (* save caller's rbp *)
+    IMov(Reg(RBP), Reg(RSP)); (* set rbp to current rsp *)
+    IAdd(Reg(RSP), Const(Int64.of_int (-(word_size) * tape_size))); (* allocate tape (tape_size bytes) *)
+    (* end callee responsibilities *)
+    IMov(Reg(RDI), Reg(RBP)); (* initialize head to be at RBP *)
+    IMov(Reg(RDX), Reg(RDI));
+    IAdd(Reg(RDI), Const(Int64.neg word_long)) (* move head down by one *)
+  ] in
+  let epilogue = [
+    IMov(Reg(RAX), RegOffset(RDI, 0)); (* store the current cell value in rax *)
+    (* begin callee responsibilities *)
+    IMov(Reg(RSP), Reg(RBP)); (* restore caller's rsp *)
+    IPop(Reg(RBP)); (* restore caller's rbp *)
+    IRet
+  ] in
   List.concat
     [
-      [ILabel("our_code_starts_here")];
-      [IMov(Reg(RDI), Reg(RSP))];
-      [IAdd(Reg(RDI), Const(Int64.neg word_long))]; (* store the current stack head address in rdi *)
+      prologue;
       compile_sequence sequence; (* compile the source code *)
-      [IMov(Reg(RAX), RegOffset(RDI, 0)); (* store the current cell value in rax *)
-      IRet]
+      epilogue
     ]
 
 (*
@@ -154,6 +225,8 @@ let r_to_asm (r : reg) : string =
   | RAX -> "rax"
   | RSP -> "rsp"
   | RDI -> "rdi"
+  | RBP -> "rbp"
+  | RDX -> "rdx"
 
 let arg_to_asm (a : arg) : string =
   match a with
@@ -182,6 +255,9 @@ let i_to_asm (i : instruction) : string =
   | IJl(label_name) -> sprintf "  jl %s" label_name
   | ICmp(left, right) ->
     sprintf "  cmp %s, %s" (arg_to_asm left) (arg_to_asm right)
+  | IPush(source) -> sprintf "  push %s" (arg_to_asm source)
+  | IPop(destination) -> sprintf "  pop %s" (arg_to_asm destination)
+  | ICall(name) -> sprintf "  call %s" name
 
 let to_asm (is : instruction list) : string =
   List.fold_left (fun s i -> Printf.sprintf "%s\n%s" s (i_to_asm i)) "" is
@@ -190,7 +266,11 @@ let compile_sequence_to_string sequence =
   let tagged_sequence = (tag sequence) in 
   let compiled = (compile_program tagged_sequence) in 
   let as_assembly_string = to_asm compiled in 
-  let prelude = "section .text\nglobal our_code_starts_here" in
+  let prelude = 
+"extern _output
+extern _input
+section .text
+global our_code_starts_here" in
   Printf.sprintf "%s%s\n" prelude as_assembly_string  
 
 (* let () = 
