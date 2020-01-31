@@ -8,7 +8,7 @@ let nat = regexp_of_string "\\d"
 let () = print_string "starting generating regex\n"
 (* let email = regexp_of_string "\\w\\w*(.\\w\\w*())*@\\w\\w*(.\\w\\w*())*" *)
 (* let email = regexp_of_string "\\w\\w*@\\w\\w*.com" *)
-let regexp = regexp_of_string ""
+let regexp = regexp_of_string "(\\w|\\d)*"
 (* let email = regexp_of_string "\\w\\w*" *)
 let () = print_string "finished generating regex\n"
 let () = Printf.printf "%s\n" (repr_of_regexp (balance regexp))
@@ -34,6 +34,7 @@ let prompt s =
     print_string s;
     read_line()
 
+let () = print_string ("regexp: " ^ (string_of_regexp regexp))
 let () =
     Iterator.fold_left 
         (fun word () -> 

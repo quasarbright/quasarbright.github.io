@@ -8,6 +8,7 @@ satisfymain
 parser
 lexer
 binTree
+satisfy
 *.sw*
 *~
 *.run
