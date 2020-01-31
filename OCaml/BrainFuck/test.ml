@@ -42,9 +42,11 @@ let parser_tests = "parser_tests">:::[
 ]
 
 let integration_tests = "integration_tests">:::[
-  t "hello-world" "+[-[<<[+[--->]-[<<<]]]>>>-]>-.---.>..>.<<<<-.<+.>>>>>.>.<<.<-." "hello world";
+  t "hello-world" "+[-[<<[+[--->]-[<<<]]]>>>-]>-.---.>..>.<<<<-.<+.>>>>>.>.<<.<-." "hello world\n";
   t "should-be-h" "[+-]++++++++++[>>+>+>++++++[<<+<+++>>>-]<<<<-]
-\"A*$\";?@![#>>+<<]>[>>]<<<<[>++<[-]]>.>." "H"
+\"A*$\";?@![#>>+<<]>[>>]<<<<[>++<[-]]>.>." "H\n";
+  te "left" "<" "Error: Fell of the left of the tape\n";
+  te "right-forever" "[+>]" "Error: Fell of the right of the tape\n";
 ]
 
 let () = 

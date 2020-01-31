@@ -1,16 +1,24 @@
 (*
-RDI holds the address of the head in memory
-RDX holds the furthest address reached so far (to the right)
-the stack is the tape
-the tape is "infinite" only in one direction
-
+assembly stuff:
+- RDI holds the address of the head in memory
+- RDX holds the furthest address reached so far (to the right)
+- the tape basically goes from rbp to rsp (including rsp, which it shouldn't)
+semantics:
+- the stack is the tape
+- the tape can only go to the right
+- going out of bounds of the tape raises a runtime error
+- cell values are constrained to [0,255] and loop around when they go out of range
+- when the head reaches a value it has never been to before, it zeroes it out
+- for input, if they type "abc" and hit enter, the next three consumed inputs will be "a" "b" then "c"
+  (don't cut off remaining characters and force the user to enter them one at a time)
+- for input, when the user hits enter, the newline is not consumed
 *)
 
 open Ast
 open Printf
 
 let word_size = 8
-let tape_size = 128
+let tape_size = 32768
 let stack_align_parity = tape_size mod 2 == 0 (* assumes 64 bit *)
 let word_long = Int64.of_int word_size
 
@@ -69,10 +77,9 @@ let tag sequence =
 let rec compile_program sequence =
 
   (**
-  checks value in RAX and corrects it if over/underflows
-  is NOT responsible for moving it back to [rdi]
+  checks value in RAX and performs given behavior in under/overflow case
   *)
-  let check_value tag =
+  let check_bounds tag min max on_underflow on_overflow =
     let overflow_check = sprintf "%s_%d" "overflow_check" tag in 
     let did_overflow = sprintf "%s_%d" "did_overflow" tag in
     let underflow_check = sprintf "%s_%d" "underflow_check" tag in 
@@ -80,36 +87,65 @@ let rec compile_program sequence =
     let done_label = sprintf "%s_%d" "done_check" tag in
     [
       ILabel(overflow_check);
-        ICmp(Reg(RAX), Const(255L));
+        ICmp(Reg(RAX), max);
         IJg(did_overflow);
         IJmp(underflow_check);
-      ILabel(did_overflow);
-        IMov(Reg(RAX), Const(0L));
-        IJmp(done_label);
+      ILabel(did_overflow);]
+        @ on_overflow
+        @ [IJmp(done_label);
       ILabel(underflow_check);
-        ICmp(Reg(RAX), Const(0L));
+        ICmp(Reg(RAX), min);
         IJl(did_underflow);
         IJmp(done_label);
-      ILabel(did_underflow);
-        IMov(Reg(RAX), Const(255L));
-      ILabel(done_label);
+      ILabel(did_underflow);]
+        @ on_underflow
+      @ [ILabel(done_label);
     ]
+  in
+
+  (** wraps the value in RAX into the range [0-255] (256 becomes 0, -1 becomes 255)
+  DOES NOT update RDI
+  *)
+  let wrap_ascii_value tag = 
+    check_bounds tag (Const(0L)) (Const(255L)) [IMov(Reg(RAX), Const(255L))] [IMov(Reg(RAX), Const(0L))]
+  in 
+
+  let check_head_location tag =
+    let check_rax = check_bounds tag 
+      (Reg(RSP))
+      (Reg(RBP))
+      [
+        IPush(Reg(RDI));
+        IPush(Reg(RDX));
+        ICall("_fell_off_right");
+        IPop(Reg(RDX));
+        IPop(Reg(RDI));
+      ]
+      [
+        IPush(Reg(RDI));
+        IPush(Reg(RDX));
+        ICall("_fell_off_left");
+        IPop(Reg(RDX));
+        IPop(Reg(RDI));
+      ]
+    in 
+    (IMov(Reg(RAX), Reg(RDI)))::check_rax
   in
 
   let print arg =
     let need_garbage = not stack_align_parity in
-      (* 64 bit only *)
-      (if need_garbage then [IPush(Const(69L))] else [])
-      @
-      [
-        IPush(Reg(RDI)); (* save RDI *)
-        IPush(Reg(RDX)); (* save RDX *)
-        IMov(Reg(RDI), arg);
-        ICall("_output");
-        IPop(Reg(RDX)); (* restore RDX *)
-        IPop(Reg(RDI)); (* restore RDI *)
-      ] (*@ (if need_garbage then [IMov(Reg(RSP), Const(word_long))] else [])*)
-    in
+    (* 64 bit only *)
+    (if need_garbage then [IPush(Const(69L))] else [])
+    @
+    [
+      IPush(Reg(RDI)); (* save RDI *)
+      IPush(Reg(RDX)); (* save RDX *)
+      IMov(Reg(RDI), arg);
+      ICall("_output");
+      IPop(Reg(RDX)); (* restore RDX *)
+      IPop(Reg(RDI)); (* restore RDI *)
+    ] (*@ (if need_garbage then [IMov(Reg(RSP), Const(word_long))] else [])*)
+  in
   (* TODO mov RDI rsp first *)
   let rec compile_element element =
   match element with
@@ -117,21 +153,21 @@ let rec compile_program sequence =
         [
           IMov(Reg(RAX), RegOffset(RDI, 0));
           IAdd(Reg(RAX), Const(1L));
-        ] @ (check_value tag) @ [
+        ] @ (wrap_ascii_value tag) @ [
           IMov(RegOffset(RDI, 0), Reg(RAX))
         ]
     | Decrement(tag) -> 
         [
           IMov(Reg(RAX), RegOffset(RDI, 0));
           IAdd(Reg(RAX), Const(Int64.neg 1L));
-        ] @ (check_value tag) @ [
+        ] @ (wrap_ascii_value tag) @ [
           IMov(RegOffset(RDI, 0), Reg(RAX))
         ]
-    | Left(_) -> [IAdd(Reg(RDI), Const(word_long))] (* that seems backwards, but it's not *)
+    | Left(tag) -> (check_head_location tag) @ [IAdd(Reg(RDI), Const(word_long))] (* that seems backwards, but it's not *)
     | Right(tag) ->
         let do_clear = sprintf "do_clear_%d" tag in 
         let done_clear = sprintf "done_clear_%d" tag in 
-        [
+        (check_head_location tag) @ [
             IAdd(Reg(RDI), Const(Int64.neg word_long));
             ICmp(Reg(RDI), Reg(RDX));
             IJl(do_clear); (* want jl, not jg. It's because lower address is more to the right *)
@@ -198,28 +234,6 @@ let rec compile_program sequence =
       epilogue
     ]
 
-(*
-+
-  mov rax [rdi]
-  add rax 1
-overflow_check:
-  cmp rax, 255
-  jg did_overflow
-  jmp underflow_check
-did_overflow:
-  mov rax 0
-  jmp done
-underflow_check:
-  cmp rax, 0
-  jl did_underflow
-  jmp done
-did_underflow:
-  mov rax 255
-  ; don't need it, but jmp done
-done:
-  mov [rdi] rax
-*)
-
 let r_to_asm (r : reg) : string =
   match r with
   | RAX -> "rax"
@@ -269,6 +283,8 @@ let compile_sequence_to_string sequence =
   let prelude = 
 "extern _output
 extern _input
+extern _fell_off_left
+extern _fell_off_right
 section .text
 global our_code_starts_here" in
   Printf.sprintf "%s%s\n" prelude as_assembly_string  

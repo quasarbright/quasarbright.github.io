@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
 
@@ -24,4 +25,14 @@ extern u_int64_t input() {
   int c_int = c;
   u_int64_t c_int64 = c_int;
   return c_int64;
+}
+
+extern void fell_off_left() {
+  fprintf(stderr, "Error: Fell off the left of the tape\n");
+  exit(EXIT_FAILURE);
+}
+
+extern void fell_off_right() {
+  fprintf(stderr, "Error: Fell off the right of the tape\n");
+  exit(EXIT_FAILURE);
 }

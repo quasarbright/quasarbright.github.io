@@ -1,3 +1,1 @@
-every <>, check bounds of rdi vs 0,rsp with cmp
-bound check head location (RBP-word, RSP)
 are you going to care about 64bit vs 32bit calling convention?
