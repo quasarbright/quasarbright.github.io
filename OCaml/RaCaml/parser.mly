@@ -15,7 +15,9 @@ let tok_span(start, endtok) = (Parsing.rhs_start_pos start, Parsing.rhs_end_pos 
 %nonassoc LET REC IN
 %left CONDITIONAL 
 %nonassoc IF THEN ELSE
+%nonassoc TUPLE
 %left COMMA 
+%left COMMA_HIGH
 %left OR
 %left AND
 %left EQ NEQ
@@ -77,13 +79,17 @@ conditional :
 /* func_call :
   | expr exprs { EFuncCall($1, $2, full_span()) } */
 
+rev_tuple_items :
+  | expr COMMA expr { [$3;$1] }
+  | rev_tuple_items COMMA expr %prec COMMA_HIGH{ $3::$1 }
+
 
 expr :
   | atom { $1 }
   | let_def %prec ASSIGN { $1 }
   | func_def %prec ASSIGN { $1 }
   | conditional %prec CONDITIONAL { $1 }
-  | expr COMMA expr { EPrim2(Tuplify, $1, $3, full_span()) }
+  | rev_tuple_items %prec TUPLE { ETuple((List.rev $1), full_span()) }
   | expr OR expr { EPrim2(Or, $1, $3, full_span()) }
   | expr AND expr { EPrim2(And, $1, $3, full_span()) }
   | expr EQ expr { EPrim2(EQ, $1, $3, full_span()) }
@@ -99,13 +105,10 @@ expr :
   | expr TIMES expr { EPrim2(Times, $1, $3, full_span()) }
   | expr EXPONENTIATE expr { EPrim2(Exponentiate, $1, $3, full_span()) }
   | NOT expr { EPrim1(Not, $2, full_span()) }
-  | expr expr %prec FUNCTION_CALL { ECall($1, $2, full_span()) }
+  | expr nothing expr %prec FUNCTION_CALL { ECall($1, $3, full_span()) }
   | LPAREN expr RPAREN %prec GROUP { $2 }
 
-/* exprs :
-  | expr { [$1] }
-  | expr exprs { $1::$2 } */
-
+nothing: { }
 
 
 program :

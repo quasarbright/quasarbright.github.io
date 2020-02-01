@@ -20,7 +20,6 @@ type prim2 =
   | LTE
   | GT
   | GTE
-  | Tuplify
 
 type 'a bind = 
   ident (* name *)
@@ -40,6 +39,7 @@ and 'a expr =
   | EString of string * 'a
   | EUnit of 'a
   | EId of ident * 'a
+  | ETuple of ('a expr list) * 'a
   | ELet of
       'a bind (* binding *)
       * 'a expr (* body *)

@@ -15,6 +15,7 @@ let rec untag (e: 'a expr) : unit expr =
     | EString(s, _) -> EString(s, ())
     | EUnit(_) -> EUnit(())
     | EId(id, _) -> EId(id, ())
+    | ETuple(exprs, _) -> ETuple((List.map untag exprs), ())
     | ECall(func_expr, arg_expr, _) -> ECall((untag func_expr), (untag arg_expr), ())
     | ELet(bind, body_expr, _) -> ELet((untag_bind bind), (untag body_expr), ())
     | EFuncDef(is_rec, func_bind, body_expr, _) ->

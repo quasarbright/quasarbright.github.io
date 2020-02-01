@@ -27,7 +27,6 @@ let string_of_prim2 prim2 =
       | LTE -> "<="
       | GT -> ">"
       | GTE -> ">="
-      | Tuplify -> ","
 
 let rec string_of_bind bind =
     let id, val_expr, _ = bind in 
@@ -47,6 +46,11 @@ and string_of_expr e =
       | EString(s, _) -> sprintf "\"%s\"" s
       | EUnit(_) -> "" (* will be surrounded with parens *)
       | EId(id, _) -> string_of_ident id
+      | ETuple([], _) -> "()"
+      | ETuple([item], _) ->
+          sprintf "%s," (string_of_expr item)
+      | ETuple(items, _) ->
+          String.concat ", " (List.map string_of_expr items)
       | ELet(bind, body_expr, _) ->
           let bind_str = string_of_bind bind in 
           let body_str = string_of_expr body_expr in 
