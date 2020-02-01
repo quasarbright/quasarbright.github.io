@@ -80,7 +80,8 @@ let parse_tests = "parse_tests">:::[
       EPrim2(Plus, two, three, ()),
       EPrim2(Plus, one, three, ()),
     ()));
-  t_parse "spicy-curry-boi" "f 1 2 3 1" (* expect ((((f 1) 2) 3) 1) *)
+  t_parse "spicy-curry-boi" "f 1 2 3 4" (* expect ((((f 1) 2) 3) 1) *)
+  (* (call (call (call (call f 1) 2) 3) 4) *)
     (ECall(
       ECall(
         ECall(
@@ -92,7 +93,7 @@ let parse_tests = "parse_tests">:::[
         ()),
         three,
       ()),
-      one,
+      EInt(4, ()),
     ()));
   t_parse "let-seq" "let x = 1 in let y = 2 in x"
     (ELet( (Name("x"), one, ()),
@@ -105,6 +106,15 @@ let parse_tests = "parse_tests">:::[
       (Name("x"), (ELet((Name("y"), two, ()), 
                   one, ())), ()),
       EId(Name("x"), ()),
+    ()));
+  
+  t_parse "arith-in-call" "f 1+2 3"
+    (ECall(
+      ECall(
+        EId(Name("f"), ()),
+        EPrim2(Plus, one, two, ()),
+      ()),
+      three,
     ()));
 ]
 

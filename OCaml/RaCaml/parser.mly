@@ -1,5 +1,6 @@
 %{
 open Exprs
+open ExprsUtils
 
 let full_span() = (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())
 let tok_span(start, endtok) = (Parsing.rhs_start_pos start, Parsing.rhs_end_pos endtok)
@@ -18,6 +19,7 @@ let tok_span(start, endtok) = (Parsing.rhs_start_pos start, Parsing.rhs_end_pos 
 %nonassoc TUPLE
 %left COMMA 
 %left COMMA_HIGH
+%left FUNCTION_CALL
 %left OR
 %left AND
 %left EQ NEQ
@@ -26,8 +28,9 @@ let tok_span(start, endtok) = (Parsing.rhs_start_pos start, Parsing.rhs_end_pos 
 %left MODULO DIVIDE TIMES
 %right EXPONENTIATE
 %nonassoc NOT
-%left FUNCTION_CALL
-%nonassoc GROUP LPAREN RPAREN
+%nonassoc GROUP 
+%nonassoc LPAREN RPAREN
+%nonassoc ATOM
 %nonassoc TRUE FALSE INT FLOAT DONT_CARE ID
 %nonassoc EOF
 
@@ -80,12 +83,12 @@ conditional :
   | expr exprs { EFuncCall($1, $2, full_span()) } */
 
 rev_tuple_items :
-  | expr COMMA expr { [$3;$1] }
+  | expr COMMA expr %prec COMMA { [$3;$1] }
   | rev_tuple_items COMMA expr %prec COMMA_HIGH{ $3::$1 }
 
 
 expr :
-  | atom { $1 }
+  | atom %prec ATOM { $1 }
   | let_def %prec ASSIGN { $1 }
   | func_def %prec ASSIGN { $1 }
   | conditional %prec CONDITIONAL { $1 }
@@ -108,7 +111,7 @@ expr :
   | expr nothing expr %prec FUNCTION_CALL { ECall($1, $3, full_span()) }
   | LPAREN expr RPAREN %prec GROUP { $2 }
 
-nothing: { }
+nothing : { }
 
 
 program :

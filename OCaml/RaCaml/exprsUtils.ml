@@ -29,3 +29,18 @@ let rec untag (e: 'a expr) : unit expr =
 
 let cmp_ignore_tag e1 e2 =
   (untag e1) = (untag e2)
+
+let rec curry exprs data =
+  Printf.printf "%s\n" (String.concat ", " (List.map Pretty.string_of_expr exprs));
+  let make_call a b = (ECall(a,b,data)) in
+  let rec aux exprs func =
+    match exprs with
+      | [] -> func
+      | current_argument::rest -> 
+        (make_call func (aux rest current_argument))
+        (* (aux rest (make_call current_argument func)) *)
+  in
+  match exprs with
+    | [] -> failwith "should be impossible"
+    | [e] -> failwith "should be impossible"
+    | func::rest -> aux rest func
