@@ -1,8 +1,11 @@
 ---
 title: QuasarBright
 ---
+![me](https://quasarbright.github.io/images/me.jpg)
 # Michael Delmonaco
-This is my personal website. Here, I have a variety of different kinds of projects I've worked on for fun over the years. Check my [repositories on GitHub](https://github.com/quasarbright) if you want to see source code and even more projects!
+I am a second-year computer science undergraduate student at Northeastern University. I'm interested in machine learning, programming languages, mathematics, physics, videogames, and rock climbing. I also make digital art based on characters from videogames and shows I like.  
+
+This is my personal website. Here, I have a variety of different kinds of projects I've worked on for fun over the years. Check out my [repositories on GitHub](https://github.com/quasarbright) if you want to see source code and even more projects!
 # [Machine Learning projects](https://quasarbright.github.io/MachineLearning/README)
 These are some interesting things I did with neural networks, which are my favorite tool to work with in computer science. The code is stored in its own repository, MachineLearning.
 # [Subduce](https://subduce.readthedocs.io/en/latest/#)
