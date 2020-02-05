@@ -1,7 +1,7 @@
 ---
 title: QuasarBright
 ---
-![me](https://quasarbright.github.io/images/me.jpg)
+![me](https://quasarbright.github.io/images/me-small.jpg)
 # Michael Delmonaco
 I am a second-year computer science undergraduate student at Northeastern University. I'm interested in machine learning, programming languages, mathematics, physics, videogames, and rock climbing. I also make digital art based on characters from videogames and shows I like.  
 
