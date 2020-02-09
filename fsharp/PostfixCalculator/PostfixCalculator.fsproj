@@ -6,6 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="ParseLib.fs" />
+    <Compile Include="PostfixCalculator.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
