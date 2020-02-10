@@ -182,9 +182,8 @@ let plusInfix =
 
 let addExpr =
     let rec help() =
-        printfn "help"
         natural
-        <||> parser {
+        <|> parser {
             let! left = natural
             let! _ = char '+'
             let! right = help()
