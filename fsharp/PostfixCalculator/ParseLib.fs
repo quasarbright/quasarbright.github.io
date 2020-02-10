@@ -73,6 +73,7 @@ let ret a =
 let ( >>= ) (parser: 'a Parser) (parserMaker: 'a -> 'b Parser) =
     let parseB chars =
         let results = parse parser chars
+        if List.isEmpty results then [] else
         // this is List bind!
         List.collect (fun (a, chars) -> parse (parserMaker a) chars) results
     Parser(parseB)
@@ -88,7 +89,28 @@ let ( <|> ) parser1 parser2 =
         List.concat [parse parser1 chars; parse parser2 chars]
     Parser(parseFn)
 
+/// short circuiting <|> (if parser1 succeeds, don't check parser2)
+let ( <||> ) parser1 parser2 =
+    let parseFn chars =
+        let r1 = parse parser1 chars
+        if not <| List.isEmpty r1 then 
+            r1
+        else
+            parse parser2 chars
+    Parser(parseFn)
+
+
 let fmap f parser = match parser with Parser(parse) -> Parser(f parse)
+
+type ParserBuilder() =
+
+    member this.Bind(p, f) = p >>= f
+
+    member this.Return(a) = ret a
+
+    member this.ReturnFrom(p) = p
+
+let parser = ParserBuilder()
 
 let parseChar target = function
     | [] -> []
@@ -98,20 +120,76 @@ let char c = Parser(parseChar c)
 
 let private noConsume = Parser((fun chars -> [([], chars)]))
 
-let rec someNonGreedy parser = 
-    let single = parser >>= (fun a -> ret [a])
-    let many = parser >>= (fun a -> (someNonGreedy parser) >>= (fun rest -> ret (a::rest)))
-    single <|> many // |> (List.maxBy (fun (success, _) -> List.length success))
+let rec someNonGreedy p = 
+    // let single = parser >>= (fun a -> ret [a])
+    // let many = parser >>= (fun a -> (someNonGreedy parser) >>= (fun rest -> ret (a::rest)))
+    // single <|> many
+    parser
+        {
+            let! a = p
+            return [a]
+        }
+    <|> parser
+        {
+            let! a = p
+            let! rest = someNonGreedy p
+            return a::rest
+        }
 
-let greedy (parser: 'a list Parser) : 'a list Parser =
+/// takes the outputs of a parser that produces a list and chooses one with the longest list
+let greedy (p: 'a list Parser) : 'a list Parser =
     let safeWrappingMaxBy f l =
         match l with 
             | [] -> []
             | _ -> [List.maxBy f l]
-    fmap (fun parse -> parse >> safeWrappingMaxBy (fun (success, _) -> List.length success )) parser
+    fmap (fun parse -> parse >> safeWrappingMaxBy (fun (success, _) -> List.length success )) p
 
 let some = someNonGreedy >> greedy
 
 
-let natural = (natChars |> charSet |> some) >>= (stringOfChars >> parseIntHelp >> ret)
-let integer = (natural <|> (char '-' >>> natural >>= ( ( ~- ) >> ret )))
+// let natural = (natChars |> charSet |> some) >>= (stringOfChars >> parseIntHelp >> ret)
+let natural = parser {
+    let! chars = natChars |> charSet |> some
+    return chars |> stringOfChars |> parseIntHelp
+}
+
+// let integer = (natural <|> (char '-' >>> natural >>= ( ( ~- ) >> ret )))
+let integer =
+    natural 
+    <|> parser {
+        let! _ = char '-'
+        let! x = natural
+        return -x
+    }
+
+
+let test =
+    parser
+        {
+            let! x = integer
+            let! y = some (char 'a')
+            return (x, y)
+        }
+
+let plusInfix =
+    parser
+        {
+            let! x = integer
+            let! _ = (char '+')
+            let! y = integer
+            return x + y
+        }
+
+let addExpr =
+    let rec help() =
+        printfn "help"
+        natural
+        <||> parser {
+            let! left = natural
+            let! _ = char '+'
+            let! right = help()
+            return left + right
+        }
+    help()
+
+let results = parseString addExpr "1+2+3"
