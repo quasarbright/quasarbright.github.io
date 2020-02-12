@@ -9,7 +9,7 @@ This is my personal website. Here, I have a variety of different kinds of projec
 # [Machine Learning projects](https://quasarbright.github.io/MachineLearning/README)
 These are some interesting things I did with neural networks, which are my favorite tool to work with in computer science. The code is stored in its own repository, MachineLearning.
 # [Subduce](https://subduce.readthedocs.io/en/latest/#)
-This is a programming language I am currently making. It is a functional programming language based on Python and Scheme. It has scheme-like expression syntax, but python-like function definitions and variable assignments. I like scheme and pure functional programming, but there are just so many parentheses in scheme that it's not pleasant to read. I really like python and its syntax, so I tried to get the best of both worlds. The code is stored in its own repository, Subduce.
+This is a programming language I made. It is a functional programming language based on Python and racket. It has racket-like expression syntax, but python-like function definitions and variable assignments. I like racket and pure functional programming, but there are just so many parentheses in some languages, that it's not pleasant to read. I really like python and its syntax, so I tried to get the best of both worlds. The code is stored in its own repository, Subduce.
 # [Unity projects](https://quasarbright.github.io/UnityProjects/)
 These are some webgl games I made in the Unity game engine. Since they run on webgl, they can run right from your browser. The code is stored in its own repository, UnityProjects.
 # [UpDown](https://quasarbright.github.io/UpDownPages/)  
