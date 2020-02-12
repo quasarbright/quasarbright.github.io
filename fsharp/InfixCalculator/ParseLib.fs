@@ -118,7 +118,7 @@ let parseChar target = function
 
 let char c = Parser(parseChar c)
 
-let private noConsume = Parser((fun chars -> [([], chars)]))
+let private noConsume a = Parser((fun chars -> [(a, chars)]))
 
 let rec someNonGreedy p = 
     // let single = parser >>= (fun a -> ret [a])
@@ -162,33 +162,40 @@ let integer =
         return -x
     }
 
+let word s =
+    let chars = charsOfString s
+    List.fold 
+        (fun p c -> p >>> char c) (noConsume '^') chars
+    >>> ret s
 
-let test =
-    parser
-        {
-            let! x = integer
-            let! y = some (char 'a')
-            return (x, y)
-        }
 
-let plusInfix =
-    parser
-        {
-            let! x = integer
-            let! _ = (char '+')
-            let! y = integer
-            return x + y
-        }
 
-let addExpr =
-    let rec help() =
-        natural
-        <|> parser {
-            let! left = natural
-            let! _ = char '+'
-            let! right = help()
-            return left + right
-        }
-    help()
+// let test =
+//     parser
+//         {
+//             let! x = integer
+//             let! y = some (char 'a')
+//             return (x, y)
+//         }
 
-let results = parseString addExpr "1+2+3"
+// let plusInfix =
+//     parser
+//         {
+//             let! x = integer
+//             let! _ = (char '+')
+//             let! y = integer
+//             return x + y
+//         }
+
+// let addExpr =
+//     let rec help() =
+//         natural
+//         <|> parser {
+//             let! left = natural
+//             let! _ = char '+'
+//             let! right = help()
+//             return left + right
+//         }
+//     help()
+
+// let results = parseString addExpr "1+2+3"
