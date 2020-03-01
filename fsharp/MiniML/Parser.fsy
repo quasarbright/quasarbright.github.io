@@ -1,0 +1,23 @@
+%{
+    open Ast
+%}
+
+%start start
+
+%token <int> INT
+%token TRUE
+%token FALSE
+%token EOF
+%type <(Ast.sourcespan * Ast.sourcespan) program> start
+
+%%
+
+start: prog { $1 }
+
+prog:
+  | expr EOF { Program($1) }
+
+expr:
+  | INT { EInt($1, parseState.ResultRange) }
+  | TRUE { EBool(true, parseState.ResultRange) }
+  | FALSE { EBool(false, parseState.ResultRange) }
