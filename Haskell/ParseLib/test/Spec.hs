@@ -38,11 +38,16 @@ orTests = TestLabel "or tests" $
     where
         aOrB = (char 'a') <|> (char 'b')
 
+seqTests = TestLabel "sequencing tests" $
+    TestList [
+                tParseSuccess "basic sequence success" (char 'a' >> char 'b') "ab" ('b', "")   
+             ]
+
 -- this is interesting because it should parse, but the parser only has one layer of backtracking
 -- maybe you need to do lists instead of maybe
 testOrThenSequence = tParseSuccess "or then sequence backtracking" ((string "a" <|> string "ab") >> string "c") "abc" ("abc", [])
 
-tests = TestLabel "all tests" $ TestList [charTests, stringTests, orTests, testOrThenSequence]
+tests = TestLabel "all tests" $ TestList [charTests, stringTests, orTests, seqTests, testOrThenSequence]
 
 main :: IO Counts
 main = runTestTT tests
