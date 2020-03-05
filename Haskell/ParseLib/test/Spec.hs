@@ -40,7 +40,7 @@ orTests = TestLabel "or tests" $
 
 -- this is interesting because it should parse, but the parser only has one layer of backtracking
 -- maybe you need to do lists instead of maybe
-testOrThenSequence = tParseSuccess "todo" ((string "a" <|> string "ab") >> string "c") "abc" ("abc", [])
+testOrThenSequence = tParseSuccess "or then sequence backtracking" ((string "a" <|> string "ab") >> string "c") "abc" ("abc", [])
 
 tests = TestLabel "all tests" $ TestList [charTests, stringTests, orTests, testOrThenSequence]
 
