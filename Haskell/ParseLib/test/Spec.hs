@@ -1,9 +1,16 @@
 import Lib
+import ParseLib
 import Test.HUnit
 
-test1 = TestCase (assertEqual "1 = 2, right?" 1 2)
+teq name a b = TestCase (assertEqual name a b)
 
-tests = TestList [test1]
+test1 = TestCase (assertEqual "1 = 2, right?" 1 2)
+a = char 'a'
+
+
+
+tests = TestLabel "parser tests" $
+    TestList [test1]
 
 main :: IO Counts
 main = runTestTT tests

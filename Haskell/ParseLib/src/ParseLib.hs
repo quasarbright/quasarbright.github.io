@@ -1,15 +1,19 @@
 module ParseLib
 (
-    Parser,
+    Parser(parse),
     runParser,
     char,
-    string
+    string,
+    charSet,
+    (<|>),
+    some
 )
 where
 
 import Data.Char
-import Control.Applicative
+import Control.Applicative (pure, liftA2)
 import Control.Monad
+import Text.Read
 
 newtype Parser a = Parser { parse :: String -> Maybe (a,String) }
 
@@ -40,13 +44,17 @@ instance Monad Parser where
                                 parse (f a) s'
     return a = Parser $ \s -> Just (a, s)
 
-none = Parser $ \s -> Just ((), s)
+none = return () :: Parser ()
+
+noParse :: Parser a
+noParse = Parser $ \s -> (Nothing :: Maybe a)
 
 parseChar :: Char -> String -> Maybe (Char, String)
 parseChar c [] = Nothing
 parseChar c (c':cs)
     | c == c' = Just (c, cs)
     | otherwise = Nothing
+
 
 char :: Char -> Parser Char
 char c = Parser $ parseChar c
@@ -60,3 +68,27 @@ string s =
                c' <- char c
                return (s ++ [c'])
         blank = return []
+
+infixl 5 <|>
+(<|>) :: Parser a -> Parser a -> Parser a
+p1 <|> p2 =
+    Parser $ \s ->
+        case parse p1 s of
+            Just (a, s') -> Just (a, s')
+            Nothing -> parse p2 s
+
+charSet :: [Char] -> Parser Char
+charSet [] = noParse :: Parser Char
+charSet s@(_:_) =
+    foldl1 (<|>) charParsers
+    where
+        charParsers = map char s
+
+
+some :: Parser a -> Parser [a]
+some p =
+        do a <- p
+           as <- some p
+           return $ a:as
+    <|> do a <- p
+           return [a]
