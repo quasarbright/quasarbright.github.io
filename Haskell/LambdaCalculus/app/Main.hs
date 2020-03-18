@@ -1,3 +1,8 @@
+-- lambda calculus
+-- (\f. (\x. f (x x)) (\x. f (x x)))
+-- lambda, vars, numbers, application
+-- no name capture problem resolution
+-- shows evaluation stepper
 module Main where
 
 import Lib

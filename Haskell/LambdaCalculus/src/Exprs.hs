@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fwarn-incomplete-patterns #-}
+
 module Exprs where
 import Data.List
 import ParseLib
@@ -9,18 +11,17 @@ data Expr a =
     | EId String a
     | EApp (Expr a) (Expr a) a
     | ENum Integer a
-    | ELet (String, a) (Expr a) (Expr a) a
     deriving(Eq, Show, Read)
 
 
-lam = token $ string "lam"
+lam = token $ string "\\"
 ident = do
     name <- token $ identifier
     guard $ not $ name `elem` ["in","let","lam"]
     return name
 lparen = token $ char '('
 rparen = token $ char ')'
-arrow = token $ string "->"
+arrow = token $ string "."
 int = token integer
 
 elam = do
@@ -48,7 +49,7 @@ atomic = do
 
 parse = runParser elam
 
-render (ELambda (name, _) body _) = "(lam " ++ name ++ " -> " ++ render body ++ ")"
+render (ELambda (name, _) body _) = "(\\" ++ name ++ ". " ++ render body ++ ")"
 render (ENum num _) = show num
 render (EId name _) = name
 render (EApp e1 e2 _) = "(" ++ render e1 ++ " " ++ render e2 ++ ")"
@@ -79,15 +80,21 @@ assoc k ((key, val):as)
     | k == key = Right val
     | otherwise = assoc k as
 
+isRedex (EApp _ _ _) = True
+isRedex (ENum _ _) = False
+isRedex (ELambda _ _ _) = False
+isRedex (EId _ _) = False
+
 reduce :: (Show a) => Expr a -> Either String (Expr a)
 reduce e@(ENum _ _) = Right e
 reduce e@(ELambda _ _ _) = Right e
-reduce (EId name tag) = Left $ "tried to reduce variable " ++ name
+reduce e@(EId name tag) = Left $ "variable not in scope: " ++ name
 reduce e@(EApp e1@(ELambda (name, _) body _) e2 _) = Right $ subst name e2 body
-reduce e@(EApp f@(EApp e1 e2 _) e3 tag) = do
-    f' <- reduce f
-    return $ EApp f' e3 tag
-reduce e@(EApp e1 _ _) = Left $ "tried to apply non-lambda " ++ render e1
+reduce e@(EApp e1 e2 tag)
+    | isRedex e1 = do
+        e1Reduced <- reduce e1
+        return $ EApp e1Reduced e2 tag
+    | otherwise = Left ("tried to apply non-function: " ++ render e1)
 
 eval e = reverse <$> go e []
     where
