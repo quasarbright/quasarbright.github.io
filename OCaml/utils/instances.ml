@@ -1,5 +1,3 @@
-open Monad
-
 module ListInstance =
   struct
     include List
@@ -7,9 +5,15 @@ module ListInstance =
     let pure x = [x]
     let bind xs f = List.concat @@ List.map f xs
     let (<*>) fs xs = bind fs (fun f -> fmap f xs)
+    let empty = []
+    let ( <|> ) xs ys =
+      match xs with
+      | _::_ -> xs
+      | [] -> ys
   end
 
-module ListMonad = Make(ListInstance)
+module ListMonad = Monad.Make(ListInstance)
+module ListAlternative = Alternative.Make(ListInstance)
 
 module OptionInstance =
   struct
@@ -19,13 +23,25 @@ module OptionInstance =
     let pure x = Some(x)
     let bind mx f = match mx with None -> None | Some(x) -> f x
     let ( <*> ) mf mx = bind mf (fun f -> fmap f mx)
+    let empty = None
+    let ( <|> ) mx my =
+      match mx with
+      | Some _ -> mx
+      | None -> my
   end
 
-module OptionMonad = Make(OptionInstance)
+module OptionMonad = Monad.Make(OptionInstance)
+module OptionAlternative = Alternative.Make(OptionInstance)
 
 module type Type =
   sig
     type t
+  end
+
+module type TypeWithDefault =
+  sig
+    type t
+    val default : t
   end
 
 module MakeResultInstance(E : Type) =
@@ -38,5 +54,16 @@ module MakeResultInstance(E : Type) =
   end
 
 (* makes a result monad with the given error type *)
-module MakeResultMonad(E : Type) =
-  Make(MakeResultInstance(E))
+module MakeResultMonad(E : Type) = Monad.Make(MakeResultInstance(E))
+
+module MakeResultInstanceWithDefault(E : TypeWithDefault) = 
+  struct
+    include MakeResultInstance(E)
+    let empty = Error(E.default)
+    let ( <|> ) mx my =
+      match mx with
+      | Ok _ -> mx
+      | Error _ -> my
+  end
+
+module MakeResultAlternative(E : TypeWithDefault) = Alternative.Make(MakeResultInstanceWithDefault(E))
