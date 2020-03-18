@@ -11,43 +11,10 @@ data Expr a =
     | EId String a
     | EApp (Expr a) (Expr a) a
     | ENum Integer a
-    deriving(Eq, Show, Read)
+    deriving(Eq, Read)
 
-
-lam = token $ string "\\"
-ident = do
-    name <- token $ identifier
-    guard $ not $ name `elem` ["in","let","lam"]
-    return name
-lparen = token $ char '('
-rparen = token $ char ')'
-arrow = token $ string "."
-int = token integer
-
-elam = do
-    lam
-    argname <- ident
-    arrow
-    body <- elam
-    return $ ELambda (argname, ()) body ()
-    <|> eapp
-
-eapp = do
-    (e:es) <- some eparen
-    return $ foldl (\app e -> EApp app e ()) e es
-
-eparen =
-    atomic <|> do
-        wrapped lparen rparen elam
-
-atomic = do
-        num <- int
-        return $ ENum num ()
-    <|> do
-        name <- ident    
-        return $ EId name ()
-
-parse = runParser elam
+instance Show (Expr a) where
+    show e = render e
 
 render (ELambda (name, _) body _) = "(\\" ++ name ++ ". " ++ render body ++ ")"
 render (ENum num _) = show num

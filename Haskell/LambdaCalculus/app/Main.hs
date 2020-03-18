@@ -9,6 +9,7 @@ import Lib
 import System.IO
 import Control.Monad
 import Exprs
+import Parser
 import Data.List
 
 renderExprs :: Show a => Either String [Expr a] -> [Char]
@@ -24,7 +25,7 @@ main =
             ":q" -> putStr ""
             ":quit" -> putStr ""
             otherwise -> do
-                case parse src of
+                case parseExpr src of
                     Nothing -> putStrLn "that didn't parse"
                     Just e -> putStrLn $ renderExprs $ eval e
                 main
