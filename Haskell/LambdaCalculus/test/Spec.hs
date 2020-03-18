@@ -13,10 +13,10 @@ tProgStr name src out =
         Just e -> teq name expected actual
                   where
                       expected = out
-                      evaled = eval e 
+                      evaled = last $ eval e
                       actual = case evaled of
                                    Left msg -> msg
-                                   Right es -> show (last es)
+                                   Right e -> show e
 
 y = "(\\f.(\\wrap.wrap wrap)(\\x.f (x x)))"
 

@@ -13,13 +13,37 @@ data Expr a =
     | ENum Integer a
     deriving(Eq, Read)
 
+data ExprType = TLambda | TApp | TId | TNum deriving(Eq, Read, Show, Ord)
+
 instance Show (Expr a) where
     show e = render e
 
-render (ELambda (name, _) body _) = "(\\" ++ name ++ ". " ++ render body ++ ")"
-render (ENum num _) = show num
-render (EId name _) = name
-render (EApp e1 e2 _) = "(" ++ render e1 ++ " " ++ render e2 ++ ")"
+-- render (ELambda (name, _) body _) = "(\\" ++ name ++ ". " ++ render body ++ ")"
+-- render (ENum num _) = show num
+-- render (EId name _) = name
+-- render (EApp e1 e2 _) = "(" ++ render e1 ++ " " ++ render e2 ++ ")"
+
+typeOfExpr :: Expr a -> ExprType
+typeOfExpr (ENum _ _) = TNum
+typeOfExpr (EId _ _) = TId
+typeOfExpr (EApp _ _ _) = TApp
+typeOfExpr (ELambda _ _ _) = TLambda
+
+cmpPrecedence :: Expr a -> Expr b -> Ordering
+cmpPrecedence a b = typeOfExpr a `compare` typeOfExpr b
+
+render e = go e (ELambda ("a", ()) (ENum 1 ()) ())
+    where
+        go :: Expr a -> Expr b -> [Char]
+        go e@(EId name _) parent = wrapIfLt e parent name
+        go e@(ENum n _) parent = wrapIfLt e parent $ show n
+        go e@(EApp e1 e2 _) parent = wrapIfLt e parent $ go e1 e ++ " " ++ go e2 e
+        go e@(ELambda (name, _) body _) parent = wrapIfLt e parent $ "\\" ++ name ++ "." ++ go body e
+        wrapIfLt e parent s =
+            case e `cmpPrecedence` parent of
+                LT -> "(" ++ s ++ ")"
+                otherwise -> s
+
 
 setDifference xs ys = [x | x <- xs, not (x `elem` ys)]
 
@@ -63,13 +87,17 @@ reduce e@(EApp e1 e2 tag)
         return $ EApp e1Reduced e2 tag
     | otherwise = Left ("tried to apply non-function: " ++ render e1)
 
-eval e = reverse <$> go e []
+eval :: (Show a, Eq a) => Expr a -> [Either String (Expr a)]
+eval e = reverse $ go e []
     where
-        go e [] = do
-            e' <- reduce e
-            go e' [e]
-        go e es@(e1:rest)
-            | e == e1 = Right es -- reduction didn't reduce
-            | otherwise = do
-                e' <- reduce e
-                go e' (e:es)
+        go :: (Show a, Eq a) => Expr a -> [(Either String (Expr a))] -> [(Either String (Expr a))]
+        go _ res@(Left _:_) = res -- can't reduce an error. abort. This shouldn't even be reached though
+        go e [] = go2 e [] -- first reduction, just keep going
+        go e res@(Right e1:rest)
+            | e == e1 = res -- reduction did nothing. Irreducible. abort
+            | otherwise = go2 e res -- reduction still happening, keep going
+        -- evaluates e and conses it onto res (wrapped in Either)
+        go2 e res =
+            case reduce e of
+                Left msg -> Left msg:Right e:res
+                Right e' -> go e' (Right e:res)
