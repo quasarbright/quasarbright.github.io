@@ -25,7 +25,10 @@ tests =
                 tProgStr "one" "1" "1",
                 tProgStr "x" "x" "variable not in scope: x",
                 tProgStr "true" "(\\x.\\y.x) 1 2" "1",
-                tProgStr "simpleY" (y ++ " (\\f.\\x.69) 1337") "69"
+                tProgStr "simpleY" (y ++ " (\\f.\\x.69) 1337") "69",
+                tProgStr "letSimple" "let x = 1 in x" "1",
+                tProgStr "letSimple2" "let x = 1 in 2" "2",
+                tProgStr "letComplex" "let x = 1 in let y = 2 in let t = \\a.\\b.a in t x y" "1"
              ]
 
 main :: IO Counts

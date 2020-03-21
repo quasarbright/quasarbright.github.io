@@ -11,6 +11,7 @@ data Expr a =
     | EId String a
     | EApp (Expr a) (Expr a) a
     | ENum Integer a
+    | ELet (String, Expr a, a) (Expr a) a
     deriving(Eq, Read)
 
 data ExprType = TLambda | TApp | TId | TNum deriving(Eq, Read, Show, Ord)
@@ -28,6 +29,7 @@ typeOfExpr (ENum _ _) = TNum
 typeOfExpr (EId _ _) = TId
 typeOfExpr (EApp _ _ _) = TApp
 typeOfExpr (ELambda _ _ _) = TLambda
+typeOfExpr (ELet _ _ _) = TLambda -- same precedence
 
 cmpPrecedence :: Expr a -> Expr b -> Ordering
 cmpPrecedence a b = typeOfExpr a `compare` typeOfExpr b
@@ -39,6 +41,7 @@ render e = go e (ELambda ("a", ()) (ENum 1 ()) ())
         go e@(ENum n _) parent = wrapIfLt e parent $ show n
         go e@(EApp e1 e2 _) parent = wrapIfLt e parent $ go e1 e ++ " " ++ go e2 e
         go e@(ELambda (name, _) body _) parent = wrapIfLt e parent $ "\\" ++ name ++ "." ++ go body e
+        go e@(ELet (name, val, _) body _) parent = wrapIfLt e parent $ "let " ++ name ++ " = " ++ go val e ++ " in " ++ go body e
         wrapIfLt e parent s =
             case e `cmpPrecedence` parent of
                 LT -> "(" ++ s ++ ")"
@@ -47,6 +50,7 @@ render e = go e (ELambda ("a", ()) (ENum 1 ()) ())
 
 setDifference xs ys = [x | x <- xs, not (x `elem` ys)]
 
+varsIn (ELet (name, val, _) body _) = varsIn val ++ varsIn body
 varsIn (EId name _) = [name]
 varsIn (ELambda _ body _) = varsIn body
 varsIn (EApp e1 e2 _) = varsIn e1 ++ varsIn e2
@@ -60,7 +64,12 @@ subst name val e@(ELambda bind@(varName, _) body tag)
     | varName == name = e -- name is bound by lambda, stop
     | otherwise = ELambda bind (subst name val body) tag
 subst name val (EApp e1 e2 tag) = EApp (subst name val e1) (subst name val e2) tag
-subst _ _ e = e
+subst name val (ELet (varName, value, bindingTag) body tag) = ELet (name, subst name val value, bindingTag) newBody tag
+    where
+        newBody
+            | varName == name = body -- name is bound by let, stop
+            | otherwise = subst name val body
+subst _ _ e@(ENum _ _) = e
 
 type Assoc a b = [(a, b)]
 keys as = fst <$> as
@@ -75,6 +84,7 @@ isRedex (EApp _ _ _) = True
 isRedex (ENum _ _) = False
 isRedex (ELambda _ _ _) = False
 isRedex (EId _ _) = False
+isRedex (ELet _ _ _) = True
 
 reduce :: (Show a) => Expr a -> Either String (Expr a)
 reduce e@(ENum _ _) = Right e
@@ -86,6 +96,8 @@ reduce e@(EApp e1 e2 tag)
         e1Reduced <- reduce e1
         return $ EApp e1Reduced e2 tag
     | otherwise = Left ("tried to apply non-function: " ++ render e1)
+-- let get's desugared to lambda on the spot
+reduce e@(ELet (name, val, bindingTag) body tag) = Right $ EApp (ELambda (name, bindingTag) body tag) val tag
 
 eval :: (Show a, Eq a) => Expr a -> [Either String (Expr a)]
 eval e = reverse $ go e []

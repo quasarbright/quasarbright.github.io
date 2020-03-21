@@ -14,13 +14,24 @@ lparen = token $ char '('
 rparen = token $ char ')'
 arrow = token $ string "."
 int = token integer
+letTok = token (string "let")
+inTok = token (string "in")
+eqTok = token (string "=")
 
 elam = do
     lam
-    argname <- ident
+    argName <- ident
     arrow
     body <- elam
-    return $ ELambda (argname, ()) body ()
+    return $ ELambda (argName, ()) body ()
+    <|> do
+        letTok
+        varName <- ident
+        eqTok
+        val <- elam
+        inTok
+        body <- elam
+        return $ ELet (varName, val, ()) body ()
     <|> eapp
 
 eapp = do
