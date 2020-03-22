@@ -7,16 +7,12 @@ module Main where
 
 import Lib
 import System.IO
+import System.Environment
 import Control.Monad
 import Exprs
+import Interpreter
 import Parser
 import Data.List
-
-renderExprs :: Show a => [Either String (Expr a)] -> [Char]
-renderExprs es = concat $ intersperse "\n" (strs es)
-    where strs [] = []
-          strs (Right e:rest) = show e:strs rest
-          strs (Left msg:rest) = msg:strs rest
 
 main :: IO ()
 main =
@@ -30,5 +26,5 @@ main =
             otherwise -> do
                 case parseExpr src of
                     Nothing -> putStrLn "that didn't parse"
-                    Just e -> putStrLn "evaluation:" >> (putStrLn $ renderExprs $ eval e)
+                    Just e -> putStrLn "evaluation:" >> (putStrLn $ renderEvalResult $ eval e)
                 main

@@ -1,0 +1,4 @@
+let x = 1 in
+let y = 2 in
+let t = \a.\b.a in
+t x y

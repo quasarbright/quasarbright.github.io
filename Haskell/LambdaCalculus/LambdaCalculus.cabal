@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ceca946efcf2d06a449ff22ee38a0cd7bbd7591fd26e969e9507def3bc244b90
+-- hash: f07a0c47b24713d57567b8ac4682e8f4d46f96d69bf45031b4e8ad024e6982a7
 
 name:           LambdaCalculus
 version:        0.1.0.0
@@ -28,9 +28,11 @@ source-repository head
 library
   exposed-modules:
       Exprs
+      Interpreter
       Lib
       ParseLib
       Parser
+      Runner
   other-modules:
       Paths_LambdaCalculus
   hs-source-dirs:

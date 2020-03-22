@@ -1,5 +1,6 @@
 import Exprs
 import Parser
+import Interpreter
 import Test.HUnit
 import Control.Applicative
 import Control.Monad
@@ -10,7 +11,7 @@ teq name a b = TestCase (assertEqual name a b)
 tProgStr name src out =
     case parseExpr src of
         Nothing -> TestLabel name $ TestCase $ assertFailure "src didn't parse"
-        Just e -> teq name expected actual
+        Just e -> teq (renderEvalResult . eval $ e) expected actual
                   where
                       expected = out
                       evaled = last $ eval e
