@@ -66,14 +66,14 @@ instance Zipper BTZipper where
 data ListZipper a = ListZipper [a] [a] deriving(Eq, Show)
 
 instance Zipper ListZipper where
-    moveDown (ListZipper [] rs) = Nothing
-    moveDown (ListZipper (l:ls) rs) = Just (ListZipper ls (l:rs))
+    moveUp (ListZipper [] rs) = Nothing
+    moveUp (ListZipper (l:ls) rs) = Just (ListZipper ls (l:rs))
 
     moveLeft _= Nothing
     moveRight _ = Nothing
 
-    moveUp (ListZipper ls []) = Nothing
-    moveUp (ListZipper ls (r:rs)) = Just (ListZipper (r:ls) rs)
+    moveDown (ListZipper ls []) = Nothing
+    moveDown (ListZipper ls (r:rs)) = Just (ListZipper (r:ls) rs)
 
     insert a (ListZipper ls rs) = ListZipper ls (a:rs)
 
@@ -106,34 +106,24 @@ runMovement MoveDown  z = moveDown z
 runMovements :: (Zipper z, Foldable f) => f Movement -> z a -> Maybe (z a)
 runMovements mvs z = foldM (flip runMovement) z mvs
 
-data Action a = MoveAction Movement | EditAction (a -> a) | InsertAction a | DeleteAction
+data Action s a = MoveAction Movement | EditAction (a -> a) | InsertAction a | DeleteAction | StateChangeAction (s -> Maybe a -> s)
 
-runAction :: Zipper z => Action a -> z a -> Maybe (z a)
-runAction (MoveAction   mv) z = runMovement mv z
-runAction (EditAction   f ) z = Just $ edit f z
-runAction (InsertAction a ) z = Just $ insert a z
-runAction DeleteAction      z = delete z
+runAction :: Zipper z => Action s a -> (s, z a) -> (s, Maybe (z a))
+runAction (MoveAction   mv) (s, z) = (s, runMovement mv z)
+runAction (EditAction   f ) (s, z) = (s, Just $ edit f z)
+runAction (InsertAction a ) (s, z) = (s, Just $ insert a z)
+runAction DeleteAction      (s, z) = (s, delete z)
+runAction (StateChangeAction f) (s, z) = (f s (get z), Just z)
 
-runActionAndCombine :: Zipper z => (a -> Action a -> b -> b) -> b -> Action a -> z a -> (b, Maybe (z a))
-runActionAndCombine f acc act z = (fromMaybe acc newAcc_, newZ_)
-  where
-    newZ_ = runAction act z
-    newAcc_ = do
-            newZ <- newZ_
-            a <- get newZ
-            return $ f a act acc 
 
-runActions :: (Zipper z, Foldable f) => f (Action a) -> z a -> Maybe (z a)
-runActions acts z = foldM (flip runAction) z acts
-
-runActionsAndCombine f acc [] z = acc
-runActionsAndCombine f acc (act:acts) z = ans
+runActions :: (Zipper z) => [Action s a] -> (s, z a) -> (s, Maybe (z a))
+runActions (act:acts) sz = ans 
     where
-        (newAcc, newZ_) = runActionAndCombine f acc act z
+        (newS, newZ_) = runAction act sz
         ans = case newZ_ of
-                Nothing -> newAcc
-                Just newZ -> runActionsAndCombine f newAcc acts newZ
-
+                Nothing -> (newS, Nothing)
+                Just newZ -> runActions acts (newS, newZ)
+runActions [] (s, z) = (s, Just z)
 
 -- | returns the starter zipper and the movements which will traverse it
 -- | if you run an edit after any up movement, you'll map the tree
@@ -173,31 +163,31 @@ traverseTree bt = (z, go bt)
         -- decide (BTZipper _      RightPath{}) MoveUp    = MoveUp
 
 traverseList :: [a] -> (ListZipper a, [Movement])
-traverseList ls = (makeListZipper ls, replicate (length ls) MoveUp)
+traverseList ls = (makeListZipper ls, replicate (length ls) MoveDown)
 
 
 flattenTree :: BT a -> [a]
-flattenTree tree = flattenZipper z mvs
+flattenTree tree = as
     where
         (z, mvs) = traverseTree tree
+        acts = MoveAction <$> mvs
+        stateChange = StateChangeAction f  -- accumulates a list of as
+            where
+                f s = maybe s (:s)
+        newActs = reverse $ foldr comb [] (reverse acts) -- adds stateChange after every MoveUp 
+        comb act acts = case act of
+                            MoveAction MoveUp -> stateChange:act:acts
+                            _ -> act:acts
+        (as, _) = runActions newActs ([], z)
 
 
 flattenList :: [a] -> [a]
-flattenList ls = flattenZipper z mvs
+flattenList ls = as
     where
         (z, mvs) = traverseList ls
-
-flattenZipper :: Zipper z => z a -> [Movement] -> [a]
-flattenZipper z mvs = ans
-    where
         acts = MoveAction <$> mvs
-        combiner a (MoveAction MoveUp) acc = a:acc
-        combiner _ _ acc = acc
-        ans = runActionsAndCombine combiner [] acts z
-
-lf = Leaf
-t = Node (Node lf 'a' (Node lf 'b' lf)) 'c' (Node (Node lf 'd' lf) 'e' (Node lf 'f' lf))
-
--- left off debugging flattenList. bug is happening because due to the nature of runAndCombine, the combiner never sees the first element and seemingly sees the last twice?
--- a more robust way to do all of this would be to keep around a (zipper, state) pair and have a state manipulation action with a (a -> s -> s)
--- then you'd just selectively place that action in the traversal list according to what you're doing
+        stateChange = StateChangeAction f  -- accumulates a list of as
+            where
+                f s = maybe s (:s)
+        newActs = foldr (\act acts -> stateChange:act:acts) [] acts
+        (as, _) = runActions newActs ([], z)
