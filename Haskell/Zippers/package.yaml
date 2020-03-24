@@ -24,6 +24,7 @@ dependencies:
 
 library:
   source-dirs: src
+  ghc-options: -w -Wall
 
 executables:
   Zippers-exe:
@@ -33,6 +34,8 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -w
+    - -Wall
     dependencies:
     - Zippers
 

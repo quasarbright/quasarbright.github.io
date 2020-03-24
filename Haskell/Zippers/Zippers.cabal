@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 49e9cab2f27a8aaba506adfdd89810416cb9d1ed72dc5c3377a0c50f4c055859
+-- hash: 91ec3723a4c59edd5edd7a0525581253011b7a90d6d2b29f301ac6578c0a9722
 
 name:           Zippers
 version:        0.1.0.0
@@ -32,6 +32,7 @@ library
       Paths_Zippers
   hs-source-dirs:
       src
+  ghc-options: -w -Wall
   build-depends:
       base >=4.7 && <5
   default-language: Haskell2010
@@ -42,7 +43,7 @@ executable Zippers-exe
       Paths_Zippers
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -w -Wall
   build-depends:
       Zippers
     , base >=4.7 && <5
