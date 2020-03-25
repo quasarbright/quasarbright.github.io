@@ -181,6 +181,21 @@ flattenTree tree = as
         (as, _) = runActions newActs ([], z)
 
 
+treeOfZipper z@(BTZipper t Top) = t
+treeOfZipper z = treeOfZipper $ fromMaybe (error "move up on tree failed") (moveUp z)
+
+editTree f tree = t
+    where
+        (z, mvs) = traverseTree tree
+        acts = MoveAction <$> mvs
+        newActs = reverse $ foldr comb [] (reverse acts) -- adds edit after every MoveUp 
+        comb act acts = case act of
+                            MoveAction MoveUp -> EditAction f:act:acts
+                            _ -> act:acts
+        t = case runActions newActs ((), z) of
+            ((), Nothing) -> error "edits failed?"
+            ((), Just newZ) -> treeOfZipper newZ
+
 flattenList :: [a] -> [a]
 flattenList ls = as
     where
@@ -191,3 +206,6 @@ flattenList ls = as
                 f s = maybe s (:s)
         newActs = foldr (\act acts -> stateChange:act:acts) [] acts
         (as, _) = runActions newActs ([], z)
+
+lf = Leaf
+t = Node (Node lf 1 (Node lf 2 lf)) 3 (Node (Node lf 4 lf) 5 lf)
