@@ -1,6 +1,9 @@
 import random
 # random.seed(2000) # for testing and debugging
 
+chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+num_chars = len(chars)
+
 class Vector:
     def __init__(self, x, y):
         self.x = x
@@ -123,6 +126,7 @@ class Game:
         self.body.insert(0, new_pos)
         if self.head_in_fruit():
             reward = 10
+            self.fruit = Vector(-1,-1) ##
             if should_respawn_fruit:
                 self.respawn_fruit()
         else:
@@ -130,7 +134,7 @@ class Game:
             reward = -0.1
         if self.head_in_body() or self.head_in_wall():
             self.dead = True
-            reward = -10
+            reward = -1000
         self.age += 1
         return reward
     
@@ -193,9 +197,8 @@ class Game:
     def __str__(self):
         base = [['_' for x in range(self.w)] for y in range(self.h)]
         base[self.fruit.y][self.fruit.x] = "F"
-        for pos in self.body:
-            base[pos.y][pos.x] = "S"
-        base[self.head().y][self.head().x] = "H"
+        for i, pos in enumerate(self.body):
+            base[pos.y][pos.x] = chars[i % num_chars]
         return '\n'.join(map(lambda l:' '.join(l), base)) + "\n"
     
     def __repr__(self):

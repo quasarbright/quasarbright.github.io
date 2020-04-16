@@ -1,8 +1,10 @@
 from agents import *
 from game import *
 
-game = Game(5,5)
-agent = MinimaxAgent(14)
+game = Game(10,10)
+# game.body = [Vector(2,2)]
+# game.fruit = Vector(3,2)
+agent = MinimaxAgent(5, .1)
 
 while not game.dead and len(game.get_legal_actions(SNAKE)) > 0:
     print(game)
