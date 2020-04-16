@@ -1,4 +1,5 @@
 import random
+# random.seed(2000) # for testing and debugging
 
 class Vector:
     def __init__(self, x, y):
@@ -66,9 +67,18 @@ class Game:
         ans.body = self.body[:]
         ans.fruit = self.fruit
         ans.dead = self.dead
-        ans.all_spots = self.all_spots[:]
+        ans.all_spots = self.all_spots#[:] # don't really need to copy, right?
         ans.age = self.age
+        ans.players = self.players
         return ans
+    
+    def __eq__(self, other):
+        # really don't need stuff like players or all_spots
+        return self.w == other.w and self.h == other.h and self.body == other.body and self.fruit == other.fruit and self.dead == other.dead and self.all_spots == other.all_spots and self.age == other.age and self.players == other.players
+    
+    def __hash__(self):
+        # really don't need stuff like players or all_spots
+        return hash((self.w, self.h, tuple(self.body), self.fruit, self.dead, tuple(self.all_spots), self.age, tuple(self.players)))
     
     def head(self):
         return self.body[0]
@@ -99,7 +109,9 @@ class Game:
         return list(filter(is_good_spot, self.all_spots))
     
     def respawn_fruit(self):
-        self.fruit = random.choice(self.good_spots())
+        good_spots = self.good_spots()
+        if len(good_spots) > 0:
+            self.fruit = random.choice(self.good_spots())
     
     def move_snake(self, direction, should_respawn_fruit=False):
         '''move the snake, possibly growing the tail.
@@ -109,13 +121,18 @@ class Game:
             raise RuntimeError("cannot move while dead")
         new_pos = self.head() + vec_of_direction(direction)
         self.body.insert(0, new_pos)
-        if not self.head_in_fruit():
+        if self.head_in_fruit():
+            reward = 10
+            if should_respawn_fruit:
+                self.respawn_fruit()
+        else:
             self.body = self.body[:-1]
-        elif should_respawn_fruit:
-            self.respawn_fruit()
+            reward = -0.1
         if self.head_in_body() or self.head_in_wall():
             self.dead = True
+            reward = -10
         self.age += 1
+        return reward
     
     def is_snake_move_safe(self, direction):
         g = self.copy()
@@ -127,7 +144,11 @@ class Game:
 
     def get_legal_actions(self, player):
         if player == SNAKE:
-            return list(filter(self.is_snake_move_safe, [UP, DOWN, LEFT, RIGHT]))
+            moves = [UP, DOWN, LEFT, RIGHT]
+            return moves
+            # return list(filter(self.is_snake_move_safe, moves))
+            # want the model to consider bad moves so it can know to avoid them?
+            # but it's expensive to consider moves that will kill you
         if player == FRUIT:
             if self.head_in_fruit():
                 return self.good_spots()
@@ -143,6 +164,9 @@ class Game:
         A long snake is worth more than a short snake if their liveness is the same
         A young snake is worth more than an old snake if all else is equal
         '''
+        if len(self) >= self.w * self.h:
+            # win
+            return float('inf')
         liveness = 0 if self.dead else 1
         return liveness - 1.0 / (len(self) + 1.0 / self.age)
 
@@ -160,10 +184,11 @@ class Game:
         g = self.copy()
         if player == SNAKE:
             assert action in [UP, DOWN, LEFT, RIGHT]
-            g.move_snake(action)
+            reward = g.move_snake(action)
         elif player == FRUIT:
             g.fruit = action
-        return g
+            reward = 0
+        return g, reward
     
     def __str__(self):
         base = [['_' for x in range(self.w)] for y in range(self.h)]
