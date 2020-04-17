@@ -25,5 +25,5 @@ def eval(episodes, size, fuel, discount_rate):
         lengths.append(status["length"])
     return avg(ages), avg(lengths)
 
-avg_age, avg_length = eval(50, 10, 6, .5)
+avg_age, avg_length = eval(50, 10, 2, .5)
 print({"avg_age": avg_age, "avg_length": avg_length})
