@@ -1,0 +1,65 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 834e1009741a7c401efd05ca2d0f807a4d8cb3b059bfefab5e41ea855bdfb660
+
+name:           EquationSolver
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/EquationSolver#readme>
+homepage:       https://github.com/githubuser/EquationSolver#readme
+bug-reports:    https://github.com/githubuser/EquationSolver/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2020 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/EquationSolver
+
+library
+  exposed-modules:
+      Equation
+      Lib
+  other-modules:
+      Paths_EquationSolver
+  hs-source-dirs:
+      src
+  ghc-options: -w -Wall
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
+
+executable EquationSolver-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_EquationSolver
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      EquationSolver
+    , base >=4.7 && <5
+  default-language: Haskell2010
+
+test-suite EquationSolver-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_EquationSolver
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -w -Wall
+  build-depends:
+      EquationSolver
+    , HUnit
+    , base >=4.7 && <5
+  default-language: Haskell2010
