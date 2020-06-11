@@ -15,14 +15,14 @@ data Expr = EAtom Atom
           | Quot Expr Expr
           | Sum Expr Expr
           | Diff Expr Expr
-          | Pow Expr Rational -- for now only support rational exponents
+          | Pow Expr Int -- for now only support integer exponents
           | Paren Expr
           deriving (Eq)
 
 data Dividend = DAtom Atom
               | DNeg Atom
               | DProd Dividend Dividend
-              | DPow Atom Rational
+              | DPow Atom Int
               | DParen Dividend
           deriving (Eq)
 
