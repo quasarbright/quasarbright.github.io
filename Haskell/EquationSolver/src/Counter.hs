@@ -16,7 +16,7 @@ initCount :: Eq a => a -> Counter a -> Counter a
 initCount a c =
     case lookup a c of
         Just _ -> c
-        otherwise -> (a, 0):c
+        _ -> (a, 0):c
 
 hasKey :: Eq a => a -> Counter a -> Bool
 hasKey a c = isJust $ lookup a c
@@ -28,11 +28,17 @@ manipCount f a c = maybeManip <$> initCount a c
             | a' == a = (a, f n)
             | otherwise = (a, n)
 
+increment :: Eq a => a -> Counter a -> Counter a
 increment a c = manipCount succ a c
+incrementBy :: Eq a => Int -> a -> Counter a -> Counter a
 incrementBy n = manipCount (+n)
+decrement :: Eq a => a -> Counter a -> Counter a
 decrement a c = manipCount pred a c
+decrementBy :: Eq a => Int -> a -> Counter a -> Counter a
 decrementBy n = manipCount (+(-n))
+multiplyBy :: Eq a => Int -> a -> Counter a -> Counter a
 multiplyBy n = manipCount (*n)
+setCount :: Eq a => Int -> a -> Counter a -> Counter a
 setCount n = manipCount (const n)
 
 keys :: Eq a => Counter a -> [a]

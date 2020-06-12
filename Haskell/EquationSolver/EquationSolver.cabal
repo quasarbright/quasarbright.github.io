@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ff6c499fbacef63f292e1dbd1009ca57b3c44eefbabeb38b7cce394ccd0fd67f
+-- hash: 9029ab7a88b03400029bb78ec84897bd692fbab08da527a6cf4139375434882d
 
 name:           EquationSolver
 version:        0.1.0.0
@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      Counter
       Equation
       Lib
       Simplify

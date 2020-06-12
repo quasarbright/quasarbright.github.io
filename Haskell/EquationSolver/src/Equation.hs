@@ -32,8 +32,8 @@ data PExpr = PStd StdExpr
            | PQuot StdExpr StdExpr
            | PSum (NonEmpty StdExpr)
            | PDiff StdExpr StdExpr
-           | PPow PExpr Int
-           | PParen PExpr
+           | PPow StdExpr Int
+           | PParen StdExpr
            deriving (Eq)
 
 -- data Factor = FVal Double
@@ -49,7 +49,7 @@ getPow :: StdPow -> Int
 getPow (VarPow _ p) = p
 getPow (ConstPow _ p) = p
 
-data Term = Term Double [StdPow] deriving (Eq)
+data Term = Term Double [StdPow] deriving (Eq, Ord)
 
 degree :: Term -> Int
 degree t =
@@ -63,11 +63,11 @@ degree t =
                 isVar VarPow{} = True
                 isVar _ = False
 
-instance Ord Term where
-    compare (Term d1 []) (Term d2 []) = compare d1 d2
-    compare Term{} (Term _ []) = LT
-    compare (Term _ []) Term{} = GT
-    compare t1 t2 = compare (degree t2) (degree t1) -- higher degree is LT
+-- instance Ord Term where
+--     compare (Term d1 []) (Term d2 []) = compare d1 d2
+--     compare Term{} (Term _ []) = LT
+--     compare (Term _ []) Term{} = GT
+--     compare (Term _ ) t2 = compare (degree t2) (degree t1) -- higher degree is LT
 
 newtype Polynomial = Polynomial (NonEmpty Term) deriving (Eq)
 
@@ -110,8 +110,8 @@ instance Show PExpr where
     show (PParen e) = concat ["(", show e, ")"]
 
 instance Show StdPow where
-    show (VarPow base 1) = show base
-    show (VarPow base power) = concat ["(", show base, "^", show power, ")"]
+    show (VarPow base 1) = [base]
+    show (VarPow base power) = concat ["(", [base], "^", show power, ")"]
     show (ConstPow base 1) = show base
     show (ConstPow base power) = concat ["(", show base, "^", show power, ")"]
 
@@ -164,15 +164,9 @@ simplifyTerm (Term d pows)
 
 
 
--- assumes simplified and sorted terms
+-- assumes simplified terms
 areLikeTerms :: Term -> Term -> Bool
-areLikeTerms (Term d1 pows1) (Term d2 pows2) = d1 == d2 && pows1' == pows2'
-    where
-        pows1' = sort [pow | pow <- pows1, notVar pow]
-        pows2' = sort [pow | pow <- pows2, notVar pow]
-
-        notVar VarPow{} = False
-        notVar _ = True
+areLikeTerms (Term _ pows1) (Term _ pows2) = sort pows1 == sort pows2
 
 -- -- assumes simplified and sorted terms
 -- combineLikeTerms :: [Term] -> [Term]
@@ -186,33 +180,40 @@ areLikeTerms (Term d1 pows1) (Term d2 pows2) = d1 == d2 && pows1' == pows2'
 -- assumes all terms are simplified and sorted
 -- assumes there are no like terms in terms list
 addTerm :: Term -> [Term] -> [Term]
-addTerm t@(Term d pows) ts = maybeCombine <$> ts
-    where
-        maybeCombine t'@(Term d' _) =
+addTerm t [] = [t]
+addTerm t@(Term d pows) (t'@(Term d' _):ts) = 
             if areLikeTerms t t'
-            then Term (d+d') pows
-            else t'
+            then Term (d+d') pows:ts
+            else t':addTerm t ts
 
 combineLikeTerms :: [Term] -> [Term]
 combineLikeTerms ts = foldr addTerm [] ts
 
+-- | apply f to a until it stops changing (returns a fixed point of f)  
+-- may not terminate
+repeatUntilIdempotent :: Eq a => (a -> a) -> a -> a
+repeatUntilIdempotent f a
+    | a' == a = a
+    | otherwise = repeatUntilIdempotent f a'
+        where a' = f a
 
+-- x - x + 1 = 0x + 1 = 0 + 1 = 1. need multiple steps
 simplifyPolynomial :: Polynomial -> Polynomial
-simplifyPolynomial p =
-    Polynomial . fromList . sort . combineLikeTerms $ (simplifyTerm <$> terms p)
+simplifyPolynomial p_ = repeatUntilIdempotent go p_ where
+    go p = fromTerms . sort . combineLikeTerms $ (simplifyTerm <$> terms p)
 
 multiplyTerms :: Term -> Term -> Term
 multiplyTerms (Term d1 pows1) (Term d2 pows2) = simplifyTerm $ Term (d1 * d2) (pows1 ++ pows2)
 
 instance Num Polynomial where
-    p1 + p2 = simplifyPolynomial . Polynomial . fromList $ terms p1 ++ terms p2
-    p1 * p2 = simplifyPolynomial . Polynomial . fromList $ crossProduct
+    p1 + p2 = simplifyPolynomial . fromTerms $ terms p1 ++ terms p2
+    p1 * p2 = simplifyPolynomial . fromTerms $ crossProduct
         where
             crossProduct = [multiplyTerms a b | a <- terms p1 , b <- terms p2]
     abs _ = error "not implemented"
     signum _ = error "not implemented"
     fromInteger n = valP (fromIntegral n)
-    negate p = simplifyPolynomial . Polynomial . fromList $ negateTerm <$> terms p
+    negate p = simplifyPolynomial . fromTerms $ negateTerm <$> terms p
         where negateTerm (Term d pows) = Term (d * (-1)) pows
 
 
@@ -224,18 +225,33 @@ instance Num PolynomialFraction where
     PolynomialFraction num1 den1 + PolynomialFraction num2 den2 = simplifyPolynomialFraction $ PolynomialFraction (num1 * den2 + num2 * den1) (den1 * den2)
     PolynomialFraction num1 den1 * PolynomialFraction num2 den2 = simplifyPolynomialFraction $ PolynomialFraction (num1 * num2) (den1 * den2)
     abs _ = error "not implemented"
-    signum = error "not implemented"
-    fromInteger n = valPF (fromIntegral n)
+    signum _ = error "not implemented"
+    fromInteger = valPF . fromIntegral
     negate (PolynomialFraction num den) = simplifyPolynomialFraction $ PolynomialFraction (negate num) den
 
 instance Fractional PolynomialFraction where
     fromRational r = PolynomialFraction (valP $ fromIntegral $ numerator r) (valP $ fromIntegral $ denominator r)
     recip (PolynomialFraction num den) = PolynomialFraction den num
 
--- instance Num StdExpr where
---     -- NO SIMPLIFYING
---     (StdExpr p1 pf1) + (StdExpr p2 pf2) = (StdExpr (p1 + p2) (pf1 + pf2))
---     (StdExpr p1 pf1) * (StdExpr p2 pf2) = (StdExpr (p1 * p2) (pf1  pf2))
+instance Num StdExpr where
+    -- NO SIMPLIFYING
+    (StdExpr p1 pf1) + (StdExpr p2 pf2) = simplifyStdExpr $ StdExpr (p1 + p2) (pf1 + pf2)
+    e1 * e2 = stdOfPf (pfOfStd e1 * pfOfStd e2)
+    fromInteger = valStd . fromIntegral
+    negate (StdExpr p pf) = simplifyStdExpr $ StdExpr (negate p) (negate pf)
+    abs _ = error "not implemented"
+    signum _ = error "not implemented"
+
+instance Fractional StdExpr where
+    fromRational = stdOfPf . fromRational
+    recip = stdOfPf . recip . pfOfStd
+
+
+stdOfPf :: PolynomialFraction -> StdExpr
+stdOfPf pf = simplifyStdExpr $ StdExpr (valP 0) pf
+
+pfOfStd :: StdExpr -> PolynomialFraction
+pfOfStd (StdExpr p (PolynomialFraction num den)) = simplifyPolynomialFraction $ PolynomialFraction (p * den + num) den
 
 maxBy :: (a -> a -> Ordering) -> NonEmpty a -> a
 maxBy cmp as = foldr1 choose (toList as)
@@ -247,20 +263,47 @@ maxBy cmp as = foldr1 choose (toList as)
 maxDegreeTerm :: Polynomial -> Term
 maxDegreeTerm (Polynomial ts) = maxBy (\a b -> compare (degree a) (degree b)) ts
 
-leadingCoefAndDegree :: Polynomial -> (Double, Int)
+leadingCoefAndDegree :: Polynomial -> (Double, Int, Term)
 leadingCoefAndDegree p = case maxDegreeTerm p of
-    t@(Term c _) -> (c, degree t)
+    t@(Term c _) -> (c, degree t, t)
 
+-- can't use Std add bc it simplifies so it would inf loop
 addPolynomialToStd :: Polynomial -> StdExpr -> StdExpr
 addPolynomialToStd p (StdExpr p' pf) = StdExpr (p + p') pf
 
+divideTerms :: Term -> Term -> Term
+divideTerms t1 (Term c pows) = simplifyTerm $ multiplyTerms (simplifyTerm t1) (simplifyTerm t2Inv) where
+    t2Inv = Term (1.0 / c) powsInv
+    powsInv = invertPow <$> pows
+    invertPow (VarPow base power) = VarPow base (-power)
+    invertPow (ConstPow base power) = ConstPow base (-power)
+
+
 -- assume single variable
+-- output is simplified ish (p and pf are simplified)
 longDivide :: Polynomial -> Polynomial -> StdExpr
 longDivide pnum pden = case (leadingCoefAndDegree pnum, leadingCoefAndDegree pden) of
-    ((cnum, dnum), (cden, dden)) -> ans where 
+    ((_, dnum, tnum), (cden, dden, tden)) -> ans where
         ans | dden == 0 = StdExpr (valP (1.0 / cden) * pnum) (valPF 0)
-            | dnum < dden = StdExpr (valP 0) (PolynomialFraction pnum pden)
-            | otherwise = addPolynomialToStd remainder (longDivide pnum' pden) where
-                factor = cnum / cden
-                pnum' = pnum - valP factor * pden
-                remainder = pden * valP factor
+            | dnum < dden = StdExpr (valP 0) (simplifyPolynomialFraction $ PolynomialFraction pnum pden)
+            | otherwise = addPolynomialToStd factor (longDivide pnum' pden) where -- can't use Std add bc it simplifies so it would inf loop
+                factor = fromTerms [divideTerms tnum tden]
+                pnum' = pnum - factor * pden
+
+examplenum :: Polynomial
+examplenum = fromTerms [Term 3 [VarPow 'x' 2], Term 2 [VarPow 'x' 1], Term 1 []]
+exampleden :: Polynomial
+exampleden = fromTerms [Term 1 [VarPow 'x' 1], Term 1 []]
+
+-- | create polynomial from terms list (must be nonempty)
+fromTerms :: [Term] -> Polynomial
+fromTerms = Polynomial . fromList
+
+simplifyStdExpr :: StdExpr -> StdExpr
+simplifyStdExpr e = repeatUntilIdempotent go e where
+    go (StdExpr p_ (PolynomialFraction num_ den_)) = std' where
+        p = simplifyPolynomial p_
+        num = simplifyPolynomial num_
+        den = simplifyPolynomial den_
+        num' = p * den + num
+        std' = longDivide num' den
