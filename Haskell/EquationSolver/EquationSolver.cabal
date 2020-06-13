@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.2.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9029ab7a88b03400029bb78ec84897bd692fbab08da527a6cf4139375434882d
+-- hash: 28af6fd491d141fb3ded0997fa3093c64c2a7190e09bd5c7914c89169aaa00f7
 
 name:           EquationSolver
 version:        0.1.0.0
@@ -30,6 +30,7 @@ library
       Counter
       Equation
       Lib
+      Parsing
       Simplify
   other-modules:
       Paths_EquationSolver
@@ -39,6 +40,7 @@ library
   build-depends:
       base >=4.7 && <5
     , containers >0.6
+    , parsec
   default-language: Haskell2010
 
 executable EquationSolver-exe
@@ -52,6 +54,7 @@ executable EquationSolver-exe
       EquationSolver
     , base >=4.7 && <5
     , containers >0.6
+    , parsec
   default-language: Haskell2010
 
 test-suite EquationSolver-test
@@ -67,4 +70,5 @@ test-suite EquationSolver-test
     , HUnit
     , base >=4.7 && <5
     , containers >0.6
+    , parsec
   default-language: Haskell2010

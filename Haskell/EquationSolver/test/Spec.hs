@@ -1,5 +1,6 @@
 import Test.HUnit
 import Equation
+import Parsing
 
 teq :: (Eq a, Show a) => String -> a -> a -> Test
 teq name a b = TestCase (assertEqual name a b)
