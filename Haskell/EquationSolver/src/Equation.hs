@@ -92,9 +92,9 @@ instance Show Atom where
 instance Show Expr where
     show (EAtom a) = show a
     show (Neg e) = '-':show e
-    show (Prod factors) = intersperse '*' (toList factors >>= show)
+    show (Prod factors) = intercalate "*" (show <$> toList factors)
     show (Quot left right) = concat [show left, "/", show right]
-    show (Sum ts) = intersperse '+' (toList ts >>= show)
+    show (Sum ts) = intercalate "+" (show <$> toList ts)
     show (Diff left right) = concat [show left, "-", show right]
     show (Pow base power) = concat [show base, "^", show power]
     show (Paren e) = concat ["(", show e, ")"]
@@ -102,9 +102,9 @@ instance Show Expr where
 instance Show PExpr where
     show (PStd se) = show se
     show (PNeg e) = '-':show e
-    show (PProd factors) = intersperse '*' (toList factors >>= show)
+    show (PProd factors) = intercalate "*" (show <$> toList factors)
     show (PQuot left right) = concat [show left, "/", show right]
-    show (PSum ts) = intersperse '+' (toList ts >>= show)
+    show (PSum ts) = intercalate "+" (show <$> toList ts)
     show (PDiff left right) = concat [show left, "-", show right]
     show (PPow base power) = concat [show base, "^", show power]
     show (PParen e) = concat ["(", show e, ")"]
