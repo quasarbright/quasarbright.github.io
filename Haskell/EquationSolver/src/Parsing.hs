@@ -1,4 +1,4 @@
-module Parsing where
+module Parsing(parseExpr, parseExprEither) where
 
 import Data.List.NonEmpty(NonEmpty((:|)), (<|), fromList, toList)
 import Text.ParserCombinators.Parsec hiding (many, (<|>))
@@ -6,6 +6,7 @@ import qualified Text.Parsec.Token as P
 import qualified Text.Parsec.Prim
 import Control.Applicative hiding (Const)
 import Control.Monad
+import Data.Either
 import Data.Functor
 import qualified Data.Functor.Identity
 import Data.Char
@@ -117,8 +118,11 @@ var = EAtom . Var <$> varTok <?> "variable"
 constant :: Parser Expr
 constant = EAtom . Const <$> (e <|> pi_) <?> "constant (pi or e)"
 
-parse :: String -> Either ParseError Expr
-parse = runParser prog () ""
+parseExpr :: String -> Expr
+parseExpr s = either (error . show) id  (runParser prog () "" s)
+
+parseExprEither :: String -> Either ParseError Expr
+parseExprEither = runParser prog () ""
 
 -- TODO juxtaposition multiplication (worried about uminus like x - y -> x * -y)
 
