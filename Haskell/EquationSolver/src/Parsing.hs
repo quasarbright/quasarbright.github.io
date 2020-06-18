@@ -1,15 +1,11 @@
-module Parsing(parseExpr, parseExprEither) where
+module Parsing(parseExpr, parseExprEither, parseEquation, parseEquationEither) where
 
 import Data.List.NonEmpty(NonEmpty((:|)), (<|), fromList, toList)
 import Text.ParserCombinators.Parsec hiding (many, (<|>))
 import qualified Text.Parsec.Token as P
-import qualified Text.Parsec.Prim
 import Control.Applicative hiding (Const)
-import Control.Monad
-import Data.Either
 import Data.Functor
 import qualified Data.Functor.Identity
-import Data.Char
 import Equation
 
 lang :: P.GenLanguageDef String () Data.Functor.Identity.Identity
@@ -23,7 +19,7 @@ lang = P.LanguageDef{
     P.opStart = oneOf ":!#$%&*+./<=>?@\\^|-~",
     P.opLetter = oneOf ":!#$%&*+./<=>?@\\^|-~",
     P.reservedNames = ["e", "pi"],
-    P.reservedOpNames = ["+", "-", "*", "/", "^"],
+    P.reservedOpNames = ["+", "-", "*", "/", "^", "="],
     P.caseSensitive = True}
 
 lexer :: P.GenTokenParser String () Data.Functor.Identity.Identity
@@ -75,13 +71,22 @@ divide :: Parser (Expr -> Expr -> Expr)
 divide = P.reservedOp lexer "/" $> Quot
 
 pow :: Parser (Expr -> Int -> Expr)
-pow = P.reservedOp lexer "^" $> Pow 
+pow = P.reservedOp lexer "^" $> Pow
+
+eq :: Parser (Expr -> Expr -> Equation)
+eq = P.reservedOp lexer "=" $> Equation
 
 parens :: Parser a -> Parser a
 parens = P.parens lexer
 
-prog :: Parser Expr
-prog = expr <* eof <?> "program"
+progEq :: Parser Equation
+progEq = eqn <* eof <?> "equation"
+
+progExpr :: Parser Expr
+progExpr = expr <* eof <?> "expression"
+
+eqn :: Parser Equation
+eqn = expr <**> eq <*> expr <?> "equation"
 
 expr :: Parser Expr
 expr = sumDiff <?> "expression"
@@ -118,11 +123,17 @@ var = EAtom . Var <$> varTok <?> "variable"
 constant :: Parser Expr
 constant = EAtom . Const <$> (e <|> pi_) <?> "constant (pi or e)"
 
+parseEquation :: String -> Equation
+parseEquation s = either (error . show) id  (runParser progEq () "" s)
+
+parseEquationEither :: String -> Either ParseError Equation
+parseEquationEither = runParser progEq () ""
+
 parseExpr :: String -> Expr
-parseExpr s = either (error . show) id  (runParser prog () "" s)
+parseExpr s = either (error . show) id  (runParser progExpr () "" s)
 
 parseExprEither :: String -> Either ParseError Expr
-parseExprEither = runParser prog () ""
+parseExprEither = runParser progExpr () ""
 
 -- TODO juxtaposition multiplication (worried about uminus like x - y -> x * -y)
 

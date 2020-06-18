@@ -1,6 +1,8 @@
+import qualified Data.Set as Set
 import Test.HUnit
 import Equation
 import Parsing
+import Solve
 
 teq :: (Eq a, Show a) => String -> a -> a -> Test
 teq name a b = TestCase (assertEqual name a b)
@@ -17,6 +19,11 @@ x n = VarPow 'x' n
 
 y :: Int -> StdPow
 y n = VarPow 'y' n
+
+testSolve :: String -> [Double] -> Test
+testSolve eqStr vals = teq eqStr (SolSet $ Set.fromList (valStd <$> vals)) sol where
+    sol = solve eqn
+    eqn = parseEquation eqStr
 
 degreeTests :: Test
 degreeTests = TestLabel "degree tests" $ TestList [
@@ -141,7 +148,19 @@ polynomialLongDivisionTests = TestLabel "long division tests" $ TestList [
             (fromTerms [Term 1 [x 1], Term 1 []])
             (StdExpr
                 (fromTerms [Term (-1) [], Term 3 [x 1]])
-                (PolynomialFraction (valP 2) (fromTerms [Term 1 [x 1], Term 1 []]))),
+                (PolynomialFraction (valP 2) (fromTerms [Term 1 [], Term 1 [x 1]]))),
+        tpass
+    ]
+
+
+solveTests :: Test
+solveTests = TestLabel "solving equation tests" $ TestList [
+        testSolve "x = 1" [1],
+        testSolve "x^2 = 1" [-1, 1],
+        testSolve "x^2 = 0" [0],
+        testSolve "(x - 1) * (x + 2) = 0" [1, -2],
+        testSolve "(3*x - 3) * (x + 2) = 0" [1, -2],
+        testSolve "x^3 - x = 0" [-1, 0, 1],
         tpass
     ]
 
@@ -153,6 +172,7 @@ tests = TestList [
         simplifyPolynomialTests,
         polynomialArithmeticTests,
         polynomialLongDivisionTests,
+        solveTests,
         tpass
     ]
 

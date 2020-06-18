@@ -6,6 +6,7 @@ import Simplify
 import Counter
 import qualified Data.Map as Map
 import qualified Data.Maybe as Maybe
+import Debug.Trace
 
 solve :: Equation -> Solution
 solve = solveStd . standardizeEquation
@@ -64,7 +65,8 @@ rootsFromDerivative p = roots where
     intervals
         | intervals_ == [(-infinity, infinity)] = [(-infinity, 0), (0, infinity)]
         | otherwise = intervals
-    rootFromInterval (xmin, xmax) = bisect (\x -> evalPoly (const x) p) xmin xmax
+    (llim, rlim) = lims p
+    rootFromInterval (xmin, xmax) = bisect (\x -> evalPoly (const x) p) xmin xmax llim rlim
     roots = fromList $ Maybe.catMaybes (rootFromInterval <$> intervals)
 
 
@@ -108,7 +110,7 @@ bisect f xmin xmax llim rlim
     | xmax == infinity  && signum ymax * signum rlim >  0 = Nothing -- no sign change
     | xmax == infinity  && signum ymax * signum rlim <= 0 = bisect f xmax xmax' llim rlim
     | signum ymin * signum ymax > 0 = Nothing -- no sign change
-    | abs (xmin - xmax) < 1e-3 || y == 0 = Just x
+    | abs (xmin - xmax) == 0 || y == 0 = traceShow (traceShow xmin xmax) Just x -- it seems like double
     | y < 0 = bisect f x xmax llim rlim
     | y > 0 = bisect f xmin x llim rlim
     | otherwise = Nothing
@@ -120,7 +122,7 @@ bisect f xmin xmax llim rlim
             -- if xmin = -infty, this is the smallest xmin found with a sign change
             xmin' = findSignChange xmin (-step) f
             -- if xmax = infty, this is the smallest xmax found with a sign change
-            xmax' = findSignChange xmax (step) f
+            xmax' = findSignChange xmax step f
             -- initial step size for finding sign change
             step = 10
 

@@ -1,7 +1,7 @@
 module Equation where
 
 import Data.List
-import Data.Set(Set)
+import qualified Data.Set as Set
 import Data.List.NonEmpty(NonEmpty((:|)), toList, fromList)
 -- import Data.Maybe
 import Data.Ratio
@@ -81,9 +81,10 @@ data StdExpr = StdExpr Polynomial PolynomialFraction deriving (Eq, Ord)
 
 data Equation = Equation Expr Expr
 
-data Solution = SolSet (Set StdExpr)
+data Solution = SolSet (Set.Set StdExpr)
               | NoSol
               | AllReals
+              deriving(Eq, Ord)
 
 instance Show Atom where
     show (Val d) = show d
@@ -99,6 +100,14 @@ instance Show Expr where
     show (Diff left right) = concat [show left, "-", show right]
     show (Pow base power) = concat [show base, "^", show power]
     show (Paren e) = concat ["(", show e, ")"]
+
+instance Show Equation where
+    show (Equation left right) = show left ++ " = " ++ show right
+
+instance Show Solution where
+    show (SolSet solutions) = "{" ++ intercalate ", " (show <$> Set.toList solutions) ++ "}"
+    show AllReals = "all real numbers"
+    show NoSol = "no real solution"
 
 instance Show PExpr where
     show (PStd se) = show se
@@ -127,6 +136,8 @@ instance Show PolynomialFraction where
     show (PolynomialFraction num den) = concat [show num, " / ", show den]
 
 instance Show StdExpr where
+    show (StdExpr poly (PolynomialFraction num den)) | num == valP 0 = show poly
+    show (StdExpr poly polyfrac) | poly == valP 0 = show polyfrac
     show (StdExpr poly polyfrac) = concat [show poly, " + ", show polyfrac]
 
 
