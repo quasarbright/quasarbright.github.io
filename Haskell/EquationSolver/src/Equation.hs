@@ -5,6 +5,7 @@ import Data.Set(Set)
 import Data.List.NonEmpty(NonEmpty((:|)), toList, fromList)
 -- import Data.Maybe
 import Data.Ratio
+import qualified Data.Map as Map
 -- import Counter
 -- import qualified Data.List.NonEmpty as NE
 
@@ -69,16 +70,16 @@ degree t =
 --     compare (Term _ []) Term{} = GT
 --     compare (Term _ ) t2 = compare (degree t2) (degree t1) -- higher degree is LT
 
-newtype Polynomial = Polynomial (NonEmpty Term) deriving (Eq)
+newtype Polynomial = Polynomial (NonEmpty Term) deriving (Eq, Ord)
 
 terms :: Polynomial -> [Term]
 terms (Polynomial ts) = toList ts
 
-data PolynomialFraction = PolynomialFraction Polynomial Polynomial deriving (Eq)
+data PolynomialFraction = PolynomialFraction Polynomial Polynomial deriving (Eq, Ord)
 
-data StdExpr = StdExpr Polynomial PolynomialFraction deriving (Eq)
+data StdExpr = StdExpr Polynomial PolynomialFraction deriving (Eq, Ord)
 
-data Eqn = Eqn Expr Expr
+data Equation = Equation Expr Expr
 
 data Solution = SolSet (Set StdExpr)
               | NoSol
@@ -267,6 +268,10 @@ leadingCoefAndDegree :: Polynomial -> (Double, Int, Term)
 leadingCoefAndDegree p = case maxDegreeTerm p of
     t@(Term c _) -> (c, degree t, t)
 
+maxDegree :: Polynomial -> Int
+maxDegree p = d where
+    (_, d, _) = leadingCoefAndDegree p
+
 -- can't use Std add bc it simplifies so it would inf loop
 addPolynomialToStd :: Polynomial -> StdExpr -> StdExpr
 addPolynomialToStd p (StdExpr p' pf) = StdExpr (p + p') pf
@@ -307,3 +312,34 @@ simplifyStdExpr e = repeatUntilIdempotent go e where
         den = simplifyPolynomial den_
         num' = p * den + num
         std' = longDivide num' den
+
+
+-- | converts a (should be monovariate) polynomial to a map from term degree to term coefficient
+polyToMap :: Polynomial -> Map.Map Int Double
+polyToMap p = foldr insertTerm Map.empty (terms p) where
+    insertTerm t@(Term coefficient _) m = Map.insert (degree t) coefficient m
+
+-- | assumes variable is called x
+mapToPoly :: Map.Map Int Double -> Polynomial
+mapToPoly m = fromTerms ts
+    where
+        ts = pairToTerm <$> Map.toList m
+        pairToTerm (deg, coef) = Term coef [VarPow 'x' deg]
+
+getCoef :: Int -> Polynomial -> Double
+getCoef deg p = Map.findWithDefault 0 deg m where
+    m = polyToMap p
+
+evalPoly :: (Char -> Double) -> Polynomial -> Double
+evalPoly evalVar p = sum (evalTerm evalVar <$> terms p)
+
+evalTerm :: (Char -> Double) -> Term -> Double
+evalTerm evalVar (Term coef pows) = coef * product (evalPow evalVar <$> pows)
+
+evalPow :: (Char -> Double) -> StdPow -> Double
+evalPow evalVar (VarPow name power) = evalVar name ^ power
+evalPow evalVar (ConstPow c power) = evalConst c ^ power
+
+evalConst :: Constant -> Double
+evalConst PI = pi
+evalConst E = exp 1
