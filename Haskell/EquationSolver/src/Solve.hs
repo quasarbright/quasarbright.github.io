@@ -17,8 +17,8 @@ standardizeEquation :: Equation -> StdExpr
 standardizeEquation (Equation e1 e2) = simplify e1 - simplify e2
 
 solveStd :: StdExpr -> Solution
-solveStd (StdExpr p (PolynomialFraction num den)) = solvePolynomial p' where
-    p' = p * den + num
+solveStd (StdExpr p (PolynomialFraction num den)) = solvePolynomial p'
+    where p' = p * den + num
 
 solvePolynomial :: Polynomial -> Solution
 solvePolynomial p
@@ -31,13 +31,18 @@ solvePolynomial p
         constantSol
             | getCoef 0 p == 0 = AllReals
             | otherwise = NoSol
-        roots = findRoots p
+        roots = clean $ findRoots p
+
+clean :: Set Double -> Set Double
+clean doubles = fromList $ round6dp <$> toList doubles
+round6dp :: Double -> Double
+round6dp x = fromIntegral (round $ x * 1e6 :: Integer) / 1e6
 
 findRoots :: Polynomial -> Set Double
 findRoots p
     | maxDegree p == 1 = singleton (negate c0 / c1)
     | maxDegree p == 2 = quadSol c2 c1 c0
-    | otherwise = rootsFromDerivative . derivative $ p
+    | otherwise = rootsFromDerivative p
         where
             c0 = getCoef 0 p
             c1 = getCoef 1 p
@@ -55,16 +60,15 @@ rootsFromDerivative :: Polynomial -> Set Double
 rootsFromDerivative p = roots where
     p' = derivative p -- finally, sensible usage of ' in haskell
     
-    roots' = findRoots p'
+    roots' = trace ("roots' = "++ show (findRoots p')) findRoots p'
 
-    -- TODO remember special case split (-infty, infty) into (-infty, 0) and (0, infty)
     getIntervals (a:b:rest) = (a, b) : getIntervals (b:rest)
     getIntervals _ = []
     
     intervals_ = getIntervals ((-infinity) : toAscList roots' ++ [infinity])
     intervals
         | intervals_ == [(-infinity, infinity)] = [(-infinity, 0), (0, infinity)]
-        | otherwise = intervals
+        | otherwise = intervals_
     (llim, rlim) = lims p
     rootFromInterval (xmin, xmax) = bisect (\x -> evalPoly (const x) p) xmin xmax llim rlim
     roots = fromList $ Maybe.catMaybes (rootFromInterval <$> intervals)
@@ -72,8 +76,10 @@ rootsFromDerivative p = roots where
 
 
 derivative :: Polynomial -> Polynomial
-derivative = mapToPoly . Map.fromList . fmap pairDerivative . Map.toList . polyToMap where
-    pairDerivative (deg, coef) = (deg - 1, coef * fromIntegral deg)
+derivative = simplifyPolynomial . mapToPoly . Map.fromList . fmap pairDerivative . Map.toList . polyToMap where
+    pairDerivative (deg, coef)
+        | deg == 0 = (0, 0)
+        | otherwise = (deg - 1, coef * fromIntegral deg)
 
 -- | gives the limits of the polynomial for x -> -infty and x -> infty
 lims :: Polynomial -> (Double, Double)
@@ -105,12 +111,12 @@ isMonovariate p = size varnames <= 1 where
 -- assumes xmin < xmax  
 bisect :: (Double -> Double) -> Double -> Double -> Double -> Double -> Maybe Double
 bisect f xmin xmax llim rlim
-    | xmin == -infinity && signum ymin * signum llim >  0 = Nothing -- no sign change
-    | xmin == -infinity && signum ymin * signum llim <= 0 = bisect f xmin' xmin llim rlim
-    | xmax == infinity  && signum ymax * signum rlim >  0 = Nothing -- no sign change
-    | xmax == infinity  && signum ymax * signum rlim <= 0 = bisect f xmax xmax' llim rlim
+    | xmin == -infinity && signum ymax * signum llim >  0 = Nothing -- no sign change
+    | xmin == -infinity && signum ymax * signum llim <= 0 = bisect f xmin' xmax llim rlim
+    | xmax == infinity  && signum ymin * signum rlim >  0 = Nothing -- no sign change
+    | xmax == infinity  && signum ymin * signum rlim <= 0 = bisect f xmin xmax' llim rlim
     | signum ymin * signum ymax > 0 = Nothing -- no sign change
-    | abs (xmin - xmax) == 0 || y == 0 = traceShow (traceShow xmin xmax) Just x -- it seems like double
+    | abs (xmin - xmax) == 0 || y == 0 = Just x -- it seems like double
     | y < 0 = bisect f x xmax llim rlim
     | y > 0 = bisect f xmin x llim rlim
     | otherwise = Nothing
@@ -120,9 +126,9 @@ bisect f xmin xmax llim rlim
             ymin = f xmin
             ymax = f xmax
             -- if xmin = -infty, this is the smallest xmin found with a sign change
-            xmin' = findSignChange xmin (-step) f
+            xmin' = findSignChange xmax (-step) f
             -- if xmax = infty, this is the smallest xmax found with a sign change
-            xmax' = findSignChange xmax step f
+            xmax' = findSignChange xmin step f
             -- initial step size for finding sign change
             step = 10
 

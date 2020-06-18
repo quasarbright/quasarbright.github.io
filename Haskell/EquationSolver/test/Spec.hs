@@ -3,6 +3,7 @@ import Test.HUnit
 import Equation
 import Parsing
 import Solve
+import Data.List
 
 teq :: (Eq a, Show a) => String -> a -> a -> Test
 teq name a b = TestCase (assertEqual name a b)
@@ -19,11 +20,6 @@ x n = VarPow 'x' n
 
 y :: Int -> StdPow
 y n = VarPow 'y' n
-
-testSolve :: String -> [Double] -> Test
-testSolve eqStr vals = teq eqStr (SolSet $ Set.fromList (valStd <$> vals)) sol where
-    sol = solve eqn
-    eqn = parseEquation eqStr
 
 degreeTests :: Test
 degreeTests = TestLabel "degree tests" $ TestList [
@@ -152,6 +148,14 @@ polynomialLongDivisionTests = TestLabel "long division tests" $ TestList [
         tpass
     ]
 
+testSolve :: String -> [Double] -> Test
+testSolve eqStr vals = teq eqStr (SolSet $ Set.fromList (valStd <$> vals)) sol where
+    sol = solve eqn
+    eqn = parseEquation eqStr
+
+testSolveFromAns :: [Double] -> Test
+testSolveFromAns roots = testSolve eqStr roots where
+    eqStr = intercalate "*" ["(x - "++show root++")" | root <- roots] ++ " = 0"
 
 solveTests :: Test
 solveTests = TestLabel "solving equation tests" $ TestList [
@@ -161,6 +165,9 @@ solveTests = TestLabel "solving equation tests" $ TestList [
         testSolve "(x - 1) * (x + 2) = 0" [1, -2],
         testSolve "(3*x - 3) * (x + 2) = 0" [1, -2],
         testSolve "x^3 - x = 0" [-1, 0, 1],
+        testSolveFromAns [1, 2, 3],
+        -- testSolveFromAns [1, 2, 3, 4],
+        -- testSolveFromAns [1, 2, 3, 4, 5],
         tpass
     ]
 

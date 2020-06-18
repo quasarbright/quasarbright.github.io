@@ -111,7 +111,7 @@ atom :: Parser Expr
 atom =  double
     <|> var
     <|> constant
-    <|> parens expr
+    <|> (Paren <$> parens expr)
     <?> "atomic/parenthesized expression"
 
 double :: Parser Expr
