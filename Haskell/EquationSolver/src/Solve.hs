@@ -3,14 +3,37 @@ module Solve where
 import Data.Set hiding (foldr)
 import Equation
 import Simplify
-import Counter
 import qualified Data.Map as Map
 import qualified Data.Maybe as Maybe
-import Debug.Trace
--- import Data.List
+
+{--
+uses the algorithm described in
+Carvalho, Osvaldo. (2017). A simple algorithm to find all real roots of a polynomial.
+
+here's the gist:
+First, we convert the equation into (a simplified polynomial = 0).
+Then we use that algorithm to find the roots of the polynomial:
+    You can find a root of a function with bisecting (basically binary search for a zero) easily
+    if you have an interval of x values surrounding the root. However, it can be difficult to find these intervals.
+
+    As a consequence of the mean value theorem, we know that between two roots of a continuous and differentiable function,
+    there must be a root of the derivative. Inversely, this means that we can use the derivative's roots to find the function's roots!
+    The intervals for bisecting are simply consecutive pairs of roots of the derivative.
+
+    But how do we find the roots of the derivative? Well, the derivative of a polynomial is another polynomial of a lower degree. So we can
+    just recurse with a base case of a polynomial of degree 1 (a line), which is easy to find a root for!
+
+    So the algorithm recursively finds intervals for bisecting using the current polynomial's derivative's roots
+
+    The only weird edge case is that you also have to consider the intervals (-infinity, derivative's left root] and [derivative's right root, infinity).
+    You handle this by examining the limits of the polynomial from its highest degree term, determining whether there is a sign change in the interval, and if there
+    is, start from the finite bound and take steps of increasing size towards the infinite bound until you find a sign change. That converts the infinite interval into
+    a finite one.
+
+--}
 
 solve :: Equation -> Solution
-solve = solveStd . standardizeEquation
+solve e = solveStd (standardizeEquation e)
 
 -- | gets the equation into a form where a stdexpr = 0.
 -- ex: x+1 = 3-x -> 2x-2 = 0
@@ -41,9 +64,9 @@ round6dp x = fromIntegral (round $ x * 1e6 :: Integer) / 1e6
 
 findRoots :: Polynomial -> Set Double
 findRoots p
-    | maxDegree p == 1 = traceShowId $ traceShow p singleton (negate c0 / c1)
-    | maxDegree p == 2 = traceShowId $ traceShow p quadSol c2 c1 c0
-    | otherwise = traceShowId $ traceShow p rootsFromDerivative p
+    | maxDegree p == 1 = singleton (negate c0 / c1)
+    | maxDegree p == 2 = quadSol c2 c1 c0
+    | otherwise = rootsFromDerivative p
         where
             c0 = getCoef 0 p
             c1 = getCoef 1 p
@@ -55,7 +78,7 @@ quadSol a b c
     | det == 0 = singleton $ (-b) / (2 * a)
     | otherwise = fromList [((-b) + sqrt det) / (2 * a), ((-b) - sqrt det) / (2 * a)]
         where
-            det = b^2 - 4*a*c
+            det = b*b - 4*a*c
 
 rootsFromDerivative :: Polynomial -> Set Double
 rootsFromDerivative p = roots where
@@ -117,10 +140,10 @@ bisect f xmin xmax llim rlim
     | xmin == -infinity && signum ymax * signum llim <= 0 = bisect f xmin' xmax llim rlim
     | xmax == infinity  && signum ymin * signum rlim >  0 = Nothing -- no sign change
     | xmax == infinity  && signum ymin * signum rlim <= 0 = bisect f xmin xmax' llim rlim
+    | isZero ymin = Just xmin
+    | isZero ymax = Just xmax
     | signum ymin * signum ymax > 0 = Nothing -- no sign change
-    | ymin == 0 = Just xmin
-    | ymax == 0 = Just xmax
-    | abs (xmin - xmax) <= 1e-16 || y == 0 = trace ("found solution "++show x) Just x -- it seems like double
+    | isZero (xmin - xmax) || isZero y = Just x -- it seems like double
     -- | y < 0 = bisect f x xmax llim rlim
     | signum y == signum ymin = bisect f x xmax llim rlim
     | signum y == signum ymax = bisect f xmin x llim rlim
@@ -136,6 +159,8 @@ bisect f xmin xmax llim rlim
             xmax' = findSignChange xmin step f
             -- initial step size for finding sign change
             step = 10
+
+            isZero k = abs k <= 1e-10
 
 findSignChange :: Double -> Double -> (Double -> Double) -> Double
 findSignChange x step f

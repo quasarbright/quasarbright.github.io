@@ -3,11 +3,8 @@ module Equation where
 import Data.List
 import qualified Data.Set as Set
 import Data.List.NonEmpty(NonEmpty((:|)), toList, fromList)
--- import Data.Maybe
 import Data.Ratio
 import qualified Data.Map as Map
--- import Counter
--- import qualified Data.List.NonEmpty as NE
 
 data Constant = PI | E deriving (Eq, Ord, Show)
 
@@ -133,10 +130,10 @@ instance Show Polynomial where
     show (Polynomial ts) = intercalate " + " (show <$> toList ts)
 
 instance Show PolynomialFraction where
-    show (PolynomialFraction num den) = concat [show num, " / ", show den]
+    show (PolynomialFraction num den) = concat ["(",show num,") / (",show den,")"]
 
 instance Show StdExpr where
-    show (StdExpr poly (PolynomialFraction num den)) | num == valP 0 = show poly
+    show (StdExpr poly (PolynomialFraction num _)) | num == valP 0 = show poly
     show (StdExpr poly polyfrac) | poly == valP 0 = show polyfrac
     show (StdExpr poly polyfrac) = concat [show poly, " + ", show polyfrac]
 
@@ -230,7 +227,9 @@ instance Num Polynomial where
 
 
 simplifyPolynomialFraction :: PolynomialFraction -> PolynomialFraction
-simplifyPolynomialFraction (PolynomialFraction num den) = PolynomialFraction (simplifyPolynomial num) (simplifyPolynomial den)
+simplifyPolynomialFraction (PolynomialFraction num den)
+    | num == valP 0 = valPF 0
+    | otherwise = PolynomialFraction (simplifyPolynomial num) (simplifyPolynomial den)
 -- TODO long division!!! that's really for stdexpr though
 
 instance Num PolynomialFraction where
@@ -349,7 +348,7 @@ evalTerm evalVar (Term coef pows) = coef * product (evalPow evalVar <$> pows)
 
 evalPow :: (Char -> Double) -> StdPow -> Double
 evalPow evalVar (VarPow name power) = evalVar name ^ power
-evalPow evalVar (ConstPow c power) = evalConst c ^ power
+evalPow _ (ConstPow c power) = evalConst c ^ power
 
 evalConst :: Constant -> Double
 evalConst PI = pi

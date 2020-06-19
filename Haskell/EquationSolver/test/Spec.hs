@@ -178,7 +178,19 @@ solveTests = TestLabel "solving equation tests" $ TestList [
         testSolveFromAns [1, 2, 3],
         testSolveFromAns [1, 2, 3, 4],
         testSolveFromAns [1, 2, 3, 4, 5],
-        -- testSolveFromAns [-1, 2, 3, 4, 5],
+        testSolveFromAns [-1, 2, 3, 4, 5],
+        testSolveFromAns [0,0],
+        testSolveFromAns [0,0,0],
+        testSolveFromAns [0,0,0,0],
+        testSolveFromAns [-1, -1, 2, 3, 4, 5, 3, 0],
+        testSolve "x^3 - x + 6 = 0" [-2],
+        testNoSol "x^2 + 1 = 0",
+        testNoSol "x^4 + 1 = 0",
+        testNoSol "x^4 + x^3 + x^2 + x + 1 = 0",
+        testAllReals "0 = 0",
+        testNoSol "1 = 0",
+        testSolveFromAns [-2,-2,-1,-1,1,1,2,2], -- all roots are on interval bounds. it better get all of them!
+        testNoSol "(x+1)^2 / (x+1)^2 = 0",
         tpass
     ]
 

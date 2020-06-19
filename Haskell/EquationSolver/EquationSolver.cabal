@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ae2b07d6ae41d96549eaf9b12851d220057c95b4b76f89245c1543d9921ed07d
+-- hash: db56ee778b7e06e911724b9a0adc36c6e8455a958b2d5fe5ea5e27612532db27
 
 name:           EquationSolver
 version:        0.1.0.0
@@ -30,7 +30,6 @@ library
       Counter
       DefaultMap
       Equation
-      Lib
       Parsing
       Simplify
       Solve
