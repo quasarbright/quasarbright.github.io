@@ -7,6 +7,7 @@ import Counter
 import qualified Data.Map as Map
 import qualified Data.Maybe as Maybe
 import Debug.Trace
+-- import Data.List
 
 solve :: Equation -> Solution
 solve = solveStd . standardizeEquation
@@ -40,9 +41,9 @@ round6dp x = fromIntegral (round $ x * 1e6 :: Integer) / 1e6
 
 findRoots :: Polynomial -> Set Double
 findRoots p
-    | maxDegree p == 1 = singleton (negate c0 / c1)
-    | maxDegree p == 2 = quadSol c2 c1 c0
-    | otherwise = rootsFromDerivative p
+    | maxDegree p == 1 = traceShowId $ traceShow p singleton (negate c0 / c1)
+    | maxDegree p == 2 = traceShowId $ traceShow p quadSol c2 c1 c0
+    | otherwise = traceShowId $ traceShow p rootsFromDerivative p
         where
             c0 = getCoef 0 p
             c1 = getCoef 1 p
@@ -60,7 +61,7 @@ rootsFromDerivative :: Polynomial -> Set Double
 rootsFromDerivative p = roots where
     p' = derivative p -- finally, sensible usage of ' in haskell
     
-    roots' = trace ("roots' = "++ show (findRoots p')) findRoots p'
+    roots' = findRoots p'
 
     getIntervals (a:b:rest) = (a, b) : getIntervals (b:rest)
     getIntervals _ = []
@@ -111,14 +112,18 @@ isMonovariate p = size varnames <= 1 where
 -- assumes xmin < xmax  
 bisect :: (Double -> Double) -> Double -> Double -> Double -> Double -> Maybe Double
 bisect f xmin xmax llim rlim
+    | xmin > xmax = error $ "invalid interval: ["++show xmin++", "++show xmax++"]"
     | xmin == -infinity && signum ymax * signum llim >  0 = Nothing -- no sign change
     | xmin == -infinity && signum ymax * signum llim <= 0 = bisect f xmin' xmax llim rlim
     | xmax == infinity  && signum ymin * signum rlim >  0 = Nothing -- no sign change
     | xmax == infinity  && signum ymin * signum rlim <= 0 = bisect f xmin xmax' llim rlim
     | signum ymin * signum ymax > 0 = Nothing -- no sign change
-    | abs (xmin - xmax) == 0 || y == 0 = Just x -- it seems like double
-    | y < 0 = bisect f x xmax llim rlim
-    | y > 0 = bisect f xmin x llim rlim
+    | ymin == 0 = Just xmin
+    | ymax == 0 = Just xmax
+    | abs (xmin - xmax) <= 1e-16 || y == 0 = trace ("found solution "++show x) Just x -- it seems like double
+    -- | y < 0 = bisect f x xmax llim rlim
+    | signum y == signum ymin = bisect f x xmax llim rlim
+    | signum y == signum ymax = bisect f xmin x llim rlim
     | otherwise = Nothing
         where
             x = (xmin + xmax) / 2

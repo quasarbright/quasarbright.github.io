@@ -153,6 +153,16 @@ testSolve eqStr vals = teq eqStr (SolSet $ Set.fromList (valStd <$> vals)) sol w
     sol = solve eqn
     eqn = parseEquation eqStr
 
+testNoSol :: String -> Test
+testNoSol eqStr = teq eqStr NoSol sol where
+    sol = solve eqn
+    eqn = parseEquation eqStr
+
+testAllReals :: String -> Test
+testAllReals eqStr = teq eqStr AllReals sol where
+    sol = solve eqn
+    eqn = parseEquation eqStr
+
 testSolveFromAns :: [Double] -> Test
 testSolveFromAns roots = testSolve eqStr roots where
     eqStr = intercalate "*" ["(x - "++show root++")" | root <- roots] ++ " = 0"
@@ -166,8 +176,9 @@ solveTests = TestLabel "solving equation tests" $ TestList [
         testSolve "(3*x - 3) * (x + 2) = 0" [1, -2],
         testSolve "x^3 - x = 0" [-1, 0, 1],
         testSolveFromAns [1, 2, 3],
-        -- testSolveFromAns [1, 2, 3, 4],
-        -- testSolveFromAns [1, 2, 3, 4, 5],
+        testSolveFromAns [1, 2, 3, 4],
+        testSolveFromAns [1, 2, 3, 4, 5],
+        -- testSolveFromAns [-1, 2, 3, 4, 5],
         tpass
     ]
 
