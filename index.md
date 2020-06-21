@@ -9,6 +9,7 @@ This is my personal website. Here, I have a variety of different kinds of projec
 # [Machine Learning projects](https://quasarbright.github.io/MachineLearning/README)
 These are some interesting things I did with neural networks, which are my favorite tool to work with in computer science. The code is stored in its own repository, MachineLearning.
 # [Game AIs](https://quasarbright.github.io/gameAIs)
+These are some AIs I've implemented to play games at a superhuman level.
 # [Subduce](https://subduce.readthedocs.io/en/latest/#)
 This is a programming language I made. It is a functional programming language based on Python and racket. It has racket-like expression syntax, but python-like function definitions and variable assignments. I like racket and pure functional programming, but there are just so many parentheses in some languages, that it's not pleasant to read. I really like python and its syntax, so I tried to get the best of both worlds. The code is stored in its own repository, Subduce.
 # [Unity projects](https://quasarbright.github.io/UnityProjects/)
