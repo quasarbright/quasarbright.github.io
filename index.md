@@ -22,8 +22,8 @@ This is a collection of my most interesting Processing sketches. Since Processin
 This is a collection of interesting programs I made using p5.js. They can run in browser, so just click on a link and it'll run. The code is stored in the quasarbright repository.
 # [OCaml projects](https://quasarbright.github.io/OCaml/index)
 This is a collection of projects I made in [OCaml](https://ocaml.org/). OCaml is a statically typed, compiled, functional programming language. For me, its killer features are algebraic types, pattern matching, and type inference. I first learned about OCaml in a compilers course I'm taking and I instantly loved it. After using the visitor pattern for union types in Java for the 100th time, when I saw a union type defined in just a few lines in OCaml, I was very impressed. And pattern matching is such a beautiful way to break down structured data and algebraic types.  
-
-These projects are stored in the quasarbright repository.
+# [Haskell projects](https://quasarbright.github.io/Haskell)
+This is a collection of projects I made in [Haskell](https://www.haskell.org/). Haskell is similar to OCaml, but is more high level and has built-in monad support, which is very nice. Haskell felt like the next step on my functional programming journey after OCaml. It's a pleasure to write in, but I wish there was better tooling.  
 # [Interactive Math Visualization Tools](https://quasarbright.github.io/ThreePeriods/)
 This is a collection of interactive math visualization tools that my classmate William Liu and I created for our senior project in High School
 # [Where to learn stuff](https://quasarbright.github.io/where%20to%20learn%20stuff)
