@@ -13,7 +13,7 @@ uniform float u_time;
 uniform vec2 u_resolution;
 const float PI = 3.1415926535897932384626433;
 const int maxIter=512;
-const float escapeRadius=2.0;
+const float escapeRadius=2.5;
 const float escapeRadiusSq=escapeRadius*escapeRadius;
 
 float sigmoid(float x) {
@@ -88,9 +88,11 @@ void main(void) {
 
   
   vec3 col=vec3(0.);
-  float mu=.5 * mandelbrot(position);
-  col+=.5+.5*cos(-u_time + 3.+mu*.15+vec3(0.,.5,1.));
-  gl_FragColor=vec4(col,1.);
+  float mu= mandelbrot(position);
+  float hu = 0.5 - 0.5 * cos(mu / 20.0 - u_time / 2.0 - 2.0);
+  gl_FragColor = vec4(hsv2rgb(vec3(hu, 1.0,.80)), 1.0);
+  // col+=.5+.5*cos(3.+mu*.5*.15+vec3(0.,.5,1.));
+  // gl_FragColor=vec4(col,1.);
   
   // mu /= 100.0;
   // // mu = mod(mu, 1.0);
