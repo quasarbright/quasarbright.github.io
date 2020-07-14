@@ -99,7 +99,7 @@ float julia(vec2 position, vec2 c) {
 }
 
 vec2 toComplex(vec2 pos) {
-  return (pos.xy-u_resolution*.5)/max(u_resolution.x,u_resolution.y)*5.0;
+  return (pos.xy-u_resolution*.5)/min(u_resolution.x,u_resolution.y)*3.0;
 }
 
 void main(void) {

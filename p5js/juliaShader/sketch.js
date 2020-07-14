@@ -6,10 +6,16 @@ void main() {
 }
 `;
 
+
 let mouseX = 0;
 let mouseY = 0;
 let mousePressed = false;
 
+let shaderData = {
+  'u_mouse': (gl, loc) => gl.uniform2fv(loc, [mouseX, mouseY]),
+  // 'xmin': gl => [gl.uniform1f, 0],
+}
+let program
 function loadTextFile(url, callback) {
   var request = new XMLHttpRequest();
   request.open('GET', url, true);
@@ -50,10 +56,10 @@ loadTextFile("shader.frag", function (text) {
   var gl = canvas.getContext('webgl');
   var vertexShader = createShader(gl, gl.VERTEX_SHADER, vert);
   var fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, frag);
-  var program = createProgram(gl, vertexShader, fragmentShader);
+  program = createProgram(gl, vertexShader, fragmentShader);
   const timeLocation = gl.getUniformLocation(program, "u_time");
   const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
-  const mouseLocation = gl.getUniformLocation(program, "u_mouse");
+  // const mouseLocation = gl.getUniformLocation(program, "u_mouse");
   var positionAttributeLocation = gl.getAttribLocation(program, "a_position");
   var positionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -86,8 +92,10 @@ loadTextFile("shader.frag", function (text) {
 
     gl.uniform1f(timeLocation, time * 0.001);
     gl.uniform2fv(resolutionLocation, [gl.canvas.width, gl.canvas.height])
-    gl.uniform2fv(mouseLocation, [mouseX, mouseY])
-    // // draw  
+    for(const name in shaderData) {
+      const location = gl.getUniformLocation(program, name)
+      shaderData[name](gl, location)
+    }
     var primitiveType = gl.TRIANGLES;
     var offset = 0;
     var count = 6;
