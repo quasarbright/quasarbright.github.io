@@ -119,6 +119,9 @@ void main(void) {
     float hu = mu / 75.0;
     float offset = 210.0 / 360.0 + u_time / 20.0; // blue
     hu = mod(-hu + offset, 1.0);
-    gl_FragColor = vec4(hsv2rgb(vec3(float(hu), 1.0, 1.0)), 1.0);
+    float br_amp = .3;
+    float br_period = 20.0;
+    float br = ((1.0-br_amp)+br_amp*cos(mu * 2.0 * PI / br_period));
+    gl_FragColor = vec4(hsv2rgb(vec3(float(hu), 1.0, br)), 1.0);
   }
 }
