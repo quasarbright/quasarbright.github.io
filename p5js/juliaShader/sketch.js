@@ -8,40 +8,117 @@ void main() {
 let program
 let mouseX = 0;
 let mouseY = 0;
-let centerx = 0;
-let centery = 0;
+
+
+// let bl = [-2, -2]
+// let tr = [2, 2]
+let centerx = 0
+let centery = 0
+let cx = 1
+let cy = 0
+let zoom = 1.0;
 let mousePressed = false;
 
 let canvas = document.createElement("canvas")
+function toComplex(x, y) {
+  let width = canvas.width
+  let height = canvas.height
+  let size = Math.min(width, height)
+  return [
+    // MAKE SURE IT'S ALSO 3.0 IN THE SHADER!
+    (3.0 / zoom) * (x - width  / 2) / size + centerx,
+    (3.0 / zoom) * (y - height / 2) / size + centery
+  ]
+}
+
+function deltaToComplex(dx, dy) {
+  let width = canvas.width
+  let height = canvas.height
+  let size = Math.min(width, height)
+  return [
+    // MAKE SURE IT'S ALSO 3.0 IN THE SHADER!
+    (3.0 / zoom) * (dx) / size,
+    (3.0 / zoom) * (dy) / size
+  ]
+}
+function lerp(a, b, r) {
+  return a + r * (b - a)
+}
 
 let shaderData = {
   'u_mouse': (gl, loc) => gl.uniform2fv(loc, [mouseX, mouseY]),
-
-  // 'xmin': gl => [gl.uniform1f, 0],
+  'c': (gl, loc) => gl.uniform2fv(loc, [cx, cy]),
+  'zoom': (gl, loc) => gl.uniform1f(loc, zoom),
+  'center': (gl, loc) => gl.uniform2fv(loc, [centerx, centery]),
 }
 
+let dragging = false
+let dragStart
 canvas.addEventListener('mousedown', (e) => {
+  rect = canvas.getBoundingClientRect();
+  let x = e.clientX - rect.left
+  let y = canvas.height - (e.clientY - rect.top)
   if (e.button === 0) {
     mousePressed = true
     rect = canvas.getBoundingClientRect();
-    mouseX = e.clientX - rect.left
-    mouseY = e.clientY - rect.top
+    mouseX = x
+    mouseY = y
+    c = toComplex(mouseX, mouseY)
+    cx = c[0]
+    cy = c[1]
+  } else if(e.button === 1) {
+    dragging = true
+    dragStart = [x,y]
   }
 })
 canvas.addEventListener('mouseup', (e) => {
   if (e.button === 0) {
     mousePressed = false
+  } else if (e.button === 1) {
+    dragging = false
   }
 })
+
 canvas.addEventListener('mousemove', (e) => {
   rect = canvas.getBoundingClientRect();
+  let x = e.clientX - rect.left
+  let y = canvas.height - (e.clientY - rect.top)
   if (mousePressed) {
-    mouseX = e.clientX - rect.left
-    mouseY = e.clientY - rect.top
+    mouseX = x
+    mouseY = y
+    c = toComplex(mouseX, mouseY)
+    cx = c[0]
+    cy = c[1]
+  }
+  if(dragging) {
+    let curr = [x, y]
+    let dx = curr[0] - dragStart[0]
+    let dy = curr[1] - dragStart[1]
+    let dcenter = deltaToComplex(dx, dy)
+    centerx -= dcenter[0]
+    centery -= dcenter[1]
+    dragStart = curr
   }
 })
-canvas.addEventListener('resize', (e) => {
-  console.log('e');
+canvas.addEventListener('wheel',(e) => {
+  rect = canvas.getBoundingClientRect();
+  let x = e.clientX - rect.left
+  let y = canvas.height - (e.clientY - rect.top)
+  z = toComplex(x, y)
+  x = z[0]
+  y = z[1]
+  let sign
+  if(e.deltaY > 0) {
+    sign = 1
+  } else {
+    sign = -1
+  }
+  let strength = .1 * sign
+  centerx = lerp(centerx, x, -strength)
+  centery = lerp(centery, y, -strength)
+  console.log([sign, centerx, centery])
+  zoom *= 1 - strength
+  
 })
 function resizeCanvas(gl) {
   gl.canvas.width = window.innerWidth;
