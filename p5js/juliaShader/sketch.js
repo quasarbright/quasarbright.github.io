@@ -6,6 +6,9 @@ void main() {
 }
 `;
 
+let mouseX = 0;
+let mouseY = 0;
+let mousePressed = false;
 
 function loadTextFile(url, callback) {
   var request = new XMLHttpRequest();
@@ -21,6 +24,26 @@ loadTextFile("shader.frag", function (text) {
   var frag = text;
 
   let canvas = document.createElement("canvas")
+  canvas.addEventListener('mousedown', (e) => {
+    if(e.button === 0) {
+      mousePressed = true
+      rect = canvas.getBoundingClientRect();
+      mouseX = e.clientX - rect.left
+      mouseY = e.clientY - rect.top
+    }
+  })
+  canvas.addEventListener('mouseup', (e) => {
+    if(e.button === 0) {
+      mousePressed = false
+    }
+  })
+  canvas.addEventListener('mousemove', (e) => {
+    rect = canvas.getBoundingClientRect();
+    if(mousePressed){
+      mouseX = e.clientX - rect.left
+      mouseY = e.clientY - rect.top
+    }
+  })
   canvas.width = window.innerWidth
   canvas.height = window.innerHeight
   document.body.appendChild(canvas)
@@ -30,6 +53,7 @@ loadTextFile("shader.frag", function (text) {
   var program = createProgram(gl, vertexShader, fragmentShader);
   const timeLocation = gl.getUniformLocation(program, "u_time");
   const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+  const mouseLocation = gl.getUniformLocation(program, "u_mouse");
   var positionAttributeLocation = gl.getAttribLocation(program, "a_position");
   var positionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -62,6 +86,7 @@ loadTextFile("shader.frag", function (text) {
 
     gl.uniform1f(timeLocation, time * 0.001);
     gl.uniform2fv(resolutionLocation, [gl.canvas.width, gl.canvas.height])
+    gl.uniform2fv(mouseLocation, [mouseX, mouseY])
     // // draw  
     var primitiveType = gl.TRIANGLES;
     var offset = 0;
@@ -90,6 +115,11 @@ loadTextFile("shader.frag", function (text) {
     const s = gl.createShader(type);
     gl.shaderSource(s, src);
     gl.compileShader(s);
+    let compiled = gl.getShaderParameter(s, gl.COMPILE_STATUS);
+    if (!compiled) {
+      // Something went wrong during compilation; get the error
+      console.error(gl.getShaderInfoLog(s));
+    }
     // should check for error here
     return s;
   }

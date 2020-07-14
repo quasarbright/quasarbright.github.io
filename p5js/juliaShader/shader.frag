@@ -11,6 +11,7 @@ precision mediump float;
 
 uniform float u_time;
 uniform vec2 u_resolution;
+uniform vec2 u_mouse;
 const float PI = 3.1415926535897932384626433;
 const int maxIter=1024;
 const float escapeRadius=2.5;
@@ -97,6 +98,10 @@ float julia(vec2 position, vec2 c) {
   return mu;
 }
 
+vec2 toComplex(vec2 pos) {
+  return (pos.xy-u_resolution*.5)/max(u_resolution.x,u_resolution.y)*5.0;
+}
+
 void main(void) {
   // float minZoom = 8.910478809532371e-05;
   // float zoom = minZoom;
@@ -106,16 +111,18 @@ void main(void) {
   vec2 target = vec2(-.994822384150892528442,0.280591204141620403577);
   //target = (target - resolution * 0.5) / max(resolution.x, resolution.y) * zoom;
   
-  vec2 position=(gl_FragCoord.xy-u_resolution*.5)/max(u_resolution.x,u_resolution.y) * 5.0;//*zoom;
+  vec2 position=toComplex(gl_FragCoord.xy);
   
   // float rotationSpeed = 2.0;
   // float angle = rotationSpeed * (.5 - .5*cos(2.*PI*u_time / (zoomTime * 2.0)));
   // position = rotate(position, angle);
   // position=position+target;
 
-  vec2 c = vec2(.7885,0);
-  float rotationPeriod = 40.0;//seconds
-  c = rotate(c, u_time * 2.0 * PI / rotationPeriod);
+  // vec2 c = vec2(.7885,0);
+  // float rotationPeriod = 40.0;//seconds
+  // c = rotate(c, u_time * 2.0 * PI / rotationPeriod);
+
+  vec2 c = toComplex(u_mouse);
 
   float mu = julia(position, c);
 
@@ -123,7 +130,7 @@ void main(void) {
     gl_FragColor = vec4(0.0,0.0,0.0,1.0);
   } else {
     float hu = mu / 75.0;
-    float offset = 210.0 / 360.0; // blue
+    float offset = 210.0 / 360.0 + u_time / 20.0; // blue
     hu = mod(-hu + offset, 1.0);
     gl_FragColor = vec4(hsv2rgb(vec3(float(hu), 1.0, 1.0)), 1.0);
   }
