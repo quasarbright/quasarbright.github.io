@@ -13,6 +13,13 @@ let centery = 0;
 let mousePressed = false;
 
 let canvas = document.createElement("canvas")
+
+let shaderData = {
+  'u_mouse': (gl, loc) => gl.uniform2fv(loc, [mouseX, mouseY]),
+
+  // 'xmin': gl => [gl.uniform1f, 0],
+}
+
 canvas.addEventListener('mousedown', (e) => {
   if (e.button === 0) {
     mousePressed = true
@@ -39,13 +46,6 @@ canvas.addEventListener('resize', (e) => {
 function resizeCanvas(gl) {
   gl.canvas.width = window.innerWidth;
   gl.canvas.height = window.innerHeight;
-}
-
-
-let shaderData = {
-  'u_mouse': (gl, loc) => gl.uniform2fv(loc, [mouseX, mouseY]),
-
-  // 'xmin': gl => [gl.uniform1f, 0],
 }
 
 
