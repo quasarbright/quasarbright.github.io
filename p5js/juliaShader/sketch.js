@@ -5,17 +5,50 @@ void main() {
   gl_Position = vec4(a_position.xy, 0.0, 1.0);
 }
 `;
-
-
+let program
 let mouseX = 0;
 let mouseY = 0;
+let centerx = 0;
+let centery = 0;
 let mousePressed = false;
+
+let canvas = document.createElement("canvas")
+canvas.addEventListener('mousedown', (e) => {
+  if (e.button === 0) {
+    mousePressed = true
+    rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left
+    mouseY = e.clientY - rect.top
+  }
+})
+canvas.addEventListener('mouseup', (e) => {
+  if (e.button === 0) {
+    mousePressed = false
+  }
+})
+canvas.addEventListener('mousemove', (e) => {
+  rect = canvas.getBoundingClientRect();
+  if (mousePressed) {
+    mouseX = e.clientX - rect.left
+    mouseY = e.clientY - rect.top
+  }
+})
+canvas.addEventListener('resize', (e) => {
+  console.log('e');
+})
+function resizeCanvas(gl) {
+  gl.canvas.width = window.innerWidth;
+  gl.canvas.height = window.innerHeight;
+}
+
 
 let shaderData = {
   'u_mouse': (gl, loc) => gl.uniform2fv(loc, [mouseX, mouseY]),
+
   // 'xmin': gl => [gl.uniform1f, 0],
 }
-let program
+
+
 function loadTextFile(url, callback) {
   var request = new XMLHttpRequest();
   request.open('GET', url, true);
@@ -28,28 +61,6 @@ function loadTextFile(url, callback) {
 loadTextFile("shader.frag", function (text) {
 
   var frag = text;
-
-  let canvas = document.createElement("canvas")
-  canvas.addEventListener('mousedown', (e) => {
-    if(e.button === 0) {
-      mousePressed = true
-      rect = canvas.getBoundingClientRect();
-      mouseX = e.clientX - rect.left
-      mouseY = e.clientY - rect.top
-    }
-  })
-  canvas.addEventListener('mouseup', (e) => {
-    if(e.button === 0) {
-      mousePressed = false
-    }
-  })
-  canvas.addEventListener('mousemove', (e) => {
-    rect = canvas.getBoundingClientRect();
-    if(mousePressed){
-      mouseX = e.clientX - rect.left
-      mouseY = e.clientY - rect.top
-    }
-  })
   canvas.width = window.innerWidth
   canvas.height = window.innerHeight
   document.body.appendChild(canvas)
@@ -104,11 +115,6 @@ loadTextFile("shader.frag", function (text) {
     requestAnimationFrame(render);
   }
   requestAnimationFrame(render);
-
-  function resizeCanvas(gl) {
-    gl.canvas.width = window.innerWidth;
-    gl.canvas.height = window.innerHeight;
-  }
 
   function createProgram(gl, vs, fs) {
     const p = gl.createProgram();
