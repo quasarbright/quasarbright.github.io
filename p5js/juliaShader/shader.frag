@@ -9,12 +9,12 @@ precision mediump float;
 
 #extension GL_OES_standard_derivatives:enable
 
-uniform float u_time;
-uniform vec2 u_resolution;
-uniform vec2 u_mouse;
-uniform vec2 center;
-uniform float zoom;
-uniform vec2 c;
+uniform float u_time; // the time in seconds
+uniform vec2 u_resolution; // the display width and height
+uniform vec2 u_mouse; // the pixel coordinate for the mouse pointer
+uniform vec2 center; // the complex number for the center of the display
+uniform float zoom; // how zoomed in the display should be
+uniform vec2 c; // the current c-value used to generate the julia set
 const float PI = 3.1415926535897932384626433;
 const int maxIter=1024;
 const float escapeRadius=2.5;

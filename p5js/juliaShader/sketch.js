@@ -1,3 +1,4 @@
+// vertex shader
 var vert = `
 attribute vec4 a_position;
 
@@ -5,13 +6,12 @@ void main() {
   gl_Position = vec4(a_position.xy, 0.0, 1.0);
 }
 `;
+
+
+// set up some global variables
 let program
 let mouseX = 0;
 let mouseY = 0;
-
-
-// let bl = [-2, -2]
-// let tr = [2, 2]
 let centerx = 0
 let centery = 0
 let cx = 1
@@ -20,6 +20,7 @@ let zoom = 1.0;
 let mousePressed = false;
 
 let canvas = document.createElement("canvas")
+// utility functions
 function toComplex(x, y) {
   let width = canvas.width
   let height = canvas.height
@@ -45,20 +46,22 @@ function lerp(a, b, r) {
   return a + r * (b - a)
 }
 
+// uniform variables to pass to the shader
 let shaderData = {
   'u_mouse': (gl, loc) => gl.uniform2fv(loc, [mouseX, mouseY]),
-  'c': (gl, loc) => gl.uniform2fv(loc, [cx, cy]),
+  'c': (gl, loc) => gl.uniform2fv(loc, [cx, cy]), // the c-value used for the current julia set (set by the user interactively)
   'zoom': (gl, loc) => gl.uniform1f(loc, zoom),
-  'center': (gl, loc) => gl.uniform2fv(loc, [centerx, centery]),
+  'center': (gl, loc) => gl.uniform2fv(loc, [centerx, centery]), // the center of the display area as a complex number
 }
 
+// canvas event listeners for interactivity
 let dragging = false
 let dragStart
 canvas.addEventListener('mousedown', (e) => {
   rect = canvas.getBoundingClientRect();
   let x = e.clientX - rect.left
   let y = canvas.height - (e.clientY - rect.top)
-  if (e.button === 0) {
+  if (e.button === 0) { // left mouse button
     mousePressed = true
     rect = canvas.getBoundingClientRect();
     mouseX = x
@@ -66,7 +69,7 @@ canvas.addEventListener('mousedown', (e) => {
     c = toComplex(mouseX, mouseY)
     cx = c[0]
     cy = c[1]
-  } else if(e.button === 1) {
+  } else if(e.button === 1) { // middle click
     dragging = true
     dragStart = [x,y]
   }
@@ -135,8 +138,8 @@ function loadTextFile(url, callback) {
   request.send();
 }
 
+// load the shader, pass it the variables, and display it on the canvas
 loadTextFile("shader.frag", function (text) {
-
   var frag = text;
   canvas.width = window.innerWidth
   canvas.height = window.innerHeight
@@ -211,7 +214,6 @@ loadTextFile("shader.frag", function (text) {
       // Something went wrong during compilation; get the error
       console.error(gl.getShaderInfoLog(s));
     }
-    // should check for error here
     return s;
   }
 });
