@@ -6,9 +6,6 @@ title: p5.js stuff
 # [P5.js](https://p5js.org/) (and some plain javascript)
 ### What is P5.js?
 P5.js is a javascript graphics library. A graphics library lets your program display things other than text, like shapes, pictures, animations, and pretty much anything you can think of.
-## [Mandelbrot Set](https://quasarbright.github.io/p5js/mandelbrotShaderRenormalized/)
-![mandelbrot set](https://quasarbright.github.io/p5js/mandelbrotShaderRenormalized/screenshot.png)
-I made this using a fragment shader in webgl so it runs very fast. Instead of coloring each pixel discretely based on the iteration count upon escape, this shader uses a continuous coloring which takes into account the iteration count as well as the modulus of the final value. Since it's colored continuously, it can have some very pretty colors.
 ## [Braille Dithering](https://quasarbright.github.io/p5js/braille)
 ```
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠂⠀⡂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
