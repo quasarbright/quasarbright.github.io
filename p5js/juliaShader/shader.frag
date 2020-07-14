@@ -13,8 +13,9 @@ uniform float u_time;
 uniform vec2 u_resolution;
 const float PI = 3.1415926535897932384626433;
 const int maxIter=1024;
-const float escapeRadius=2.0;
+const float escapeRadius=2.5;
 const float escapeRadiusSq=escapeRadius*escapeRadius;
+const float BLACK_MU = -100000.0;
 
 float sigmoid(float x) {
   return 1.0 / (1.0 + exp(-x));
@@ -70,7 +71,7 @@ float mandelbrot(vec2 position) {
   return mu;
 }
 
-int julia(vec2 position, vec2 c) {
+float julia(vec2 position, vec2 c) {
   float x = position.x;
   float y = position.y;
   float cx = c.x;
@@ -87,7 +88,13 @@ int julia(vec2 position, vec2 c) {
     }
   }
 
-  return escape;
+  float mu;
+  if(escape>=maxIter){
+    mu=BLACK_MU;
+  }else{
+    mu=float(escape)-(log2(log2(x*x+y*y)))-4.;
+  }
+  return mu;
 }
 
 void main(void) {
@@ -110,15 +117,17 @@ void main(void) {
   float rotationPeriod = 40.0;//seconds
   c = rotate(c, u_time * 2.0 * PI / rotationPeriod);
 
-  int escape = julia(position, c);
-  if (escape >= maxIter) {
+  float mu = julia(position, c);
+
+  if(mu == BLACK_MU) {
     gl_FragColor = vec4(0.0,0.0,0.0,1.0);
   } else {
-    float hu = 20.0 * float(escape) / float(maxIter);
-    float offset = 250.0 / 360.0; // blue
+    float hu = mu / 75.0;
+    float offset = 210.0 / 360.0; // blue
     hu = mod(-hu + offset, 1.0);
     gl_FragColor = vec4(hsv2rgb(vec3(float(hu), 1.0, 1.0)), 1.0);
   }
+
 
   
   // vec3 col=vec3(0.);
