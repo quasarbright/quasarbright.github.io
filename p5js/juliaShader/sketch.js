@@ -14,8 +14,8 @@ let mouseX = 0;
 let mouseY = 0;
 let centerx = 0
 let centery = 0
-let cx = 1
-let cy = 0
+let cx = -0.7664233576642335
+let cy = -0.14507299270072993
 let zoom = 1.0;
 let mousePressed = false;
 
@@ -90,6 +90,7 @@ canvas.addEventListener('mousemove', (e) => {
     mouseX = x
     mouseY = y
     c = toComplex(mouseX, mouseY)
+    console.log(c)
     cx = c[0]
     cy = c[1]
   }

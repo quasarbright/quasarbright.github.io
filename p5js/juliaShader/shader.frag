@@ -80,23 +80,35 @@ float julia(vec2 position, vec2 c) {
   float y = position.y;
   float cx = c.x;
   float cy = c.y;
-  int escape;
+  int escape=0;
+  float distanceTraveled = 0.;
   for(int i = 0; i <= maxIter; i++) {
     escape++;
     float x_=x*x-y*y+cx;
     float y_=2.*x*y+cy;
     x=x_;
     y=y_;
+    float modSq = x*x+y*y;
+    distanceTraveled += sqrt(modSq);
     if(x*x+y*y>escapeRadiusSq){
       break;
     }
   }
 
+  // apparently this helps
+  for(int i=0;i<2;i++){
+    escape++;
+    float x_=x*x-y*y+cx;
+    float y_=2.*x*y+cy;
+    x=x_;
+    y=y_;
+  }
+
   float mu;
   if(escape>=maxIter){
-    mu=BLACK_MU;
+    mu= distanceTraveled / float(escape);
   }else{
-    mu=float(escape)-(log2(log2(x*x+y*y)))-4.;
+    mu=float(escape)-(log2(abs(log2(x*x+y*y))))-4.;
   }
   return mu;
 }
