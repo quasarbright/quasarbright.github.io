@@ -7,17 +7,21 @@ https://www.shadertoy.com/view/4df3Rn
 precision mediump float;
 #endif
 
-#extension GL_OES_standard_derivatives:enable
 
-uniform float u_time;
-uniform vec2 u_resolution;
-const float PI = 3.1415926535897932384626433;
-const int maxIter=512;
+uniform float u_time;// the time in seconds
+uniform vec2 u_resolution;// the display width and height
+uniform vec2 u_mouse;// the pixel coordinate for the mouse pointer
+uniform vec2 center;// the complex number for the center of the display
+uniform float zoom;// how zoomed in the display should be
+uniform vec2 c;// the current c-value used to generate the julia set
+const float PI=3.1415926535897932384626433;
+const int maxIter=256;
 const float escapeRadius=2.5;
 const float escapeRadiusSq=escapeRadius*escapeRadius;
+const float BLACK_MU=-100000.;
 
-float sigmoid(float x) {
-  return 1.0 / (1.0 + exp(-x));
+float sigmoid(float x){
+  return 1./(1.+exp(-x));
 }
 
 vec3 hsv2rgb(vec3 c)
@@ -34,12 +38,53 @@ vec2 rotate(vec2 v,float a){
   return m*v;
 }
 
-float mandelbrot(vec2 position) {
+float mandelbrot(vec2 position){
   float cx=position.x;
   float cy=position.y;
-  float x=0.;
-  float y=0.;
+  float x=cx;
+  float y=cy;
   int escape=0;
+  for(int i=0;i<=maxIter;i++){
+    escape++;
+    if(x*x+y*y>escapeRadiusSq){
+      break;
+    }
+    float x_=x*x-y*y+cx;
+    float y_=2.*x*y+cy;
+    x=x_;
+    y=y_;
+  }
+  
+  // apparently this helps
+  for(int i=0;i<2;i++){
+    escape++;
+    float x_=x*x-y*y+cx;
+    float y_=2.*x*y+cy;
+    x=x_;
+    y=y_;
+  }
+  
+  // float mu = float(escape)-(log(0.5*log(x*x+y*y)))/log(2.);
+  float mu;
+  // if(interior) {
+  //   return float(escape) - log2(abs(log2(x*x+y*y))) - 4.;
+  // }
+    mu=float(escape) - log2(abs(log2(x*x+y*y))) - 4.;//-(log2(log2(dx*dx+dy*dy)))-4.;
+  // } else 
+  // if(escape<maxIter) {
+    // mu=float(escape)-(log2(log2(x*x+y*y)))-4.;
+  // }else{
+    // mu=BLACK_MU;
+  // }
+  return mu;
+}
+
+float julia(vec2 position,vec2 c){
+  float x=position.x;
+  float y=position.y;
+  float cx=c.x;
+  float cy=c.y;
+  int escape;
   for(int i=0;i<=maxIter;i++){
     escape++;
     float x_=x*x-y*y+cx;
@@ -50,59 +95,36 @@ float mandelbrot(vec2 position) {
       break;
     }
   }
-
-  // apparently this helps
-  for(int i=0;i<2;i++){
-    escape++;
-    float x_=x*x-y*y+cx;
-    float y_=2.*x*y+cy;
-    x=x_;
-    y=y_;
-  }
-
-  // float mu = float(escape)-(log(0.5*log(x*x+y*y)))/log(2.);
+  
   float mu;
   if(escape>=maxIter){
-    mu=0.;
+    mu=BLACK_MU;
   }else{
     mu=float(escape)-(log2(log2(x*x+y*y)))-4.;
   }
   return mu;
 }
 
-void main(void) {
-  // float minZoom = 8.910478809532371e-05;
-  // float zoom = minZoom;
-  float zoomTime = 20.0; // time to reach max zoom
-  float maxAmplitude = 30.0;
-  float zoom=1.0/pow(1.5, maxAmplitude*(1.0-0.5*cos(2.0*PI * u_time / (zoomTime * 2.0)))-20.0);
-  vec2 target = vec2(-.994822384150892528442,0.280591204141620403577);
-  //target = (target - resolution * 0.5) / max(resolution.x, resolution.y) * zoom;
-  
-  vec2 position=(gl_FragCoord.xy-u_resolution*.5)/max(u_resolution.x,u_resolution.y)*zoom;
-  
-  float rotationSpeed = 2.0;
-  float angle = rotationSpeed * (.5 - .5*cos(2.*PI*u_time / (zoomTime * 2.0)));
-  position = rotate(position, angle);
-  position=position+target;
+vec2 toComplex(vec2 pos){
+  return(pos.xy-u_resolution*.5)/min(u_resolution.x,u_resolution.y)*3./zoom+center;
+}
 
+void main(void){  
+  vec2 position=toComplex(gl_FragCoord.xy);
   
-  vec3 col=vec3(0.);
-  float mu= mandelbrot(position);
-  float hu = 0.5 - 0.5 * cos(mu / 20.0 - u_time / 2.0 - 2.0);
-  gl_FragColor = vec4(hsv2rgb(vec3(hu, 1.0,.80)), 1.0);
-  // col+=.5+.5*cos(3.+mu*.5*.15+vec3(0.,.5,1.));
-  // gl_FragColor=vec4(col,1.);
+  // vec2 c = toComplex(u_mouse);
   
-  // mu /= 100.0;
-  // // mu = mod(mu, 1.0);
-
-  // // mu = sigmoid(mu);
-
-  // gl_FragColor=vec4(hsv2rgb(vec3(mu,1.0,1.0)),1.0);
-  // for debugging target centering
-  // if(gl_FragCoord.x <= u_resolution.x / 2.0 && gl_FragCoord.y <= u_resolution.y / 2.0) {
-  //   gl_FragColor = vec4(1.0,0.0,0.0,1.0);
-  // }
+  float mu=mandelbrot(position);
   
+  if(mu==BLACK_MU){
+    gl_FragColor=vec4(0.,0.,0.,1.);
+  }else{
+    float hu=mu/10.;
+    float offset=210./360.+u_time/50.;// blue
+    hu=mod(-hu+offset,1.);
+    float br_amp=.3;
+    float br_period=2.;
+    float br=((1.-br_amp)+br_amp*cos((mu-u_time)*2.*PI/br_period));
+    gl_FragColor=vec4(hsv2rgb(vec3(float(hu),1.,br)),1.);
+  }
 }
