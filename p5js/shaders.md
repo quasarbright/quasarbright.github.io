@@ -13,6 +13,8 @@ Instead of coloring each pixel discretely based on the iteration count upon esca
 This shader uses a continuous coloring which takes into account the iteration count
 as well as the modulus of the final value. Since it's colored continuously, it can have some very pretty colors.
 
+Zoom with the scroll wheel and pan the camera by clicking and dragging
+
 ## [Julia Set](https://quasarbright.github.io/p5js/juliaShader/)
 ![julia set](https://quasarbright.github.io/p5js/juliaShader/screenshot.png)
 This shader uses the same coloring method as the Mandelbrot set shader, but you can select the c-value used to
