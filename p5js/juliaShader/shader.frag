@@ -16,7 +16,7 @@ uniform vec2 center; // the complex number for the center of the display
 uniform float zoom; // how zoomed in the display should be
 uniform vec2 c; // the current c-value used to generate the julia set
 const float PI = 3.1415926535897932384626433;
-const int maxIter=1024;
+const int maxIter=512;
 const float escapeRadius=2.5;
 const float escapeRadiusSq=escapeRadius*escapeRadius;
 const float BLACK_MU = -100000.0;
