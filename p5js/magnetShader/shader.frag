@@ -23,15 +23,10 @@ uniform float zoom;// how zoomed in the display should be
 const float PI=3.1415926535897932384626433;
 
 const int maxIter=256;
-const float epsilon = .001;
-const float epsilon_vel = .2;
-const int min_iter = 10;
 
-const float k_hookes = 5.0; // constant for hooke's law
-const float k_mag = 2.0;
-const float k_friction = 40.0; // friction constant
-const float mass = 200.; // pendulum mass
-const float dt = 30. / float(maxIter);
+float kf=.01;
+float km=.4;
+float kp=.1;
 
 float sigmoid(float x){
   return 1./(1.+exp(-x));
@@ -95,54 +90,8 @@ float getClosestMagnetDistSq(magnet[NUM_MAGNETS] magnets, vec2 position) {
   return nearestDistSq;
 }
 
-result simulate(magnet magnets[NUM_MAGNETS], vec2 position) {
-  vec2 velocity = vec2(0.);
-  vec2 acceleration = vec2(0.);
-
-  int iter = 0;
-  float traceLength = 0.;
-  for(int i = 0; i <= maxIter; i++) {
-    iter = i;
-
-    float nearestDsq = getClosestMagnetDistSq(magnets, position);
-    if (iter > min_iter && nearestDsq < epsilon && dot(velocity, velocity) < epsilon_vel) {
-      break;
-    }
-
-    vec2 force = vec2(0.);
-
-    // hooke's law on the pendulum
-    vec2 force_hookes = -k_hookes * position;
-    force += force_hookes;
-
-    // sum over magnetic forces
-    for(int index = 0; index < NUM_MAGNETS; index++) {
-      magnet mag = magnets[index];
-      vec2 disp = position - mag.pos;
-      float denominator = pow(dot(disp, disp), 1.5);
-      vec2 force_mag = -k_mag * disp / denominator;
-      force += force_mag;
-    }
-
-    // friction on pendulum
-    vec2 force_friction = -k_friction * velocity;
-    force += force_friction;
-
-    position += velocity * dt;
-    traceLength += sqrt(dot(velocity, velocity));
-    velocity += acceleration * dt;
-    acceleration = force / mass;
-  }
-
-  magnet nearest = getClosestMagnet(magnets, position);
-
-  return result(nearest, iter, traceLength);
-}
-
 result simulate_pde(magnet[NUM_MAGNETS] magnets, vec2 position) {
-  float kf = .01;
-  float km = .4;
-  float kp = .1;
+
 
 
   vec2 velocity = vec2(0.);
@@ -208,17 +157,6 @@ void main(void){
   vec3 color = res.mag.color;
   color = rgb2hsv(color);
   color.z = 1.-pow(float(res.iterations) / float(maxIter), 2.) * .8;
-  // color.z = 1.-pow(float(res.iterations) / float(maxIter) / pow(dot(position, position), .08), 2.) * .8;
-  // color.z = 1. / exp(log(float(maxIter)) / pow(float(maxIter), 2.0) * pow(float(res.iterations), 2.1));
-  // color.z = exp(-0.02 * pow(float(res.traceLength), 1.6));
-  // color.z = 1. - pow(res.traceLength * 20. / float(maxIter), .1);
-  // color.z = 1. / exp(log(float(256)) / pow(100., 2.0) * pow(res.traceLength, 2.0));
-  // color.z = 1. - (res.traceLength / float(maxIter));
   color = hsv2rgb(color);
   gl_FragColor = vec4(color, 1.0);
-
-  // float nearestDist = getClosestMagnetDistSq(magnets, position);
-  // if(nearestDist < epsilon) {
-  //   gl_FragColor = vec4(1.);
-  // }
 }
