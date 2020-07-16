@@ -91,9 +91,6 @@ float getClosestMagnetDistSq(magnet[NUM_MAGNETS] magnets, vec2 position) {
 }
 
 result simulate_pde(magnet[NUM_MAGNETS] magnets, vec2 position) {
-
-
-
   vec2 velocity = vec2(0.);
   vec2 acceleration = vec2(0.);
   int iter = 0;
@@ -127,7 +124,6 @@ result simulate_pde(magnet[NUM_MAGNETS] magnets, vec2 position) {
 
     acceleration = force;
     velocity += acceleration;
-    traceLength += sqrt(dot(velocity, velocity)) / 60.;
     position += velocity / 60.;
   }
 
