@@ -22,7 +22,7 @@ uniform vec2 center;// the complex number for the center of the display
 uniform float zoom;// how zoomed in the display should be
 const float PI=3.1415926535897932384626433;
 
-const int maxIter=256;
+const int maxIter=int(256. * 3.0 / float(NUM_MAGNETS));
 
 float kf=.01;
 float km=.4;
@@ -156,7 +156,7 @@ void main(void){
 
   vec3 color = res.mag.color;
   color = rgb2hsv(color);
-  color.z = 1.-pow(float(res.iterations) / float(maxIter), 2.) * .8;
+  color.z = 1.-pow(float(res.iterations) / float(maxIter), 2.) * .3;
   color = hsv2rgb(color);
   gl_FragColor = vec4(color, 1.0);
 }
