@@ -25,8 +25,8 @@ If you want to pan the camera, you can do so by holding the mouse wheel down and
 ![magnet shader](https://quasarbright.github.io/p5js/magnetShader/screenshot.png)
 The fractal is generated from simulating a magnetic pendulum swinging over a table with three magnets on it. Each pixel is colored based
 on which magnet it ends up at and darkened based on how long it took to stop at a magnet. The three magnets oscillate radially from the center to
-create an interesting visual effect. You can adjust the number of magnets and the maximum number of iterations of the simulation (detail slider).
+create an interesting visual effect. You can adjust all of the parameters of the simulation to change how it looks and moves.
 
 You can move around by clicking and dragging and zoom in and out by scrolling.
 ### GPU Warning
-This one is really heavy on the GPU. If it runs too slowly, try decreasing the detail slider or making your browser-window smaller.
+This one is really heavy on the GPU. If it runs too slowly, try decreasing the maximum iterations or making your browser-window smaller.
