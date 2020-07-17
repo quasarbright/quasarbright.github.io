@@ -24,9 +24,9 @@ uniform int maxIter;
 const float PI=3.1415926535897932384626433;
 
 
-float kf=.01;
-float km=.4;
-float kp=.1;
+uniform float kf;
+uniform float km;
+uniform float kp;
 
 float sigmoid(float x){
   return 1./(1.+exp(-x));

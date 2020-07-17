@@ -19,6 +19,8 @@ canvas {
 }
 
 .inputs {
+  /* min-width: 100px; */
+  max-width: 20%;
   font-family: monospace;
   color: white;
   background-color: rgba(0, 0, 0, .8);
@@ -26,4 +28,8 @@ canvas {
   top: 10px;
   right: 10px;
   z-index: 10;
+}
+
+.slider {
+  width: 99%;
 }

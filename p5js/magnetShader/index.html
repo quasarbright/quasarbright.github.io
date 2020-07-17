@@ -15,9 +15,19 @@
     <div class="inputs">
         <label for="detail"> detail</label>
         <input class="slider" name="detail" id="detail" type="range" min="0" max="1024" value="256" step="1">
-        <br>
+        <hr>
         <label for="num_mag"> number of magnets</label>
-        <input class="slider" name="num_mag" id="num_mag" type="number" min="1" max="20" value="3" step="1" oninput="main()">
+        <input  name="num_mag" id="num_mag" type="number" min="1" max="20" value="3" step="1" oninput="main()">
+        <hr>
+        <label for="kf">friction strength</label>
+        <input class="slider" name="kf" id="kf" type="range" min="0" max="0.1" step=".00001" value=".01">
+        <hr>
+        <label for="km">magnet strength</label>
+        <input class="slider" name="km" id="km" type="range" min="0" max="1" step=".00001" value=".4">
+        <hr>
+        <label for="kp">pendulum strength</label>
+        <input class="slider" name="kp" id="kp" type="range" min="0" max="1" step=".00001" value=".1">
+        
     </div>
 </body>
 

@@ -58,7 +58,9 @@ let shaderData = {
   'zoom': (gl, loc) => gl.uniform1f(loc, zoom),
   'center': (gl, loc) => gl.uniform2fv(loc, [centerx, centery]), // the center of the display area as a complex number
   'maxIter': (gl, loc) => gl.uniform1i(loc, document.getElementById("detail").value),
-  // 'NUM_MAGNETS': (gl, loc) => gl.uniform1i(loc, document.getElementById("num_mag").value)
+  'kf': (gl, loc) => gl.uniform1f(loc, document.getElementById("kf").value),
+  'kp': (gl, loc) => gl.uniform1f(loc, document.getElementById("kp").value),
+  'km': (gl, loc) => gl.uniform1f(loc, document.getElementById("km").value),
 }
 
 // canvas event listeners for interactivity
