@@ -10,6 +10,11 @@ void main() {
 
 // set up some global variables
 let program
+// for ensuring only 1 shader runs at a time
+// acts as a shader id
+window.count = 0
+let timeLocation
+let resolutionLocation
 let mouseX = 0;
 let mouseY = 0;
 let centerx = 0
@@ -52,6 +57,8 @@ let shaderData = {
   'c': (gl, loc) => gl.uniform2fv(loc, [cx, cy]), // the c-value used for the current julia set (set by the user interactively)
   'zoom': (gl, loc) => gl.uniform1f(loc, zoom),
   'center': (gl, loc) => gl.uniform2fv(loc, [centerx, centery]), // the center of the display area as a complex number
+  'maxIter': (gl, loc) => gl.uniform1i(loc, document.getElementById("detail").value),
+  // 'NUM_MAGNETS': (gl, loc) => gl.uniform1i(loc, document.getElementById("num_mag").value)
 }
 
 // canvas event listeners for interactivity
@@ -139,9 +146,14 @@ function loadTextFile(url, callback) {
   request.send();
 }
 
+function main() {
+// increment count for this shader's id
+count++
 // load the shader, pass it the variables, and display it on the canvas
 loadTextFile("shader.frag", function (text) {
   var frag = text;
+  var re = /# define NUM_MAGNETS \d*/gi
+  frag = frag.replace(re, "#define NUM_MAGNETS "+document.getElementById("num_mag").value)
   canvas.width = window.innerWidth
   canvas.height = window.innerHeight
   document.body.appendChild(canvas)
@@ -149,8 +161,9 @@ loadTextFile("shader.frag", function (text) {
   var vertexShader = createShader(gl, gl.VERTEX_SHADER, vert);
   var fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, frag);
   program = createProgram(gl, vertexShader, fragmentShader);
-  const timeLocation = gl.getUniformLocation(program, "u_time");
-  const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+  // RENDER USES THE OLD LOCATION!!!! HAVE TO MAKE IT GLOBAL
+  timeLocation = gl.getUniformLocation(program, "u_time");
+  resolutionLocation = gl.getUniformLocation(program, "u_resolution");
   // const mouseLocation = gl.getUniformLocation(program, "u_mouse");
   var positionAttributeLocation = gl.getAttribLocation(program, "a_position");
   var positionBuffer = gl.createBuffer();
@@ -165,35 +178,40 @@ loadTextFile("shader.frag", function (text) {
   ];
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
+  // give this shader an id
+  let localCount = count
   function render(time) {
-    resizeCanvas(gl);
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-    gl.clearColor(0, 0, 0, 0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.useProgram(program);
-    gl.enableVertexAttribArray(positionAttributeLocation);
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    // // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
-    var size = 2;          // 2 components per iteration
-    var type = gl.FLOAT;   // the data is 32bit floats
-    var normalize = false; // don't normalize the data
-    var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
-    var offset = 0;        // start at the beginning of the buffer
-    gl.vertexAttribPointer(
-      positionAttributeLocation, size, type, normalize, stride, offset)
+    // if this is the current shader
+    if(localCount === window.count) {
+      resizeCanvas(gl);
+      gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.useProgram(program);
+      gl.enableVertexAttribArray(positionAttributeLocation);
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      // // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+      var size = 2;          // 2 components per iteration
+      var type = gl.FLOAT;   // the data is 32bit floats
+      var normalize = false; // don't normalize the data
+      var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+      var offset = 0;        // start at the beginning of the buffer
+      gl.vertexAttribPointer(
+        positionAttributeLocation, size, type, normalize, stride, offset)
 
-    gl.uniform1f(timeLocation, time * 0.001);
-    gl.uniform2fv(resolutionLocation, [gl.canvas.width, gl.canvas.height])
-    for (const name in shaderData) {
-      const location = gl.getUniformLocation(program, name)
-      shaderData[name](gl, location)
+      gl.uniform1f(timeLocation, time * 0.001);
+      gl.uniform2fv(resolutionLocation, [gl.canvas.width, gl.canvas.height])
+      for (const name in shaderData) {
+        const location = gl.getUniformLocation(program, name)
+        shaderData[name](gl, location)
+      }
+      var primitiveType = gl.TRIANGLES;
+      var offset = 0;
+      var count = 6;
+      gl.drawArrays(primitiveType, offset, count);
+
+      requestAnimationFrame(render);
     }
-    var primitiveType = gl.TRIANGLES;
-    var offset = 0;
-    var count = 6;
-    gl.drawArrays(primitiveType, offset, count);
-
-    requestAnimationFrame(render);
   }
   requestAnimationFrame(render);
 
@@ -218,3 +236,6 @@ loadTextFile("shader.frag", function (text) {
     return s;
   }
 });
+}
+
+main()

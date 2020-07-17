@@ -20,9 +20,9 @@ uniform vec2 u_resolution;// the display width and height
 uniform vec2 u_mouse;// the pixel coordinate for the mouse pointer
 uniform vec2 center;// the complex number for the center of the display
 uniform float zoom;// how zoomed in the display should be
+uniform int maxIter;
 const float PI=3.1415926535897932384626433;
 
-const int maxIter=int(256. * 3.0 / float(NUM_MAGNETS));
 
 float kf=.01;
 float km=.4;
@@ -95,7 +95,10 @@ result simulate_pde(magnet[NUM_MAGNETS] magnets, vec2 position) {
   vec2 acceleration = vec2(0.);
   int iter = 0;
   float traceLength = 0.;
-  for(int i = 0; i <= maxIter; i++) {
+  for(int i = 0; i >= -1; i++) {
+    if(i >= maxIter) {
+      break;
+    }
     iter = i;
     float nearestDsq = getClosestMagnetDistSq(magnets, position);
     if(nearestDsq < 0.0005 && dot(velocity, velocity) < 10.) {
