@@ -61,6 +61,12 @@ let shaderData = {
   'kf': (gl, loc) => gl.uniform1f(loc, document.getElementById("kf").value),
   'kp': (gl, loc) => gl.uniform1f(loc, document.getElementById("kp").value),
   'km': (gl, loc) => gl.uniform1f(loc, document.getElementById("km").value),
+  'trap_radius': (gl, loc) => gl.uniform1f(loc, document.getElementById("trap_radius").value),
+  'trap_velocity': (gl, loc) => gl.uniform1f(loc, document.getElementById("trap_velocity").value),
+  'max_magnetism': (gl, loc) => gl.uniform1f(loc, document.getElementById("max_magnetism").value),
+  'shading_strength': (gl, loc) => gl.uniform1f(loc, document.getElementById("shading_strength").value),
+  'oscillation_amplitude': (gl, loc) => gl.uniform1f(loc, document.getElementById("oscillation_amplitude").value),
+  'oscillation_period': (gl, loc) => gl.uniform1f(loc, document.getElementById("oscillation_period").value),
 }
 
 // canvas event listeners for interactivity

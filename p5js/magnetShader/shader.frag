@@ -15,18 +15,23 @@ struct result {
   float traceLength;
 };
 
+const float PI=3.1415926535897932384626433;
+
 uniform float u_time;// the time in seconds
 uniform vec2 u_resolution;// the display width and height
 uniform vec2 u_mouse;// the pixel coordinate for the mouse pointer
 uniform vec2 center;// the complex number for the center of the display
 uniform float zoom;// how zoomed in the display should be
 uniform int maxIter;
-const float PI=3.1415926535897932384626433;
-
-
 uniform float kf;
 uniform float km;
 uniform float kp;
+uniform float trap_radius; // actually radius squared
+uniform float trap_velocity; // actually velocity squared
+uniform float max_magnetism;
+uniform float shading_strength;
+uniform float oscillation_amplitude;
+uniform float oscillation_period;
 
 float sigmoid(float x){
   return 1./(1.+exp(-x));
@@ -101,7 +106,7 @@ result simulate_pde(magnet[NUM_MAGNETS] magnets, vec2 position) {
     }
     iter = i;
     float nearestDsq = getClosestMagnetDistSq(magnets, position);
-    if(nearestDsq < 0.0005 && dot(velocity, velocity) < 10.) {
+    if(nearestDsq < trap_radius && dot(velocity, velocity) < trap_velocity) {
       break;
     }
     vec2 force = vec2(0.);
@@ -116,8 +121,8 @@ result simulate_pde(magnet[NUM_MAGNETS] magnets, vec2 position) {
       vec2 displacement = mag.pos - position;
       float dsq = dot(displacement, displacement);
       vec2 temp = normalize(displacement) * km / dsq;
-      if (dot(temp, temp) > .25) {
-        temp = normalize(temp) * .5;
+      if (dot(temp, temp) > max_magnetism*max_magnetism) {
+        temp = normalize(temp) * max_magnetism;
       }
       force += temp;
     }
@@ -140,10 +145,8 @@ result simulate_pde(magnet[NUM_MAGNETS] magnets, vec2 position) {
 void main(void){
   gl_FragColor = vec4(1., 0., 1., 1.);
   magnet magnets[NUM_MAGNETS];
-  float jiggle_amp = .3;
-  float jiggle_period = 10.;
   for(int i = 0; i < NUM_MAGNETS; i++) {
-    float r = 1.+jiggle_amp*sin((u_time/jiggle_period-float(i)/float(NUM_MAGNETS))*(2.*PI)); 
+    float r = 1.+oscillation_amplitude*sin((u_time/oscillation_period-float(i)/float(NUM_MAGNETS))*(2.*PI)); 
     float hu = float(i) / float(NUM_MAGNETS);
     vec3 color = hsv2rgb(vec3(hu, 1., 1.));
     magnets[i]=magnet(rotate(vec2(r,0.),float(i)*2.*PI/float(NUM_MAGNETS)),color);
@@ -155,7 +158,7 @@ void main(void){
 
   vec3 color = res.mag.color;
   color = rgb2hsv(color);
-  color.z = 1.-pow(float(res.iterations) / float(maxIter), 2.) * .3;
+  color.z = 1.-pow(float(res.iterations) / float(maxIter), 2.) * shading_strength;
   color = hsv2rgb(color);
   gl_FragColor = vec4(color, 1.0);
 }
