@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>quasarbright</title>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/p5.js"></script> -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/addons/p5.dom.min.js"></script> -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/addons/p5.sound.min.js"></script> -->
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta charset="utf-8" />
+</head>
+
+<body>
+    <script src="sketch.js"></script>
+    <div class="inputs">
+        <label for="detail"> max iterations</label>
+        <input class="slider" name="detail" id="detail" type="range" min="0" max="1024" value="256" step="1">
+        <hr>
+        <label for="num_mag"> number of magnets</label>
+        <input  name="num_mag" id="num_mag" type="number" min="1" max="20" value="3" step="1" oninput="main()">
+        <hr>
+        <label for="kf">friction strength</label>
+        <input class="slider" name="kf" id="kf" type="range" min="0" max="0.1" step=".00001" value=".01">
+        <hr>
+        <label for="km">magnet strength</label>
+        <input class="slider" name="km" id="km" type="range" min="0" max=".6" step=".00001" value=".4">
+        <hr>
+        <label for="kp">pendulum strength</label>
+        <input class="slider" name="kp" id="kp" type="range" min="0" max=".4" step=".00001" value=".1">
+        <hr>
+        <label for="trap_radius">trap radius</label>
+        <input class="slider" name="trap_radius" id="trap_radius" type="range" min="0" max=".005" step=".00001" value=".0005">
+        <hr>
+        <label for="trap_velocity">trap velocity</label>
+        <input class="slider" name="trap_velocity" id="trap_velocity" type="range" min="0" max="50" step=".00001" value="10">
+        <hr>
+        <label for="max_magnetism">max magnetic force</label>
+        <input class="slider" name="max_magnetism" id="max_magnetism" type="range" min="0" max="1" step=".00001" value=".5">
+        <hr>
+        <label for="shading_strength">shading strength</label>
+        <input class="slider" name="shading_strength" id="shading_strength" type="range" min="0" max="5" step=".00001" value=".3">
+        <hr>
+        <label for="oscillation_amplitude">oscillation amplitude</label>
+        <input class="slider" name="oscillation_amplitude" id="oscillation_amplitude" type="range" min="0" max="2" step=".00001" value=".3">
+        <hr>
+        <label for="oscillation_period">oscillation period</label>
+        <input class="slider" name="oscillation_period" id="oscillation_period" type="range" min="0" max="30" step=".00001" value="10">
+    </div>
+</body>
+
+</html>

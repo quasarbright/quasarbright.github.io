@@ -1,0 +1,63 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 91ec3723a4c59edd5edd7a0525581253011b7a90d6d2b29f301ac6578c0a9722
+
+name:           Zippers
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/Zippers#readme>
+homepage:       https://github.com/githubuser/Zippers#readme
+bug-reports:    https://github.com/githubuser/Zippers/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2020 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/Zippers
+
+library
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_Zippers
+  hs-source-dirs:
+      src
+  ghc-options: -w -Wall
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
+
+executable Zippers-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_Zippers
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -w -Wall
+  build-depends:
+      Zippers
+    , base >=4.7 && <5
+  default-language: Haskell2010
+
+test-suite Zippers-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_Zippers
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      Zippers
+    , base >=4.7 && <5
+  default-language: Haskell2010

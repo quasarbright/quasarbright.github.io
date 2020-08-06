@@ -3,11 +3,9 @@ title: p5.js stuff
 ---
 * TOC
 {:toc}
-# [P5.js](https://p5js.org/)
+# [P5.js](https://p5js.org/) (and some plain javascript)
 ### What is P5.js?
 P5.js is a javascript graphics library. A graphics library lets your program display things other than text, like shapes, pictures, animations, and pretty much anything you can think of.
-## [2048](https://quasarbright.github.io/p5js/2048)
-The game 2048. Move the tiles with the arrow keys. Combine equal tiles to double their value. your goal is to create a tile with the value 2048 by combining tiles.
 ## [Braille Dithering](https://quasarbright.github.io/p5js/braille)
 ```
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠂⠀⡂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀

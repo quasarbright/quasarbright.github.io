@@ -1,0 +1,1 @@
+* currently, the minimax agent will treat dying with length 3 equal to surviving with length 3. Need cumulative rewards/discounting or something. Can try something like value = length * 100 - age, or make a custom comparable with (isDead, length, age) so you cmp liveness, then cmp length, then cmp age. You actually need a key extractor for python though.

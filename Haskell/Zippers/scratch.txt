@@ -1,0 +1,34 @@
+DDDRURDDRURUURDRDRUUU
+DD(DRU)RD(DRU)RUURDR(DRU)UU
+DD(Node l d l)RDDRURUURDRDRUUU
+
+NNNLdLdNNLdLdLdNLdNLdL
+ ( ( (   R   ) R  ( (    R    ) R   )) R  (   R  (    R    )))
+N(N(N(lf,d,lf),d,N(N(lf, d, lf),d,lf)),d,N(lf,d,N(lf, d, lf)))
+
+(R x = Node(lf, d, x)
+x R) = Node(x d, lf)
+
+Node(
+    Node(
+        Node(
+            lf,d,lf
+        ),
+        d,
+        Node(
+            Node(
+                lf, d, lf
+            ),
+            d,
+            lf
+        )
+    ),
+    d,
+    Node(
+        lf,
+        d,
+        Node(
+            lf, d, lf
+        )
+    )
+)
