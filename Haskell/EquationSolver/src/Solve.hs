@@ -144,7 +144,6 @@ bisect f xmin xmax llim rlim
     | isZero ymax = Just xmax
     | signum ymin * signum ymax > 0 = Nothing -- no sign change
     | isZero (xmin - xmax) || isZero y = Just x -- it seems like double
-    -- | y < 0 = bisect f x xmax llim rlim
     | signum y == signum ymin = bisect f x xmax llim rlim
     | signum y == signum ymax = bisect f xmin x llim rlim
     | otherwise = Nothing
