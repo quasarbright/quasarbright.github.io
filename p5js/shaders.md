@@ -4,7 +4,7 @@ title: Shaders
 * TOC
 {:toc}
 These are Fragment shaders I've made using webgl. A fragment shader uses your GPU to do pick a color for every pixel on your screen.
-Since you're GPU can run a shader for many pixels at the same time, it runs very fast despite the number of computations. This is perfect for when you
+Since your GPU can run a shader for many pixels at the same time, it runs very fast despite the number of computations. This is perfect for when you
 want to compute something for every point on the screen.
 
 ## [Mandelbrot Set](https://quasarbright.github.io/p5js/mandelbrotShaderRenormalized/)
