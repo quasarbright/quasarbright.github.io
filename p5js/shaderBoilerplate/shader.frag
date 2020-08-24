@@ -5,6 +5,7 @@ precision mediump float;
 # define NUM_MAGNETS 3
 
 const float PI=3.1415926535897932384626433;
+const float TAU = 2.0 * PI;
 
 uniform float u_time;// the time in seconds
 uniform vec2 u_resolution;// the display width and height
@@ -17,6 +18,27 @@ uniform int brightness;
 
 float sigmoid(float x){
   return 1./(1.+exp(-x));
+}
+
+float constrain(float x,float minimum,float maximum){
+  if(x<minimum){
+    return minimum;
+  }else if(x>maximum){
+    return maximum;
+  }else{
+    return x;
+  }
+}
+
+float map(float x, float min1, float max1, float min2, float max2) {
+  float d1 = max1 - min1;
+  float d2 = max2 - min2;
+  float disp1 = (x - min1) / d1;
+  return min2 + x * d2;
+}
+
+float atanNorm(float x) {
+  return atan(x) / (PI / 2.0);
 }
 
 vec3 hsv2rgb(vec3 c)
@@ -47,6 +69,33 @@ vec2 rotate(vec2 v,float a){
 
 vec2 toCoord(vec2 pos) {
   return(pos.xy-u_resolution*.5)/min(u_resolution.x,u_resolution.y)*3./zoom+center;
+}
+
+float angle(vec2 z){
+  if(z.x==0.&&z.y>0.){
+    return TAU/4.;
+  }else if(z.x==0.){
+    return 3.*TAU/4.;
+  }
+  
+  float theta=atan(z.y/z.x);
+  
+  if(z.x<0.){
+    // quadrant 2/3
+    theta+=PI;
+  }else if(z.y<0.){
+    // quadrant 4
+    theta+=TAU;
+  }
+  return theta;
+}
+
+float mag(vec2 z){
+  return distance(vec2(0),z);
+}
+
+float magSq(vec2 z) {
+  return z.x*z.x + z.y*z.y;
 }
 
 void main(void){
