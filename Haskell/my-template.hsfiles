@@ -67,8 +67,8 @@ tests:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
-    - w
-    - Wall
+    - -w
+    - -Wall
     dependencies:
     - {{name}}
     - hspec
