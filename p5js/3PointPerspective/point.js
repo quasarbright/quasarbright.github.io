@@ -134,6 +134,16 @@ function lerpDerivedPoint(start,end,kf) {
     return new DerivedPoint(()=>start.lerp(kf(),end).copy())
 }
 
+/**
+ * create a point that is at the intersection of two segments
+ * @param {Segment} ab 
+ * @param {Segment} cd 
+ * @returns {DerivedPoint}
+ */
+function intersectionDerivedPoint(ab,cd) {
+    return new DerivedPoint(()=>ab.intersection(cd).copy())
+}
+
 
 let segments = []
 /**
@@ -162,6 +172,33 @@ class Segment {
         stroke(this.c)
         strokeWeight(this.thickness)
         line(this.pi.p.x,this.pi.p.y,this.pf.p.x,this.pf.p.y)
+    }
+
+    /**
+     * calculate slope of this line
+     * @returns {number}
+     */
+    slope() {
+        let f = this.pf.p
+        let i = this.pi.p
+        return (f.y-i.y) / (f.x-i.x)
+    }
+
+    /**
+     * calculate intersection position of two line segments as vector
+     * @param {Segment} other 
+     * @returns {p5.Vector}
+     */
+    intersection(other) {
+        let a = this.pi.p
+        let b = this.pf.p
+        let c = other.pi.p
+        let d = other.pf.p
+        let mab = this.slope()
+        let mcd = other.slope()
+        let x = (a.x*mab - c.x * mcd + c.y - a.y) / (mab - mcd)
+        let y = (x - a.x)*mab + a.y
+        return createVector(x,y)
     }
 }
 
