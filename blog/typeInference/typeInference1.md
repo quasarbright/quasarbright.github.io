@@ -10,8 +10,10 @@ In this series, I will explain how type inference works and walk through impleme
 
 In this part, we learn about what type inference is and how to describe a type system for a language.
 
+This part of the tutorial is largely based on the wikipedia article for [Hindley–Milner type system](https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system). Specifically, this tutorial walks through Algorithm J.
+
 # What is type inference?
-A language like Java has what is called a static type system. In java, if you try to do something silly like pass a `String` to a method that expects an `int`, the type checker will tell you that you made a mistake before your code even runs.
+A language like Java has what is called a static type system. In Java, if you try to do something silly like pass a `String` to a method that expects an `int`, the type checker will tell you that you made a mistake before your code even runs.
 
 This is great, because it catches a lot of errors before you even think about running your code. But the drawback is that you have to tell Java the types of all of your variables and the signatures of all of your methods. And when you want to write polymorphic code, you have to use generics, which are a little finicky and have ugly syntax.
 
@@ -273,7 +275,7 @@ Here is the rule for if expressions:
 
 $$
 \frac
-{\Gamma \vdash e_1 : bool \qquad \Gamma \vdash e_2 : \tau \qquad \Gamma e_3 : \tau}
+{\Gamma \vdash e_1 : bool \qquad \Gamma \vdash e_2 : \tau \qquad \Gamma \vdash e_3 : \tau}
 {\Gamma \vdash \textrm{ if } e_1 \textrm{ then } e_2 \textrm{ else } e_3 : \tau} If
 $$
 
@@ -323,6 +325,188 @@ That's our declarative rule system. We can't make a good algorithm out of this, 
 * how do we know what mono types to use when we _do_ instantiate schemes?
 * how do we know what mono type to use for the argument when inferring the type of a lambda?
 
-We have this idealized declarative rule system for determining which type assignments make sense for our type language. But we can't make an algorithm out of it because there is too much "magic" in the rules. Now, we must make another rule system for _inferring_ types of expressions in a way that satisfies the declarative rule system, and without "magic" so we can make a type inference algorithm out of it. This is the algorithm rule system
+We have this idealized declarative rule system for determining which type assignments make sense for our type language. But we can't make an algorithm out of it because there is too much "magic" in the rules. Now, we must make another rule system for _inferring_ types of expressions in a way that satisfies the declarative rule system, and without "magic" so we can make a type inference algorithm out of it. This is the algorithm rule system.
+
+Before we the algorithmic rule system, here are all of the rules for the declarative rule system:
+
+$$
+\frac{(x:\sigma) \in \Gamma}{\Gamma \vdash x:\sigma} Var
+$$
+$$
+\frac{\Gamma \vdash e_1:\tau \rightarrow \tau'\qquad \Gamma \vdash e_2: \tau}{\Gamma \vdash e_1\ e_2:\tau'} App
+$$
+$$
+\frac{\Gamma,(x:\tau) \vdash e: \tau'}{\Gamma \vdash \lambda x.e : \tau \rightarrow \tau'} Abs
+$$
+$$
+\frac{\Gamma \vdash e_1:\sigma \qquad \Gamma, (x:\sigma) \vdash e_2 : \tau}{\Gamma \vdash \textrm{let } x = e_1 \textrm{ in } e_2 : \tau} Let
+$$
+$$
+\frac
+{\Gamma \vdash e_1 : bool \qquad \Gamma \vdash e_2 : \tau \qquad \Gamma \vdash e_3 : \tau}
+{\Gamma \vdash \textrm{ if } e_1 \textrm{ then } e_2 \textrm{ else } e_3 : \tau} If
+$$
+$$
+\frac
+{\Gamma \vdash e: \sigma' \qquad \sigma' \sqsubseteq \sigma}
+{\Gamma \vdash e:\sigma}
+Inst
+$$
+$$
+\frac
+{\Gamma \vdash e : \sigma \qquad a \notin \textrm{free} (\Gamma)
+}
+{\Gamma \vdash e : \forall a. \sigma
+}
+Gen
+$$
 
 # Algorithmic Rule System
+
+This type system we've been creating is known as a Hindley-Milner type system. This particular ruleset we're about to make is for a type inference algorithm called Algorithm J.
+
+Before we get to the rules, we need some more tools and definitions. First, let's define how to generalize a mono type $\tau$ under a given context $\Gamma$.
+
+$$\bar{\Gamma}(\tau) = \forall \hat{a}.\tau \qquad \hat{a} =\textrm{free}(\tau) - \textrm{free}(\Gamma)
+$$
+
+This means take all the variables free in $\tau$, except those in the context $\Gamma$, and forall them around $\tau$. The $\forall \hat{a}$ just means a bunch of foralls. The reason we don't take all the free variables in $\tau$ is because, as we'll soon see, the context is going to be filled with "constrained" type variables that might actually be solved to specific mono types like `nat`. But don't worry about that yet, we'll get there.
+
+The way this algorithm will work is by generating type variables for types we don't know yet, and asserting certain constraints on them as we learn more about them. The way we will assert those constraints is with a process called unification.
+
+Unification uses a data structure called a union find. If you aren't familiar, a union find is used when you have a set of values and you want to group them together by some relationship. 
+
+For example, let's say we have a set of people, some of which are friends with each other. Let's assume the friendship relationship is symmetric, so if Alice is friends with Bob, Bob is friends with Alice. We want to keep track of friendship groups, where people are in the same group if there is some chain of friendships connecting them.
+
+Let's say we have Alice, Bob, Charlie, Eve, Dee, and Frank. Nobody is friends at first, so there are 6 groups, each with just one person. But then Alice and Bob become friends, and Eve and Frank become friends. We now have 4 groups: (Alice, Bob), (Charlie), (Dee), (Eve, Frank). Now let's say Bob and Eve become friends. Now we have (Alice, Bob, Eve, Frank), (Charlie), (Dee). Even though Bob and Frank aren't directly friends, they are in the same group because we can follow the chain of friendships Bob -> Eve -> Frank. But Charlie still isn't friends with anyone, so he is in his own group :(. Let's say charlie and Frank become friends. Now we have (Alice, Bob, Charlie, Eve, Frank), (Dee). Dee will stay alone.
+
+![](unionFind.png)
+
+That's the the union operation, but what is find? Find tells us whether two people are in the same group. More precisely, we'll keep track of a representative from each group, and find will take an object and return its representative.
+
+We'll implement the union find as a Map from objects to their representatives. Every object starts out being its own representative. Union will set one object't representative to the other's representative, and find will follow the chain until it reaches an object who is its own representative. This is necessary since these chains may develop. A more efficient implementation is possible, but this is simple and correct.
+
+We will use a union-find of mono types to keep track of what types should be equal. Equality is symmetric and transitive, just like friendship in our example, so a union find is perfect to keep track of this. If we want to assert that two types are equal, we just union them and make them friends :).
+
+We need to be careful with the "direction" we unify things in. If we say a type variable `a` should be equal to `nat -> nat`, we want the representative of `a` to be `nat -> nat`, not the other way around. That's all we need to do, because as it turns out, we will only be unioning type variables with other types. 
+
+We are keeping track of mono type equality because we will have "in-progress" or "constrained" type variables floating around, but we will only generalize a mono type once it's "done". We don't want to assert scheme equality, because that would get messy. We will just use the union find to keep track of the solutions of type variables.
+
+Here is the unification algorithm in pseudocode:
+```
+unify(ta, tb):
+    ta = find(ta)
+    tb = find(tb)
+    // if ta was a type variable, this replaces it with its value, if there is one.
+    if ta and tb are both function types
+        unify their argument and return types
+    else if ta and tb are the same primitive type
+        do nothing
+    else if ta is a type variable
+        if ta occurs in tb:
+            // example: unify(a,a -> a) is impossible. That's an infinite type
+            throw occurs error
+        else
+            // ta's representative is now tb
+            union(ta,tb)
+    else if tb is a type variable
+        if tb occurs in ta
+            throw occurs error
+        else
+            // tb's representative is now ta
+            // note the reversed order from the previous case
+            union(tb,ta)
+    else
+        // these types are different and can't be equal
+        // example: unify(bool, nat)
+        throw type mismatch error
+```
+
+So we find the types `ta,tb` to replace constrained type variables with their actual values, if we have found them. For example, if we previously called `unify(a,nat)`, `find(a)` would be `nat`. So if we call `unify(a,nat);unify(a,bool)`, the second call will end up trying to unify `nat,bool` and mismatch. For function types, if we called `unify(a->a, nat->bool)`, we'd end up calling `unify(a,nat)` first. Then, we'd call `unify(a,bool)`, which would fail because it would `find` `a` to be `nat`, which would cause a mismatch. For something like `unify(a->(b->c), nat->(bool->bool))` we'd call `unify(a,nat)`, then `unify(b->c, bool->bool)`, which would produce its own recursive calls and eventually hit the type variable base cases and union them.
+
+If you wanted to add tuple types or algebraic data types, the unification would have to check that two types are from the same type constructor, and zip through the type constructor's arguments and unify them. For example, to unify the tuple types `unify((a,b,c), (nat, bool, t))`, we'd call `unify(a,nat); unify(b,bool); unify(c,t)` If the type constructors don't match, we throw a mismatch error like before.
+
+Ok, now we know how to assert that two types are equal, and we know how to generalize mono types to type schemes. Now, all that's left is to instantiate schemes and come up with the type for a lambda argument. These problems have the same solution: `newvar`. We simply create a new type variable that isn't used anywhere else. Since all type variables will be created this way, we can just keep track of a stream of type variables `a1,a2,a3,...` and take the next one and advance the stream every time we need a `newvar`. So newvar generates a never-before-used mono type variable.
+
+When we want to instantiate a scheme $\forall a.\sigma$, we just take the outermost forall, generate a $newvar$ $\tau$, and replace $a$ with $\tau$. We repeat this until there are no more foralls, and we're left with a mono type that has a bunch of unsolved type variables, waiting to be unified!
+
+Now we're ready for the rules! This is what we've all been waiting for.
+
+Here is the rule for variable references:
+
+$$
+\frac
+{(x:\sigma) \in \Gamma \qquad \tau=instantiate(\sigma)}
+{\Gamma \vdash x : \tau}
+Var
+$$
+
+In the context, variables can have type schemes. So when we reference a variable, if its type is polymorphic, we instantiate the scheme and infer the resulting mono type. So if the context $\Gamma$ contains $(id : \forall a. a \rightarrow a)$, and we were inferring the type of $\lambda f. \lambda x. (id\ f)\ (id\ x)$, the scheme $\forall a. a \rightarrow a$ would get instantiated twice, one for each variable reference. And they would get instantiated with different type variables, so it's ok if the type of $f$ is different than the type of $x$.
+
+Since we're using let-bound polymorphism, the only expressions with polymorphic types are variables, so variable references are the only place we need to instantiate schemes.
+
+Here is the rule for function application:
+
+$$
+\frac{\Gamma \vdash e_1 : \tau_1 \qquad\Gamma\vdash e_2 : \tau_2 \qquad \tau' = newvar \qquad unify(\tau_1,\tau_2 \rightarrow \tau')}
+{\Gamma \vdash e_1\ e_2 : \tau'}App
+$$
+
+We infer the type of the function and the argument expressions. Then, we make sure that $\tau_1$ is a function type that takes in the type of the argument expression $\tau_2$, and returns $\tau'$. The whole application has the type $\tau'$ since that's the type the function returns. In general, when we want a type to have a specific shape, like a function type, we can just make some `newvar`s and do some unification like we did. For example, if you want to assert that expression is a 3-tuple, you'd do
+$$\Gamma \vdash e : \tau \qquad \tau_{1,2,3}=newvar \qquad unify(\tau,(\tau_1,\tau_2,\tau_3))$$
+
+Notice how we don't directly infer a function type like the declarative rule system. We have to take whatever gets inferred, and use `newvar` `unify` to assert the details of the type $\tau$. $e_1$ might be inferred to have a function type, or it might be an unconstrained variable type, which would then be solved to be a function type when we unify.
+
+Also notice that this rule, as well as $Var$ infer mono types. In fact, all our rules will infer mono types. Type schemes only exist in the context, and are instantiated away in variable reference expressions.
+
+Here is the rule for lambda expressions:
+
+$$
+\frac
+{\tau = newvar \qquad \Gamma,(x:\tau) \vdash e : \tau'}
+{\Gamma \vdash \lambda x.e : \tau \rightarrow \tau'}
+Abs
+$$
+
+We have no idea what the type of $x$ should be, so we just make a `newvar` and let it get solved appropriately with any unification that may happen while inferring the type of the body $e$. Whatever type $e$ gets inferred to be is the return type of the function, and $x$'s type is the argument type, so the whole lamdba is inferred to have the type $\tau \rightarrow \tau'$
+
+It may bother you that $\tau$ is just some type variable that will get solved later, but we use $\tau$ it instead of its "solution" when inferrring the function type. Why not use its solution as the argument type? As it turns out, due to the way unification works, it really makes no difference. If we try to unify this function type with some other type, in `unify`, $\tau$ will be `find`ed to have its solution, so it all works out.
+
+This is all well and good for the internal workings of the type checker, but what if I want to _show_ the user of my language what the type of something is? It wouldn't be very helpful to say "Oh you want the type of that lambda you wrote? It's $a_{22} \rightarrow a_{47}$. Have a nice day." We want to show the fully solved type. We'll get more into that once we implement this in code, but in short, you define a function `findMono`. This function recurses on a mono type until it hits a type variable. Then, it uses the union find to `find` what this variable "really is", and replaces it with its solution. But you actually need to call `findMono` on the solution too, because that type may also contain variables which need to be replaced by their solutions. You stop once you hit a variable whose representative in the union find is itself. In other words, when `find(a) == a`.
+
+But the fact that we generate a `newvar` is important for polymorphism. Consider inferring the type of the identity function $\lambda x.x$. If `newvar` leads to $\tau = a$, we infer the body, $x$, to have type $a$. So the whole lambda has type $a \rightarrow a$. And if we generalized this, we'd get $\forall a . a \rightarrow a$. So that's where the type variables for polymorphic functions come from. The `newvar` in the lambda rule creates the type variables that are eventually "foralled" in polymorphic functions.
+
+Here is the rule for let:
+
+$$
+\frac
+{\Gamma \vdash e_1 : \tau \qquad \sigma = \bar{\Gamma}(\tau) \qquad \Gamma,(x:\sigma) \vdash e_2 : \tau'}
+{\Gamma \vdash \textrm{ let } x = e_1 \textrm{ in } e_2 : \tau'}
+Let
+$$
+
+First, we infer the type of the right-hand-side $e_1$. It is some mono type $\tau$. Since we're doing let-bound polymorphism, here is where we generalize. Recall that $\bar{\Gamma}(\tau)$ genralizes $\tau$ as much as possible to a type scheme $\sigma$. We say that $x$ has type $\sigma$, so it can be used polymorphically in the body $e_2$, and infer the type of the body to be $\tau'$ under that modified context. The whole let expression is inferred to have the type $\tau'$.
+
+In the declarative rule system, $e_1$ was directly inferred to have a type scheme as a type. Here, $e_1$ is inferred to have a mono type and we generalize it in the annotation $(x:\sigma)$ that we add to the context $\Gamma$ when inferring the type of the body $e_2$. No magic required!
+
+Here is the if expression rule:
+
+$$
+\frac
+{\Gamma \vdash e_1 : \tau_1 \quad unify(\tau_1,bool) \quad \Gamma \vdash e_2 : \tau_2 \quad \Gamma \vdash e_3 : \tau_3 \quad unify(\tau_2,\tau_3)}
+{\Gamma \vdash \textrm{ if } e_1 \textrm{ then } e_2 \textrm{ else } e_3 : \tau_2} If
+$$
+
+The main difference is that instead of $e_1:bool$ and so on, we have to infer a normal mono type, and then use `unify` to assert details. We explicitly assert that the condition's type is a boolean and the branches have the same type.
+
+Here is the generalization rule:
+
+Just kidding! There is none. There is also no instantiation rule. Instead of getting their own rules which would have to be magically applied to make an inference algorithm, generalization and instantiation happen explicitly and under our contol in the $Let$ and $Var$ rules respectively. Even then, polymorphism only really "exists" in the context $\Gamma$, since no expression is ever directly inferred to have a type scheme type.
+
+That's it! We now have all the rules and tools to make a type inference algorithm. All that's left to do is translate these mathematical rules into code, which is exactly what we'll do in the next part!
+
+## Side note on algorithm W
+
+The algorithm with the union find we described is known as algorithm J. This algorithm eagerly enforces type equality constraints with the `unify` function. Unification could cause checking to fail with an error in the middle of the program since it happens right away. But why do we do this? If all we care about is a bunch of type equalities, why not just accumulate a bag of equations and solve them all at the end? That's what algorithm W does, roughly. But I find algorithm J more intuitive, and it generalizes nicely if you want to add new language features like pattern matching. Although, I've only implemented algorithm W for small, simple languages like this one. Anyway, I recommend looking into it if you're curious. I might even do a tutorial on algorithm W some day to understand it better myself!
+
+// todo cite wikipedia
