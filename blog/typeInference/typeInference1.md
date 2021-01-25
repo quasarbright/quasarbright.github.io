@@ -37,12 +37,11 @@ To demonstrate a basic type inference system, we will use a very simple language
 
 We will consider the whole program to be just one expression. Here is what an expression can be:
 
-<!-- $$ \LARGE
+$$
 e = x\ |\ true\ |\ false\ |\ n
 |\ \textrm{if}\ e_1\ \textrm{then}\ e_2\ \textrm{else}\ e_3 |\ \lambda x.e\ |\ e_1 e_2\ |\ \mathrm{let}\ x = e_1\ \mathrm{in}\ e_2
-$$ --> 
+$$
 
-<div align="center"><img style="background: white;" src="https://render.githubusercontent.com/render/math?math=e%20%3D%20x%5C%20%7C%5C%20true%5C%20%7C%5C%20false%5C%20%7C%5C%20n%0D%0A%7C%5C%20%5Ctextrm%7Bif%7D%5C%20e_1%5C%20%5Ctextrm%7Bthen%7D%5C%20e_2%5C%20%5Ctextrm%7Belse%7D%5C%20e_3%20%7C%5C%20%5Clambda%20x.e%5C%20%7C%5C%20e_1%20e_2%5C%20%7C%5C%20%5Cmathrm%7Blet%7D%5C%20x%20%3D%20e_1%5C%20%5Cmathrm%7Bin%7D%5C%20e_2%0D"></div> 
 
 
 So we have variables, booleans, natural numbers, anonymous functions, function application, and let bindings for local variables.
