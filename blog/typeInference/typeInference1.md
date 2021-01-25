@@ -236,6 +236,27 @@ All this says is that a variable is assigned a type if its type is known in the 
 
 Notice that $x$ is assigned a (possibly polymorhic) type scheme, not a mono type. We'll see why soon.
 
+Here are the rules for natural number and boolean literals:
+
+$$
+\frac
+{}
+{\Gamma \vdash n : nat} Nat
+$$
+
+$$
+\frac
+{}
+{\Gamma \vdash true : bool} True
+$$
+
+$$
+\frac
+{}
+{\Gamma \vdash false : bool} False
+$$
+
+
 Here is the rule for function application:
 
 $$
@@ -332,6 +353,24 @@ Before we the algorithmic rule system, here are all of the rules for the declara
 $$
 \frac{(x:\sigma) \in \Gamma}{\Gamma \vdash x:\sigma} Var
 $$
+$$
+\frac
+{}
+{\Gamma \vdash n : nat} Nat
+$$
+
+$$
+\frac
+{}
+{\Gamma \vdash true : bool} True
+$$
+
+$$
+\frac
+{}
+{\Gamma \vdash false : bool} False
+$$
+
 $$
 \frac{\Gamma \vdash e_1:\tau \rightarrow \tau'\qquad \Gamma \vdash e_2: \tau}{\Gamma \vdash e_1\ e_2:\tau'} App
 $$
@@ -445,6 +484,26 @@ In the context, variables can have type schemes. So when we reference a variable
 
 Since we're using let-bound polymorphism, the only expressions with polymorphic types are variables, so variable references are the only place we need to instantiate schemes.
 
+The rules for natural number and boolean literals are unchanged:
+
+$$
+\frac
+{}
+{\Gamma \vdash n : nat} Nat
+$$
+
+$$
+\frac
+{}
+{\Gamma \vdash true : bool} True
+$$
+
+$$
+\frac
+{}
+{\Gamma \vdash false : bool} False
+$$
+
 Here is the rule for function application:
 
 $$
@@ -503,10 +562,60 @@ Here is the generalization rule:
 
 Just kidding! There is none. There is also no instantiation rule. Instead of getting their own rules which would have to be magically applied to make an inference algorithm, generalization and instantiation happen explicitly and under our contol in the $Let$ and $Var$ rules respectively. Even then, polymorphism only really "exists" in the context $\Gamma$, since no expression is ever directly inferred to have a type scheme type.
 
+Here are all the rules for the algorithmic rule system:
+
+$$
+\frac
+{(x:\sigma) \in \Gamma \qquad \tau=instantiate(\sigma)}
+{\Gamma \vdash x : \tau}
+Var
+$$
+
+$$
+\frac
+{}
+{\Gamma \vdash n : nat} Nat
+$$
+
+$$
+\frac
+{}
+{\Gamma \vdash true : bool} True
+$$
+
+$$
+\frac
+{}
+{\Gamma \vdash false : bool} False
+$$
+
+$$
+\frac{\Gamma \vdash e_1 : \tau_1 \qquad\Gamma\vdash e_2 : \tau_2 \qquad \tau' = newvar \qquad unify(\tau_1,\tau_2 \rightarrow \tau')}
+{\Gamma \vdash e_1\ e_2 : \tau'}App
+$$
+
+$$
+\frac
+{\tau = newvar \qquad \Gamma,(x:\tau) \vdash e : \tau'}
+{\Gamma \vdash \lambda x.e : \tau \rightarrow \tau'}
+Abs
+$$
+
+$$
+\frac
+{\Gamma \vdash e_1 : \tau \qquad \sigma = \bar{\Gamma}(\tau) \qquad \Gamma,(x:\sigma) \vdash e_2 : \tau'}
+{\Gamma \vdash \textrm{ let } x = e_1 \textrm{ in } e_2 : \tau'}
+Let
+$$
+
+$$
+\frac
+{\Gamma \vdash e_1 : \tau_1 \quad unify(\tau_1,bool) \quad \Gamma \vdash e_2 : \tau_2 \quad \Gamma \vdash e_3 : \tau_3 \quad unify(\tau_2,\tau_3)}
+{\Gamma \vdash \textrm{ if } e_1 \textrm{ then } e_2 \textrm{ else } e_3 : \tau_2} If
+$$
+
 That's it! We now have all the rules and tools to make a type inference algorithm. All that's left to do is translate these mathematical rules into code, which is exactly what we'll do in the next part!
 
 ## Side note on algorithm W
 
 The algorithm with the union find we described is known as algorithm J. This algorithm eagerly enforces type equality constraints with the `unify` function. Unification could cause checking to fail with an error in the middle of the program since it happens right away. But why do we do this? If all we care about is a bunch of type equalities, why not just accumulate a bag of equations and solve them all at the end? That's what algorithm W does, roughly. But I find algorithm J more intuitive, and it generalizes nicely if you want to add new language features like pattern matching. Although, I've only implemented algorithm W for small, simple languages like this one. Anyway, I recommend looking into it if you're curious. I might even do a tutorial on algorithm W some day to understand it better myself!
-
-// todo cite wikipedia
