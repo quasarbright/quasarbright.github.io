@@ -6,11 +6,13 @@ title: How to implement type inference Part 1
 
 # Introduction
 
-In this series, I will explain how type inference works and walk through implementing it for a small language in Haskell. This part doesn't require any experience with Haskell, since it's all conceptual. However, general knowledge of functional languages and/or "expression-oriented" languages will be helpful for understanding the constructs of the language we create, like let-expressions, if expressions, lambdas/anonymous functions, and currying.
+In this series, I will explain how type inference works and walk through implementing it for a small language in Haskell. This part doesn't require any experience with Haskell, since it's all conceptual. However, general knowledge of functional languages and/or "expression-oriented" languages will be helpful for understanding the constructs of the language we create, like let-expressions, if expressions, lambdas/anonymous functions, and currying. But I will explain as much as I reasonably can for those unfamiliar.
 
-In this part, we learn about what type inference is and how to describe a type system for a language.
+I am attempting to make this tutorial as accessible as possible, since I know most people don't know Haskell. I am going to avoid advanced/confusing features of Haskell in part 2 and I'm going to add clarifications for those without a FP/Haskell background from a Java programmer's perspective, since Java has a static type system with a lot of features and most people are familiar with Java.
 
-This part of the tutorial is largely based on the wikipedia article for [Hindley–Milner type system](https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system). Specifically, this tutorial walks through Algorithm J.
+In this part, we learn about what type inference is and how to formally describe a type system for a language. We will make a type system for a little programming language and we will also build up an additional rule system for typing that will lend itself nicely to an implementation in part 2.
+
+This part of the tutorial is largely based on the wikipedia article for [Hindley–Milner type system](https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system). Specifically, my tutorial build up to and walks through Algorithm J.
 
 # What is type inference?
 A language like Java has what is called a static type system. In Java, if you try to do something silly like pass a `String` to a method that expects an `int`, the type checker will tell you that you made a mistake before your code even runs.
@@ -614,6 +616,15 @@ $$
 $$
 
 That's it! We now have all the rules and tools to make a type inference algorithm. All that's left to do is translate these mathematical rules into code, which is exactly what we'll do in the next part!
+
+Just for fun, let's look at the whole inference tree for the expression $\textrm{ let } id = \lambda x . x \textrm{ in } id\ 1$:
+
+$$
+\small
+\frac{\displaystyle \frac{\displaystyle t1 = newvar  \quad \frac{\displaystyle (x : t1) \in (x : t1) \quad t1 = instantiate(t1)}{\displaystyle (x : t1)\ \vdash\ x : t1} Var}{\displaystyle \ \vdash\ \lambda x . x : t1 \rightarrow t1}Abs \quad \frac{\displaystyle \frac{\displaystyle (id : \forall t1 . t1 \rightarrow t1) \in (id : \forall t1 . t1 \rightarrow t1) \quad t2 \rightarrow t2 = instantiate(\forall t1 . t1 \rightarrow t1)}{\displaystyle (id : \forall t1 . t1 \rightarrow t1)\ \vdash\ id : t2 \rightarrow t2} Var \quad \frac{\displaystyle }{\displaystyle (id : \forall t1 . t1 \rightarrow t1)\ \vdash\ 1 : nat} Nat \quad t3 = newvar  \quad  unify(nat \rightarrow t3 , t2 \rightarrow t2)}{\displaystyle (id : \forall t1 . t1 \rightarrow t1)\ \vdash\ id\ 1 : t3} App}{\displaystyle \ \vdash\ \textrm{let }id = \lambda x . x\textrm{ in }id\ 1 : t3} Let
+$$
+
+If that fits on your screen, you'll be able to follow how the algorithm works. Remember, read it clockwise.
 
 ## Side note on algorithm W
 
