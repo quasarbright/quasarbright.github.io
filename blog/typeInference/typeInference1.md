@@ -8,11 +8,11 @@ title: How to implement type inference Part 1
 
 In this series, I will explain how type inference works and walk through implementing it for a small language in Haskell. This part doesn't require any experience with Haskell, since it's all conceptual. However, general knowledge of functional languages and/or "expression-oriented" languages will be helpful for understanding the constructs of the language we create, like let-expressions, if expressions, lambdas/anonymous functions, and currying. But I will explain as much as I reasonably can for those unfamiliar.
 
-I am attempting to make this tutorial as accessible as possible, since I know most people don't know Haskell. I am going to avoid advanced/confusing features of Haskell in part 2 and I'm going to add clarifications for those without a FP/Haskell background from a Java programmer's perspective, since Java has a static type system with a lot of features and most people are familiar with Java.
+I am attempting to make this tutorial as accessible as possible, since I know most people don't know Haskell. I am going to avoid advanced/confusing features of Haskell in part 2. I'm also going to add clarifications of FP/Haskell concepts from a Java programmer's perspective, since Java has a static type system with a lot of features and most people are familiar with Java.
 
-In this part, we learn about what type inference is and how to formally describe a type system for a language. We will make a type system for a little programming language and we will also build up an additional rule system for typing that will lend itself nicely to an implementation in part 2.
+In this part, we learn about what type inference is and how to formally describe a type system for a language. We will make a type system for a little programming language and specify the rules for typing expressions.
 
-This part of the tutorial is largely based on the wikipedia article for [Hindley–Milner type system](https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system). Specifically, my tutorial build up to and walks through Algorithm J.
+This part of the tutorial is largely based on the wikipedia article for [Hindley–Milner type system](https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system). Specifically, my tutorial builds up to and walks through Algorithm J.
 
 # What is type inference?
 A language like Java has what is called a static type system. In Java, if you try to do something silly like pass a `String` to a method that expects an `int`, the type checker will tell you that you made a mistake before your code even runs.
@@ -25,9 +25,9 @@ In languages like Haskell and OCaml, we get all the safety of a static type syst
 ```haskell
 applyFunction f x = f x
 ```
-Haskell infers the type of `applyFunction`:
+This defines a function that takes in two arguments, and calls the first argument with the second. Haskell infers the type of `applyFunction`:
 ```haskell
-applyFunction :: (a -> b) a -> b
+applyFunction :: (a -> b) -> a -> b
 ```
 It knows that `applyFunction` takes in a function from `a` to `b` and a value of type `a` and returns a value of type `b`. And I didn't have to write a type anywhere. And it even knows the function is polymorphic!
 
@@ -48,28 +48,29 @@ $$
 
 So we have variables, booleans, natural numbers, anonymous functions, function application, and let bindings for local variables.
 
-In case this syntax is confusing, here's how we'd implement function composition in this language:
+In case this syntax is confusing, here's how we'd implement `applyFunction` in this language:
 
 $$
-\lambda f.\lambda g.\lambda x. f(g\ x)
+\lambda f.\lambda x. f\ x
 $$
 In haskell, we could have written
 ```haskell
-\f g -> (\x -> f (g x))
+\f -> \x -> f x
 ```
 
 
-This function takes in two functions `f,g` and calls `g` first and then calls `f` on the result.
-Here is the same example using a let binding to create a local variable:
-
-$$
-\lambda f.\lambda g.\lambda x. \textrm{let}\ x' = g\ x\ \textrm{in}\ f\ x'
-$$
+This function takes in two arguments `f,x` and calls `f` on `x`.
 
 ### side note on currying
 In functional languages, it is common for multi argument functions to actually be single argument functions that return other functions. For example, if we have the function `add x y = x + y`, it's the same as `add = \x -> (\y -> (x+y))`. The `add` function is really a single argument function that takes in `x` and returns another single argument function that takes in `y` and that function finally returns `x+y`. So when you see a signature like `nat -> nat -> nat`, if we drew the parentheses, we'd write `nat -> (nat -> nat)`. This may seem like unnecessary complexity, but it's actually very helpful. For example, we can partially apply functions like `addFive = add 5`. Now `addFive` is a function of type `nat -> nat` which adds 5 to whatever number you gave it. Notice how we didn't have to say `addFive y = add 5 y`, because of partial application. This idea of using single argument functions that return other functions to "simulate" multi-argument functions is called currying.
 
 ---
+
+Here is an example of using a `let` expression:
+
+$$\textrm{let }id = \lambda x. x \textrm{ in } id\ 1$$
+
+This defines a local variable $id$ to be the identity function, which is a function that just returns its argument. It then calls it on $1$, so the whole expression will evaluate to $1$. `let` expressions are a way to have variables in a language that has no statements, only expressions.
 
 You might be thinking "this doesn't look like a programming language, this looks like math!" That's what I thought when I first saw something like this. It is math, actually! This language is based on an even simpler one called the lambda calculus, which is the theoretical foundation for modern functional programming languages. Basically, when someone comes up with a new fancy type system, they formalize it like this in terms of simple constructs. These rules generalize to languages that look more like coding languages.
 
@@ -77,7 +78,7 @@ In fact, usually, when presenting this kind of type system, people don't even ha
 
 Ok, now we know what our language looks like and how it works. So ... type inference time? Not so fast. What even is a type in our langauge?
 
-# types
+# Types
 
 To start off, there are primitive types: `nat` and `bool`
 
@@ -91,7 +92,7 @@ $$
 \lambda x.x
 $$
 
-This is the identity function. It takes in anything and just returns it. It can take in a number, a boolean, a function, anything. We don't want to restrict this function to being able to only take in one type of value, because it works for all types. To capture this notion of polymorphism, we need a "forall" construction, or something like that. At any rate, the type of the identity function is
+This is the identity function. It takes in anything and just returns it. It can take in a number, a boolean, a function, anything. We don't want to restrict this function to being able to only take in one type of value, because it works _for all_ types. To capture this notion of polymorphism, we need a "forall" construction, or something like that. At any rate, the type of the identity function is
 
 $$
 \forall a. a \rightarrow a
@@ -118,7 +119,7 @@ $$
 
 Interesting. So there is more than one way to assign a type to an expression. We will revisit this once we talk about inference.
 
-Wait a minute, the Haskell inferred type for `applyFunction` didn't have any foralls in it. Why not? In Haskell, and most languages, all the foralls are on the outside like in this type, so it is implied that all type variables have a forall on the outside of a type. We'll go into why Haskell has all of its types' foralls on the outside in a moment.
+Wait a minute, the Haskell inferred type for `applyFunction` didn't have any foralls in it. Why not? In Haskell, and most languages, all the foralls are always on the outside like in this type, so it is implied that all type variables have a forall on the outside of a type. We'll go into why Haskell has all of its types' foralls on the outside in a moment.
 
 Here is a weird case:
 
@@ -130,7 +131,7 @@ $$
 \forall c. \forall a.\forall b. (c \rightarrow c) \rightarrow (a \rightarrow b) \rightarrow a \rightarrow b
 $$
 
-But this doesn't work, because in `id f`, we see that `c` must be `a -> b`. But then, we call `id x`, so `c` is also `a`. That doesn't make sense. We need an inner forall:
+But this doesn't work, because in `id f`, we see that `c` must be `a -> b`. But then, we call `id x`, so `c` is also `a`. That doesn't make sense. The problem is that `c` can only be one thing inside of its forall. To get around this, we need an inner forall:
 
 $$
 \forall a. \forall b. (\forall c.c \rightarrow c) \rightarrow (a \rightarrow b) \rightarrow a \rightarrow b
@@ -138,11 +139,11 @@ $$
 
 Now, `c` can be different things in the body of the first lambda. The difference is that before, the forall was outside the whole type. So there was "only one `c`". But now, we know that identity function works for all `c`. This is a very subtle difference, but it's very important. Make sure you understand this.
 
-The difference is that before, `c` could only get "instantiated" once (to `a -> b`) since it was in the outer forall. And in the second way, `c` could get instantiated as many times as you want since the forall is inside its little type instead of outside of the whole signature.
+The difference is that before, `c` could only one thing (`a -> b`) since it was in the outer forall. And in the second way, `c` could get instantiated as many times as you want since the forall is inside its little type instead of outside of the whole signature.
 
-We will make this notion of instantiation more concrete soon.
+We will make this notion of instantiation of foralls more concrete soon.
 
-Being able to put foralls in the middle of a type like this would be very nice so you can write functions like this where you need parameters themselves to be polymorphic functions, but unfortunately, type inference is impossible if we allow this in general. So we will only allow foralls on the outside. But variables bound defined in a let expression can have polymorphic types in the body of the let expression, so we can get around this restriction. This system is called let-bound polymorphism. [Here](https://en.wikipedia.org/wiki/Parametric_polymorphism) is a wikipedia article explaining the different kinds of parametric polymorphism.
+Being able to put foralls in the middle of a type like this would be very nice so you can write functions like this where you need parameters themselves to be polymorphic functions, but unfortunately, implementing type inference is impossible if we allow this in general. So we will only allow foralls on the outside. But variables bound defined in a let expression can have polymorphic types in the body of the let expression, so we can work around this restriction when using the language. This system is called let-bound polymorphism. [Here](https://en.wikipedia.org/wiki/Parametric_polymorphism) is a wikipedia article explaining the different kinds of parametric polymorphism.
 
 Ok, so foralls on the outside only. No big deal. Now we're ready to define what a type is. We have mono types, which have no foralls, and type schemes, which are a bunch of foralls and a mono type:
 
@@ -153,9 +154,9 @@ $$
 \textrm{type scheme: } \sigma = \tau\ |\ \forall a.\sigma
 $$
 
-So mono types can be type variables, primitive types, or function types. And type schemes are a bunch of foralls with a mono type inside. This langauge doesn't have any structured data like lists or tuples, but it is not too difficult to add that sort of thing in. But I'll keep it simple for this guide, and maybe expand the type system in a future post.
+So mono types can be type variables, primitive types, or function types. And type schemes are a bunch of (or zero) foralls with a mono type inside. This language doesn't have any structured data like lists or tuples, but it is not too difficult to add that sort of thing in. But I'll keep it simple for this guide, and maybe expand the type system in a future post.
 
-Now we have to define a system of typing expressions. Recall that an expression could be assigned multiple types. How do we choose? For example,
+Now we have to define a system of typing expressions. Recall that an expression could be assigned multiple types. How do we choose? For example, in
 $$
 \lambda x.x
 $$
@@ -170,22 +171,22 @@ nat \rightarrow nat
 $$
 ?
 
-Well let's say you had a function that needs to take in a value of type `nat -> nat`. If you had a function of type `forall a. a -> a`, that function can serve as a `nat -> nat` function. Just instantiate `a` to `nat`! so `forall a. a -> a` "is a" `nat -> nat`. In other words, anywhere you need a `nat -> nat`, you can instead use a `forall a. a -> a`.
+Well let's say you had a function that needs to take in a value of type `nat -> nat`. If you had a function of type `forall a. a -> a`, that function can serve as a `nat -> nat` function. Just instantiate `a` to `nat`! so `forall a. a -> a` "is a" `nat -> nat`. In other words, anywhere you need a `nat -> nat`, you can also use a `forall a. a -> a`.
 
-This "is a" stuff sounds a lot like subtyping in a language like Java. In fact, it is a subtyping relationship! Polymorphic types are subtypes of monomorphic types that "fit" them like in this example. Or more precisely, polymorphic type schemes are subtypes of their instantiations. Cool.
+This "is a" stuff sounds a lot like subtyping in a language like Java. In fact, it is a subtyping relationship! A `Circle` is a `Shape` in the same way that a `forall a. a -> a` is a `nat -> nat`. Polymorphic types are subtypes of monomorphic types that "fit" them like in this example. Or more precisely, polymorphic type schemes are subtypes of their instantiations. Cool.
 
 So if we have an expression, we should try to assign it the most general, polymorphic type since it is the most versatile.
 
-Now we are ready to describe the type rules for our language. At first, these rules will be declarative, and not really conducive to an algorithm that we can reasonably implement. It will just be to describe the idealized type system. We will then transform these rules to be more like an algorithm so we can implement it.
+Now we are ready to describe the type rules for our language. At first, these rules will be declarative, and not really conducive to an algorithm that we can reasonably implement. It will just be to describe the rules for what type(s) _can_ legally be assigned to an expression, not what type _should_ be assigned or how to find it. We will then transform these rules to be more like an algorithm so we can implement it.
 
-Before we finally get to the rules, I have to introduce some definitions and notation. While typing a sub-expression of a larger expression, there will likely be variables defined outside which are used in the sub expresssion. For example, `let id = \x.x in let one = 1 in id one`. When we are trying to assign a type to `id one`, we need to know the types of `id` and `one`. So we need to keep track of a context which maps variables that are in scope to their types. Specifically, to their type schemes, since the type of a variable might be polymorphic. This context will be denoted with the letter $\Gamma$, and it will contain a set of variable-type scheme pairs.
+Before we finally get to the rules, I have to introduce some definitions and notation. While typing a sub-expression of a larger expression, there will likely be variables defined outside which are used in the sub expresssion. For example, `let id = \x.x in let one = 1 in id one`. When we are trying to assign a type to `id one`, we need to know the types of `id` and `one`. So we need to keep track of a context which maps variables that are in scope to their types. Specifically, to their type schemes, since the type of a variable might be polymorphic. This context will be denoted with the letter $\Gamma$, and it will contain a set of variable-type scheme pairs, like $(x:\sigma)$ denoting $x$ has the type $\sigma$. I will refer to these pairs as annotations.
 
 A typing judgement will be written like this:
 $$
-\Gamma \vdash e:\tau
+\Gamma \vdash e:\sigma
 $$
 
-This means that in the context $\Gamma$, the expression $e$ can be assigned the type $\tau$. I say "can be assigned the type" rather than "has the type" or "is inferred to have the type" becase this declarative rule system only tells us what judgements/typings are valid, not which ones are "best" or even how to come up with typings. For that, we will need an algorithmic rule system, which I will introduce later.
+This means that in the context $\Gamma$, the expression $e$ can be assigned the type $\sigma$. I say "can be assigned the type" rather than "has the type" or "is inferred to have the type" becase this declarative rule system only tells us what judgements/typings are valid, not which ones are "best" or even how to come up with typings. For that, we will need an algorithmic rule system, which I will introduce later.
 
 Often times, typing judgements will have requirements. Some things that must be true for the judgement to pass. For example,
 
@@ -193,7 +194,7 @@ $$
 \frac{(x:\sigma) \in \Gamma}{\Gamma \vdash x:\sigma}
 $$
 
-This says that a variable reference has type $\sigma$ when the annotation $x:\sigma$ is in the typing context $\Gamma$.
+This says that a variable reference has type $\sigma$ when the annotation $x:\sigma$ is in the typing context $\Gamma$. Everything above the bar must be true in order for the judgement below the bar to be true.
 
 I like to read these judgement rules clockwise. Start by reading the expression on the bottom, read all the requirements on top from left to right, then look at the type at the bottom.
 
@@ -266,7 +267,7 @@ $$
 
 This says that for a function application, if the function has some function type and the argument has the same type as the function's argument type, the whole application is assigned the function's return type.
 
-Notice that these are all mono types. But a function can have a polymorphic type scheme, right? As it turns out, when a function is applied, if it has a polymorphic type, that scheme gets instantiated on the spot to the appropriate mono type. Right now, this happens magically from a rule I'll introduce in a moment, but we'll see how to revise these rules later to make them implementable.
+Notice that these are all mono types. But a function can have a polymorphic type scheme, right? As it turns out, when a function is applied, if it has a polymorphic type, that scheme gets instantiated on the spot to the appropriate mono type. There is a rule for instantiating schemes, and I'll get to that in a moment.
 
 Here is the rule for lambda expressions, or anonymous functions:
 
@@ -276,18 +277,18 @@ $$
 
 This rule is named $Abs$ for lambda abstractions. This rule says that if you add an annotation that $x$ has type $\tau$ and the body has type $\tau'$ under that modified context, then the function has a type $\tau \rightarrow \tau'$. This makes sense because function application can be thought of as just substituting all occurences of $x$ with the argument in $e$. So if $x$ has a certain argument type $\tau$, whatever type $e$ has is what the function returns, so the whole function has type $\tau \rightarrow \tau'$. 
 
-Notice again that all the types are mono types. The fact that $x$ has a mono type when typing $e$ is why that weird function with $id$ before couldn't be typed with foralls on the outside. A mono type only has one type and can't be reinstantiated in the body, $e$.
+Notice again that all the types are mono types. The fact that $x$ has a mono type when typing $e$ is why that weird version of `applyFunction` with $id$ before couldn't be typed with foralls on the outside. A mono type only has one type and can't be reinstantiated in the body, $e$.
 
 This rule doesn't create polymorphic functions, but there will be a generalization rule which "schemifies" mono types that can be made polymorphic.
 
-Now the rule for let bindings:
+Now the rule for `let` exressions:
 $$
 \frac{\Gamma \vdash e_1:\sigma \qquad \Gamma, (x:\sigma) \vdash e_2 : \tau}{\Gamma \vdash \textrm{let } x = e_1 \textrm{ in } e_2 : \tau} Let
 $$
 
-So if the right-hand-side $e_1$ has a possibly polymorphic type scheme $\sigma$, we just add the annotation that $x$ has type $\sigma$ and type the body $e_2$. But It's important not to think of these rules as "finding" types for expressions. They are really just rules for what type assignments are valid, they don't really "do" anything in some sense. There could be multiple $\tau$s that satisfy this judgement, for example. This just says what would be valid.
+So if the right-hand-side $e_1$ has a possibly polymorphic type scheme $\sigma$, we just add the annotation that $x$ has type $\sigma$ and type the body $e_2$. But It's important not to think of these rules as "finding" types for expressions. They are really just rules for what type assignments are valid, they don't really "do" anything in some sense. There could be multiple $\tau$s that satisfy this judgement, for example. This just says what could be valid.
 
-Notice that the variable $x$ has a type scheme! This is what let-bound polymorphism is all about. The right-hand-side expression can have a polymorphic type and it can be used polymorphically in the body of the statement. All polymorphism comes from let bindings, in a sense.
+Notice that the variable $x$ has a type scheme! This is what let-bound polymorphism is all about. The right-hand-side expression can have a polymorphic type and it can be used polymorphically in the body of the expression $e_2$. All polymorphism comes from let bindings, in a sense.
 
 The only places where variables are added to the context is lambdas and let bindings. Lambdas annotate variables with mono types, and lets annotate variables with type schemes. That's let-bound polymorphism.
 
@@ -303,7 +304,7 @@ $$
 
 The condition has to be a boolean and the two branches must have the same type. The whole expression has the same type as the branches.
 
-Now here are the "magic" instantiation and generalization rules:
+Now here are the rules for instantiating polymorphic schemes into mono types, and generalizing mono types into schemes:
 
 $$
 \frac
@@ -316,7 +317,7 @@ Remember $\sigma' \sqsubseteq \sigma$ means $\sigma'$ is a subtype of $\sigma$. 
 
 So this rule says you can assign a type to an expression, you can also assign any super type of that type to it. For example, if an expression can be assigned a type `Circle`, then it can be assigned a type `Shape` too. In that example, $\sigma'$ would be `Circle` and $\sigma$ would be `Shape`.
 
-This rule is how foralls are transformed into mono types. Since $\forall a. a \rightarrow a \sqsubseteq nat \rightarrow nat$, the identity function can be instantiated into the `nat`-only identity function. It's also how polymorphic functions get "magically" instantiated to appropriate monomorphic types in rules like $App$. This rule has to happen "behind the scenes" for polymorphic functions to be called with their appropriate monomorphic instantiations. Again, this rule says nothing about _how_ to instantiate, just that it is allowed if we follow subtyping rules. We'll get more control and clarity in the algorithmic rule system.
+This rule is how foralls are transformed into mono types. Since $\forall a. a \rightarrow a \sqsubseteq nat \rightarrow nat$, the identity function can be instantiated into the `nat`-only identity function. It's also how polymorphic functions get "magically" instantiated to appropriate monomorphic types in rules like $App$. This rule has to be applied "behind the scenes" for polymorphic functions to be called with their appropriate monomorphic instantiations. Again, this rule says nothing about _how_ to instantiate, just that it is allowed if we follow subtyping rules. We'll get more control and clarity in the algorithmic rule system.
 
 So if I typed $\textrm{let } id = \lambda x.x \textrm{ in } id\ 1$, the variable $id$ might be assigned type $\forall a. a \rightarrow a$, but when it's called, it must be instantiated with the type $nat \rightarrow nat$, which is valid since this instantiation follows the subtyping rules.
 
@@ -347,9 +348,9 @@ That's our declarative rule system. We can't make a good algorithm out of this, 
 * how do we know what mono types to use when we _do_ instantiate schemes?
 * how do we know what mono type to use for the argument when inferring the type of a lambda?
 
-We have this idealized declarative rule system for determining which type assignments make sense for our type language. But we can't make an algorithm out of it because there is too much "magic" in the rules. Now, we must make another rule system for _inferring_ types of expressions in a way that satisfies the declarative rule system, and without "magic" so we can make a type inference algorithm out of it. This is the algorithm rule system.
+We have this idealized declarative rule system for determining which type assignments are valid in our language. But we can't make an algorithm out of it because there is too much "magic" in the rules. Now, we must make another rule system for _inferring_ types of expressions in a way that satisfies the declarative rule system, and without "magic" so we can make a type inference algorithm out of it. This is the algorithmic rule system.
 
-Before we the algorithmic rule system, here are all of the rules for the declarative rule system:
+Before we make the algorithmic rule system, here are all of the rules for the declarative rule system:
 
 $$
 \frac{(x:\sigma) \in \Gamma}{\Gamma \vdash x:\sigma} Var
@@ -412,32 +413,38 @@ $$
 
 This means take all the variables free in $\tau$, except those in the context $\Gamma$, and forall them around $\tau$. The $\forall \hat{a}$ just means a bunch of foralls. The reason we don't take all the free variables in $\tau$ is because, as we'll soon see, the context is going to be filled with "constrained" type variables that might actually be solved to specific mono types like `nat`. But don't worry about that yet, we'll get there.
 
-The way this algorithm will work is by generating type variables for types we don't know yet, and asserting certain constraints on them as we learn more about them. The way we will assert those constraints is with a process called unification.
+The way this algorithm will work is by generating type variables for types we don't know yet, and asserting equality constraints on them as we learn more about them. The way we will assert those constraints is with a process called unification.
 
-Unification uses a data structure called a union find. If you aren't familiar, a union find is used when you have a set of values and you want to group them together by some relationship. 
+Unification uses a data structure called a union find. If you aren't familiar, a union find is used when you have a set of values and you want to group them by merging groups together.
 
-For example, let's say we have a set of people, some of which are friends with each other. Let's assume the friendship relationship is symmetric, so if Alice is friends with Bob, Bob is friends with Alice. We want to keep track of friendship groups, where people are in the same group if there is some chain of friendships connecting them.
+For example, let's say we have a set of people, some of which are friends with each other. Let's assume the friendship relationship is symmetric, so if Alice is friends with Bob, Bob is friends with Alice. We want to keep track of friendship groups, where people are in the same group if there is some chain of mutual friendships connecting them.
 
-Let's say we have Alice, Bob, Charlie, Eve, Dee, and Frank. Nobody is friends at first, so there are 6 groups, each with just one person. But then Alice and Bob become friends, and Eve and Frank become friends. We now have 4 groups: (Alice, Bob), (Charlie), (Dee), (Eve, Frank). Now let's say Bob and Eve become friends. Now we have (Alice, Bob, Eve, Frank), (Charlie), (Dee). Even though Bob and Frank aren't directly friends, they are in the same group because we can follow the chain of friendships Bob -> Eve -> Frank. But Charlie still isn't friends with anyone, so he is in his own group :(. Let's say charlie and Frank become friends. Now we have (Alice, Bob, Charlie, Eve, Frank), (Dee). Dee will stay alone.
+Let's say we have Alice, Bob, Charlie, Dee, Eve, and Frank. Nobody is friends at first, so there are 6 groups, each with just one person.
+
+But then Alice and Bob become friends, and Eve and Frank become friends. We now have 4 groups: (Alice, Bob), (Charlie), (Dee), (Eve, Frank).
+
+Now let's say Bob and Eve become friends. Now we have (Alice, Bob, Eve, Frank), (Charlie), (Dee). Even though Bob and Frank aren't directly friends, they are in the same group because we can follow the chain of friendships Bob -> Eve -> Frank.
+
+But Charlie still isn't friends with anyone, so he is in his own group :(. Let's say Charlie and Frank become friends. Now we have (Alice, Bob, Charlie, Eve, Frank), (Dee). Dee will stay alone.
 
 ![](unionFind.png)
 
 That's the the union operation, but what is find? Find tells us whether two people are in the same group. More precisely, we'll keep track of a representative from each group, and find will take an object and return its representative.
 
-We'll implement the union find as a Map from objects to their representatives. Every object starts out being its own representative. Union will set one object't representative to the other's representative, and find will follow the chain until it reaches an object who is its own representative. This is necessary since these chains may develop. A more efficient implementation is possible, but this is simple and correct.
+We'll implement the union find as a Map from objects to their representatives. Every object starts out being its own representative. Union will set one object't representative to the other's representative, and find will follow the chain until it reaches an object who is its own representative. This is necessary since these chains may develop. A more efficient implementation which prevents chains is possible, but this is simple and correct.
 
 We will use a union-find of mono types to keep track of what types should be equal. Equality is symmetric and transitive, just like friendship in our example, so a union find is perfect to keep track of this. If we want to assert that two types are equal, we just union them and make them friends :).
 
-We need to be careful with the "direction" we unify things in. If we say a type variable `a` should be equal to `nat -> nat`, we want the representative of `a` to be `nat -> nat`, not the other way around. That's all we need to do, because as it turns out, we will only be unioning type variables with other types. 
+We need to be careful with the "direction" we unify things in. If we say a type variable `a` should be equal to `nat -> nat`, we want the representative of `a` to be `nat -> nat`, not the other way around. That's all we need to do, because as it turns out, we will only be unioning type variables with other mono types.
 
-We are keeping track of mono type equality because we will have "in-progress" or "constrained" type variables floating around, but we will only generalize a mono type once it's "done". We don't want to assert scheme equality, because that would get messy. We will just use the union find to keep track of the solutions of type variables.
+We are keeping track of mono type equality because we will have "in-progress" or "constrained" type variables floating around, but we will only generalize a mono type once it's "done". We don't want to assert scheme equality, because that's unnecessary and it would get messy. We will just use the union find to keep track of the solutions of type variables.
 
 Here is the unification algorithm in pseudocode:
 ```
 unify(ta, tb):
+    // if ta was a type variable, this replaces it with its value, if there is one.
     ta = find(ta)
     tb = find(tb)
-    // if ta was a type variable, this replaces it with its value, if there is one.
     if ta and tb are both function types
         unify their argument and return types
     else if ta and tb are the same primitive type
@@ -466,9 +473,9 @@ So we find the types `ta,tb` to replace constrained type variables with their ac
 
 If you wanted to add tuple types or algebraic data types, the unification would have to check that two types are from the same type constructor, and zip through the type constructor's arguments and unify them. For example, to unify the tuple types `unify((a,b,c), (nat, bool, t))`, we'd call `unify(a,nat); unify(b,bool); unify(c,t)` If the type constructors don't match, we throw a mismatch error like before.
 
-Ok, now we know how to assert that two types are equal, and we know how to generalize mono types to type schemes. Now, all that's left is to instantiate schemes and come up with the type for a lambda argument. These problems have the same solution: `newvar`. We simply create a new type variable that isn't used anywhere else. Since all type variables will be created this way, we can just keep track of a stream of type variables `a1,a2,a3,...` and take the next one and advance the stream every time we need a `newvar`. So newvar generates a never-before-used mono type variable.
+Ok, now we know how to assert that two types are equal, and we know how to generalize mono types to type schemes. Now, all that's left is to instantiate schemes and come up with the type for a lambda argument. These problems have the same solution: `newvar`. We simply create a new type variable that isn't used anywhere else. We can do this by keeping track of an index, and every time we generate a `newvar`, we generate `ti` and increment the index `i`. This will ensure unique type variables. So `newvar` generates a never-before-used mono type variable.
 
-When we want to instantiate a scheme $\forall a.\sigma$, we just take the outermost forall, generate a $newvar$ $\tau$, and replace $a$ with $\tau$. We repeat this until there are no more foralls, and we're left with a mono type that has a bunch of unsolved type variables, waiting to be unified!
+When we want to instantiate a scheme $\forall a.\sigma$, we just take the outermost forall, generate a $newvar$, $\tau$, and replace $a$ with $\tau$. We repeat this until there are no more foralls, and we're left with a mono type that has a bunch of unsolved type variables, waiting to be unified!
 
 Now we're ready for the rules! This is what we've all been waiting for.
 
@@ -528,13 +535,13 @@ $$
 Abs
 $$
 
-We have no idea what the type of $x$ should be, so we just make a `newvar` and let it get solved appropriately with any unification that may happen while inferring the type of the body $e$. Whatever type $e$ gets inferred to be is the return type of the function, and $x$'s type is the argument type, so the whole lamdba is inferred to have the type $\tau \rightarrow \tau'$
+We have no idea what the type of $x$ should be, so we just make a `newvar` and let it get solved appropriately with any unification that may happen while inferring the type of the body $e$. Whatever type $e$ gets inferred to be is the return type of the function, and $x$'s type is the argument type, so the whole lambda is inferred to have the type $\tau \rightarrow \tau'$
 
-It may bother you that $\tau$ is just some type variable that will get solved later, but we use $\tau$ it instead of its "solution" when inferrring the function type. Why not use its solution as the argument type? As it turns out, due to the way unification works, it really makes no difference. If we try to unify this function type with some other type, in `unify`, $\tau$ will be `find`ed to have its solution, so it all works out.
+It may bother you that $\tau$ is just some type variable that will get solved later, but we use $\tau$ it instead of its "solution" when inferring the function type. Why not use its solution as the argument type? As it turns out, due to the way unification works, it really makes no difference. If we try to unify this function type with some other type, in `unify`, $\tau$ will be `find`ed to have its solution before anything else happens, so it all works out.
 
 This is all well and good for the internal workings of the type checker, but what if I want to _show_ the user of my language what the type of something is? It wouldn't be very helpful to say "Oh you want the type of that lambda you wrote? It's $a_{22} \rightarrow a_{47}$. Have a nice day." We want to show the fully solved type. We'll get more into that once we implement this in code, but in short, you define a function `findMono`. This function recurses on a mono type until it hits a type variable. Then, it uses the union find to `find` what this variable "really is", and replaces it with its solution. But you actually need to call `findMono` on the solution too, because that type may also contain variables which need to be replaced by their solutions. You stop once you hit a variable whose representative in the union find is itself. In other words, when `find(a) == a`.
 
-But the fact that we generate a `newvar` is important for polymorphism. Consider inferring the type of the identity function $\lambda x.x$. If `newvar` leads to $\tau = a$, we infer the body, $x$, to have type $a$. So the whole lambda has type $a \rightarrow a$. And if we generalized this, we'd get $\forall a . a \rightarrow a$. So that's where the type variables for polymorphic functions come from. The `newvar` in the lambda rule creates the type variables that are eventually "foralled" in polymorphic functions.
+But the fact that we generate a `newvar` is important for polymorphism. Consider inferring the type of the identity function $\lambda x.x$. If `newvar` leads to $\tau = a$, we infer the body, $x$, to have type $a$. So the whole lambda has type $a \rightarrow a$. And `a` will be totally unconstrained. So if we generalized this, we'd get $\forall a . a \rightarrow a$. So that's where the type variables for polymorphic functions come from. The `newvar` in the lambda rule creates the type variables that are eventually "foralled" in polymorphic functions.
 
 Here is the rule for let:
 
@@ -545,7 +552,7 @@ $$
 Let
 $$
 
-First, we infer the type of the right-hand-side $e_1$. It is some mono type $\tau$. Since we're doing let-bound polymorphism, here is where we generalize. Recall that $\bar{\Gamma}(\tau)$ genralizes $\tau$ as much as possible to a type scheme $\sigma$. We say that $x$ has type $\sigma$, so it can be used polymorphically in the body $e_2$, and infer the type of the body to be $\tau'$ under that modified context. The whole let expression is inferred to have the type $\tau'$.
+First, we infer the type of the right-hand-side $e_1$. It is some mono type $\tau$. Since we're doing let-bound polymorphism, here is where we generalize. Recall that $\bar{\Gamma}(\tau)$ generalizes $\tau$ as much as possible to a type scheme $\sigma$. We say that $x$ has type $\sigma$, so it can be used polymorphically in the body $e_2$, and infer the type of the body to be $\tau'$ under that modified context. The whole let expression is inferred to have the type $\tau'$.
 
 In the declarative rule system, $e_1$ was directly inferred to have a type scheme as a type. Here, $e_1$ is inferred to have a mono type and we generalize it in the annotation $(x:\sigma)$ that we add to the context $\Gamma$ when inferring the type of the body $e_2$. No magic required!
 
@@ -561,7 +568,7 @@ The main difference is that instead of $e_1:bool$ and so on, we have to infer a 
 
 Here is the generalization rule:
 
-Just kidding! There is none. There is also no instantiation rule. Instead of getting their own rules which would have to be magically applied to make an inference algorithm, generalization and instantiation happen explicitly and under our contol in the $Let$ and $Var$ rules respectively. Even then, polymorphism only really "exists" in the context $\Gamma$, since no expression is ever directly inferred to have a type scheme type.
+Just kidding! There is none. There is also no instantiation rule. Instead of getting their own rules which would have to be magically applied to make an inference algorithm, generalization and instantiation happen explicitly and under our control in the $Let$ and $Var$ rules respectively. Even then, polymorphism only really "exists" in the context $\Gamma$, since no expression is ever directly inferred to have a type scheme type.
 
 Here are all the rules for the algorithmic rule system:
 
@@ -624,7 +631,7 @@ $$
 \frac{\displaystyle \frac{\displaystyle t1 = newvar  \quad \frac{\displaystyle (x : t1) \in (x : t1) \quad t1 = instantiate(t1)}{\displaystyle (x : t1)\ \vdash\ x : t1} Var}{\displaystyle \ \vdash\ \lambda x . x : t1 \rightarrow t1}Abs \quad \frac{\displaystyle \frac{\displaystyle (id : \forall t1 . t1 \rightarrow t1) \in (id : \forall t1 . t1 \rightarrow t1) \quad t2 \rightarrow t2 = instantiate(\forall t1 . t1 \rightarrow t1)}{\displaystyle (id : \forall t1 . t1 \rightarrow t1)\ \vdash\ id : t2 \rightarrow t2} Var \quad \frac{\displaystyle }{\displaystyle (id : \forall t1 . t1 \rightarrow t1)\ \vdash\ 1 : nat} Nat \quad t3 = newvar  \quad  unify(nat \rightarrow t3 , t2 \rightarrow t2)}{\displaystyle (id : \forall t1 . t1 \rightarrow t1)\ \vdash\ id\ 1 : t3} App}{\displaystyle \ \vdash\ \textrm{let }id = \lambda x . x\textrm{ in }id\ 1 : t3} Let
 $$
 
-If that fits on your screen, you'll be able to follow how the algorithm works. Remember, read it clockwise.
+If that fits on your screen, you'll be able to follow how the algorithm works. Remember, read it clockwise. It shows the requirements for each judgement until we get down to base cases. This example has pretty much every rule, so it's good to look over, but it's pretty huge.
 
 ## Side note on algorithm W
 
