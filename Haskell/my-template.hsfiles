@@ -28,6 +28,10 @@ dependencies:
 - extra
 - transformers
 
+ghc-options:
+- -w
+- -Wall
+
 library:
   source-dirs: src
   default-extensions:
