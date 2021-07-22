@@ -7,7 +7,7 @@ import Data.Array
 import Data.Bits
 import Data.List
 import Data.List.Split
-import Data.Set
+import Data.Set hiding (null)
 --import Data.Text
 import Debug.Trace
 import System.Environment
@@ -50,7 +50,7 @@ main = do
     s <- getLine
 
     let result = superReducedString s
-    let result' = if [] == result then "Empty String" else result
+    let result' = if null result then "Empty String" else result
 
     hPutStrLn fptr result'
 
