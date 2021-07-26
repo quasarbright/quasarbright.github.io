@@ -6,8 +6,10 @@ title: QuasarBright
 I am a third-year computer science undergraduate student at Northeastern University. I'm interested in machine learning, programming languages, mathematics, physics, videogames, and rock climbing. I also make digital art based on characters from videogames and shows I like.  
 
 This is my personal website. Here, I have a variety of different kinds of projects I've worked on for fun over the years. Check out my [repositories on GitHub](https://github.com/quasarbright) if you want to see source code and even more projects!
+# [Programming Languages](https://quasarbright.github.io/programming-languages)
+These are some programming languages I've made
 # [Machine Learning projects](https://quasarbright.github.io/MachineLearning/README)
-These are some interesting things I did with neural networks, which are my favorite tool to work with in computer science. The code is stored in its own repository, MachineLearning.
+These are some interesting things I've done with neural networks. The code is stored in its own repository, [MachineLearning](https://github.com/quasarbright/MachineLearning).
 # [Game AIs](https://quasarbright.github.io/gameAIs)
 These are some AIs I've implemented to play games at a superhuman level.
 # [Shaders](https://quasarbright.github.io/p5js/shaders)
