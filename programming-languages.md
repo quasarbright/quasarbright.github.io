@@ -21,7 +21,7 @@ programming languages was my professor quickly showing me how to make a tiny lam
 with syntax inspired by JavaScript. It was originally created as a scripting langauge for a game engine he was developing for a class on game engines. As such, it has
 a foreign-function-interface for C/C++.
 
-The language was developed in Haskell. Currently, the language is directly interpreted by monadically evaluating an AST,
+The language was developed in Haskell. Currently, the language is directly interpreted by directly evaluating/running an AST,
 but we are considering byte-code compilation as of writing this.
 
 There are many features planned, including classes, a module system, continuations, and algebraic effects
