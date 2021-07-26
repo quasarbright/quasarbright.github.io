@@ -17,7 +17,7 @@ programming languages was my professor quickly showing me how to make a tiny lam
 
 # [PongChamp](https://github.com/quasarbright/PongChamp)
 
-[PongChamp](https://github.com/quasarbright/PongChamp) is an imperative programming language my friend Ryan Mitchell and I made together. It is a scripting language
+[PongChamp](https://github.com/quasarbright/PongChamp) is an imperative programming language my friend [Ryan Mitchell](https://github.com/RyanRio) and I made together. It is a scripting language
 with syntax inspired by JavaScript. It was originally created as a scripting langauge for a game engine he was developing for a class on game engines. As such, it has
 a foreign-function-interface for C/C++.
 
