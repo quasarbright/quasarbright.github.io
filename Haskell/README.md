@@ -5,3 +5,5 @@ A parsing library similar to parsec
 Simplifies mathematical expressions into standard form polynomials and finds their roots to solve equations
 ## [Unit Checker](https://github.com/quasarbright/UnitChecker)
 Checks the units of simple physics expressions and equations.
+## [Solitaire](https://github.com/quasarbright/solitaire)
+solitaire playable in the terminal
