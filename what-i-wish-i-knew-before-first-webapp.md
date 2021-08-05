@@ -4,6 +4,10 @@ I recently made a web-app on aws full-stack. Here is what I wish I knew before s
 
 I made a web-app using aws lambda (python), api gateway, dynamodb, s3, elasticsearch, python for the backend. Made a react frontend (ts) deployed with amplify
 
+# use neptune
+
+haven't looked too much into it, but it seems like neptune would be a much better way to store data. It's such a pain to manage relationships and sorting and stuff in ddb, neptune is graph-based, claims to be good for social media, and claims to scale.
+
 # use flask (or a different language)
 
 I had a single lambda for the whole api and did routing internally. I made my own flask-like routing decorator with a path-argument system. Flask has that and much more.
