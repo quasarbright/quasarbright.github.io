@@ -235,7 +235,7 @@ TypeScript is the most popular implementation of gradual typing. According to th
 
 Sound gradual typing is a very good idea and makes typed-untyped interaction much safer. One day, it might make its way into the mainstream. Research will make progress. More efficient implementations will be discovered and unsolved problems will be solved. People used to think garbage collection would never be practical and look where we are today. Hopefully soundness becomes popular and one day, writing ad-hoc runtime type checks becomes a ghost story CS students tell around a campfire at night like `free` and `malloc`.
 
-## References
+## Sources
 
 * [Migratory Typing: Ten Years Later](https://drops.dagstuhl.de/opus/volltexte/2017/7120/): Information about the implementation of Typed Racket.
 * [Typed-Untyped Interaction](https://docs.racket-lang.org/ts-guide/typed-untyped-interaction.html): Documentation about typed-untyped interaction in Typed Racket.
