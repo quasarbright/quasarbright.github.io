@@ -1,5 +1,9 @@
 # Why You Want Sound Gradual Typing, and Why You Won't See it for a While
 
+Mike Delmonaco
+
+April 20, 2022
+
 ## Introduction
 
 Sound gradual typing is something very useful that may one day make its way into the mainstream. Currently, it's only in niche and research languages like Racket. There are still many problems that need to be worked out before most people would go anywhere near it. But one day, we may wonder how we lived without it. Anyway, let's find out what sound gradual typing is and why it's so useful.
