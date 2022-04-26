@@ -76,7 +76,7 @@ You might be thinking "this doesn't look like a programming language, this looks
 
 In fact, usually, when presenting this kind of type system, people don't even have numbers or booleans in the language! The rules for the kind of type system we're making don't "care" about the primitive types. Or to be more precise, there is nothing special about numbers and booleans with respect to making type inference. The rules would work for a language with no primitive types at all. I just added them to make things a little less abstract.
 
-Ok, now we know what our language looks like and how it works. So ... type inference time? Not so fast. What even is a type in our langauge?
+Ok, now we know what our language looks like and how it works. So ... type inference time? Not so fast. What even is a type in our language?
 
 # Types
 
@@ -179,16 +179,16 @@ So if we have an expression, we should try to assign it the most general, polymo
 
 Now we are ready to describe the type rules for our language. At first, these rules will be declarative, and not really conducive to an algorithm that we can reasonably implement. It will just be to describe the rules for what type(s) _can_ legally be assigned to an expression, not what type _should_ be assigned or how to find it. We will then transform these rules to be more like an algorithm so we can implement it.
 
-Before we finally get to the rules, I have to introduce some definitions and notation. While typing a sub-expression of a larger expression, there will likely be variables defined outside which are used in the sub expresssion. For example, `let id = \x.x in let one = 1 in id one`. When we are trying to assign a type to `id one`, we need to know the types of `id` and `one`. So we need to keep track of a context which maps variables that are in scope to their types. Specifically, to their type schemes, since the type of a variable might be polymorphic. This context will be denoted with the letter $\Gamma$, and it will contain a set of variable-type scheme pairs, like $(x:\sigma)$ denoting $x$ has the type $\sigma$. I will refer to these pairs as annotations.
+Before we finally get to the rules, I have to introduce some definitions and notation. While typing a sub-expression of a larger expression, there will likely be variables defined outside which are used in the sub expression. For example, `let id = \x.x in let one = 1 in id one`. When we are trying to assign a type to `id one`, we need to know the types of `id` and `one`. So we need to keep track of a context which maps variables that are in scope to their types. Specifically, to their type schemes, since the type of a variable might be polymorphic. This context will be denoted with the letter $\Gamma$, and it will contain a set of variable-type scheme pairs, like $(x:\sigma)$ denoting $x$ has the type $\sigma$. I will refer to these pairs as annotations.
 
 A typing judgement will be written like this:
 $$
 \Gamma \vdash e:\sigma
 $$
 
-This means that in the context $\Gamma$, the expression $e$ can be assigned the type $\sigma$. I say "can be assigned the type" rather than "has the type" or "is inferred to have the type" becase this declarative rule system only tells us what judgements/typings are valid, not which ones are "best" or even how to come up with typings. For that, we will need an algorithmic rule system, which I will introduce later.
+This means that in the context $\Gamma$, the expression $e$ can be assigned the type $\sigma$. I say "can be assigned the type" rather than "has the type" or "is inferred to have the type" because this declarative rule system only tells us what judgments/typings are valid, not which ones are "best" or even how to come up with typings. For that, we will need an algorithmic rule system, which I will introduce later.
 
-Often times, typing judgements will have requirements. Some things that must be true for the judgement to pass. For example,
+Often times, typing judgement will have requirements. Some things that must be true for the judgement to pass. For example,
 
 $$
 \frac{(x:\sigma) \in \Gamma}{\Gamma \vdash x:\sigma}
@@ -236,7 +236,7 @@ $$
 
 All this says is that a variable is assigned a type if its type is known in the context. Pretty straightforward.
 
-Notice that $x$ is assigned a (possibly polymorhic) type scheme, not a mono type. We'll see why soon.
+Notice that $x$ is assigned a (possibly polymorphic) type scheme, not a mono type. We'll see why soon.
 
 Here are the rules for natural number and boolean literals:
 
@@ -275,13 +275,13 @@ $$
 \frac{\Gamma,(x:\tau) \vdash e: \tau'}{\Gamma \vdash \lambda x.e : \tau \rightarrow \tau'} Abs
 $$
 
-This rule is named $Abs$ for lambda abstractions. This rule says that if you add an annotation that $x$ has type $\tau$ and the body has type $\tau'$ under that modified context, then the function has a type $\tau \rightarrow \tau'$. This makes sense because function application can be thought of as just substituting all occurences of $x$ with the argument in $e$. So if $x$ has a certain argument type $\tau$, whatever type $e$ has is what the function returns, so the whole function has type $\tau \rightarrow \tau'$. 
+This rule is named $Abs$ for lambda abstractions. This rule says that if you add an annotation that $x$ has type $\tau$ and the body has type $\tau'$ under that modified context, then the function has a type $\tau \rightarrow \tau'$. This makes sense because function application can be thought of as just substituting all occurrences of $x$ with the argument in $e$. So if $x$ has a certain argument type $\tau$, whatever type $e$ has is what the function returns, so the whole function has type $\tau \rightarrow \tau'$. 
 
 Notice again that all the types are mono types. The fact that $x$ has a mono type when typing $e$ is why that weird version of `applyFunction` with $id$ before couldn't be typed with foralls on the outside. A mono type only has one type and can't be reinstantiated in the body, $e$.
 
 This rule doesn't create polymorphic functions, but there will be a generalization rule which "schemifies" mono types that can be made polymorphic.
 
-Now the rule for `let` exressions:
+Now the rule for `let` expressions:
 $$
 \frac{\Gamma \vdash e_1:\sigma \qquad \Gamma, (x:\sigma) \vdash e_2 : \tau}{\Gamma \vdash \textrm{let } x = e_1 \textrm{ in } e_2 : \tau} Let
 $$
