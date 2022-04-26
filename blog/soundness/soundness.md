@@ -6,11 +6,11 @@ April 20, 2022
 
 ## Introduction
 
-Sound gradual typing is something very useful that may one day make its way into the mainstream. Currently, it's only in niche and research languages like Racket. There are still many problems that need to be worked out before most people would go anywhere near it. But one day, we may wonder how we lived without it. Anyway, let's find out what sound gradual typing is and why it's so useful.
+Sound gradual typing is an experimental language feature that makes the interaction between typed and untyped code safe. Currently, it's only in niche and research languages like Racket. There are still many problems that need to be worked out before most people would go anywhere near it. But one day, we may wonder how we lived without it, like garbage collection. Anyway, let's find out what sound gradual typing is and why it's so useful.
 
 ## Gradual Typing
 
-Gradual typing is a mixture of static and dynamic typing in a single language. In a gradually typed language, some parts of code can be typed and others can be left untyped. TypeScript and Python with type hints are examples of this. You can have totally untyped javascript files and typed TypeScript files in the same project and it works fine. Being able to do this is very helpful.
+Gradual typing is a mixture of static and dynamic typing in a single language. In a gradually typed language, some parts of code can be typed and others can be left untyped. TypeScript and Python with type hints are examples of this. You can have totally untyped JavaScript files and typed TypeScript files in the same project and it works fine. This makes the language much more versatile.
 
 Gradual typing gives us the benefits of static and dynamic typing in one language. Dynamic typing is good for early prototyping and exploration where a static type checker isn't necessary and just gets in the way. Certain parts of code like glue code don't benefit much from static typing anyway. In contrast, systems level programming and large, complex projects can be very difficult to maintain without the safety and guarantees of static typing. It helps you keep everything together. It also can help compilers make optimizations. With gradual typing, you don't have to choose between one or the other. This also means it is easy to migrate from untyped to typed code.
 
@@ -155,11 +155,11 @@ In normal TypeScript, this "cast" on the last line wouldn't actually do anything
 
 There is a caveat: For functions, these runtime checks can validate that values of an unexpected type are not returned. However, they don't help you with arguments. If you declare that a function can take in any type of number, but it can only take in integers, passing in a float will result in the same kind of runtime error as if you called it from untyped code.
 
-These runtime checks make using untyped code from typed code much safer. There are also runtime checks that make the other direction safe:
+These runtime checks make using untyped code from typed code much safer. There are also runtime checks that make using typed code from untyped code safer:
 
 Let's say you're writing a library in TypeScript. JavaScript users can use your library just fine, but the type information is lost at runtime. If you write a TypeScript function that takes in a number, there is nothing stopping a JavaScript program from passing in a string. Again, you're lucky if you even get a runtime type error. If you want to avoid this, you might check inputs of functions you export. But what if your library is used by TypeScript and these checks are unnecessary? And what if your library exports functions which take in other functions as arguments? Soundness solves these problems by inserting runtime checks when values flow from typed code to untyped code, but not when they flow from typed code to other typed code. For functions, a wrapper is inserted which checks arguments on the way in.
 
-Let's consider an example:
+Let's consider an example.
 
 Here is our typed library:
 
@@ -215,9 +215,9 @@ Great! We should all use sound gradual typing! Right? Well, unfortunately, there
 
 A significant issue with soundness is its performance. When values flow between typed and untyped code, they are runtime checks inserted to make sure the interaction is type-safe. Making sure a value is an integer is cheap, but functions and compound data like arrays are more complicated. Functions have to be wrapped by contracts which check arguments or return values depending on the direction of the boundary-crossing. These run every time the function is called, they take up space, and if the function goes back and forth between typed and untyped code, the wrappers duplicate, multiplying these costs. For compound values like arrays, either every value is checked, even if it is never accessed, or the data structure is wrapped with something that checks the type upon accessing. These wrappers can also duplicate like functions' wrappers. These runtime checks have a significant impact on performance
 
-The costs of these wrappings and delayed checks adds up to cause extreme slowdowns. According to a study on the performance of Typed Racket, which is the state of the art for sound gradual typing in an industrial-strength language, the cost of soundness is "overwhelming". In this study, several programs were run in various configurations of typed and untyped code. Certain configurations led to slowdowns around 100x, and adding annotations only made performance worse. It was only when all modules were typed that performance became acceptable (0.7x). This performance hit is extreme.
+The costs of these wrappings and delayed checks adds up to cause extreme slowdowns. According to a study on the performance of Typed Racket, which is the state of the art for sound gradual typing in an industrial-strength language, the cost of soundness is "overwhelming". In this study, several programs were run in various configurations of typed and untyped code. Certain configurations led to slowdowns around 100x, and adding annotations only made performance worse. It was only when all modules were typed that performance became acceptable (0.7x). This performance penalty makes soundness completely unusable.
 
-For a potential 100x slowdown, nobody writing a production application would touch it with a hundred-foot pole. Garbage collection is in pretty much all the mainstream languages today, but it took a very long time, hardware advancement, and research innovation before it was considered practical and worth the performance impact. Soundness has a long way to go before it is worth using. The benefits aren't enough to justify these costs, and even if they were, soundness is incomplete.
+For a potential 100x slowdown, nobody writing a production application would touch it with a hundred-foot pole. Garbage collection was once in a similar place. Programmers used to have to manually allocate and free space in memory to create new objects and clean up when they were no longer used. Garbage collection automated this tedious, bug-prone task, but was very inefficient at first. People didn't use it because of its performance impact. After a lot of research and innovation, it finally became worth using and caught on. Today, it's in all the popular languages and we can't imagine how we lived without it. Hopefully, soundness follows the same path. Soundness isn't as pervasive as memory management, but it is still a useful thing to automate that needs innovation to become more efficient. Unfortunately, performance isn't the only problem with soundness.
 
 ## Dude, Where's my Polymorphism?
 
@@ -243,7 +243,7 @@ TypeScript is the most popular implementation of gradual typing. According to th
 
 ## One Day
 
-Sound gradual typing is a very good idea and makes typed-untyped interaction much safer. One day, it might make its way into the mainstream. Research will make progress. More efficient implementations will be discovered and unsolved problems will be solved. People used to think garbage collection would never be practical and look where we are today. Hopefully soundness becomes popular and one day, writing ad-hoc runtime type checks becomes a ghost story that CS students tell around a campfire at night like `free` and `malloc`.
+Sound gradual typing is a great idea that makes typed-untyped interaction much safer. One day, it might make its way into the mainstream. More efficient implementations will be discovered and problems will be solved. People used to think garbage collection would never be practical and look where we are today. Hopefully soundness becomes popular and one day, writing ad-hoc runtime type checks becomes a ghost story that CS students tell around a campfire at night like `free` and `malloc`.
 
 ## Sources
 
