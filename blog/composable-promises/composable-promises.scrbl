@@ -7,10 +7,10 @@
                  [sandbox-memory-limit 50])
     (make-evaluator 'racket)))
 
-@title{Composable Promises and an Efficient Way to Collapse Indirection}
+@title{Composable Promises: Adding Laziness to a Strict Language and Collapsing Indirection}
 @author{Mike Delmonaco}
 
-Before there is any confusion, I'm not talking about JavaScript promises that are used for async computations.
+Before there is any confusion, I'm not talking about JavaScript promises that are used for asynchronous computations.
 In this case, a promise is just a delayed computation. For example, a simple form of a promise is a function that
 takes in no arguments and returns a result. In this blog post, we will be focusing on promises that remember their
 results and promises that may evaluate to other promises. Promises are useful for control flow and implementing
@@ -40,7 +40,8 @@ And the print does not run when we @racket[force] the promise again. This tells 
 does not re-evaluate its body upon subsequent @racket[force]s. In general, the body of a promise runs at most once. These simple promises can be
 implemented by storing the return value of a zero-argument function.
 
-@racketblock[
+@examples[
+  #:eval (make-base-eval '(require racket/function))
 (struct simple-promise (thunk [result #:mutable] [forced? #:mutable]))
 (define (make-simple-promise thunk) (simple-promise thunk #f #f))
 (define (force promise)
@@ -50,7 +51,11 @@ implemented by storing the return value of a zero-argument function.
             (set-simple-promise-result! promise result)
             (set-simple-promise-forced?! promise #t)
             result)]))
-(define-syntax-rule (delay body) (make-simple-promise (lambda () body)))
+(define-syntax-rule (delay body ...) (make-simple-promise (lambda () body ...)))
+(define p (delay (println "in the delay") 2))
+(println "in top-level")
+(force p)
+(force p)
 ]
 
 If the promise has already been forced, we return the stored result. Otherwise, we call the thunk, store the result, and return it.
