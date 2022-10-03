@@ -7,7 +7,7 @@
                  [sandbox-memory-limit 50])
     (make-evaluator 'racket)))
 
-@title{Composable Promises: Adding Laziness to a Strict Language and Collapsing Indirection}
+@title[#:style 'unnumbered #:tag "composable-promises"]{Composable Promises: Adding Laziness to a Strict Language and Collapsing Indirection}
 @author{Mike Delmonaco}
 
 Before there is any confusion, I'm not talking about JavaScript promises that are used for asynchronous computations.
