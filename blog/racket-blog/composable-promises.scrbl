@@ -42,6 +42,7 @@ implemented by storing the return value of a zero-argument function.
 
 @examples[
   #:eval (make-base-eval '(require racket/function))
+  #:label #f
 (struct simple-promise (thunk [result #:mutable] [forced? #:mutable]))
 (define (make-simple-promise thunk) (simple-promise thunk #f #f))
 (define (force promise)
@@ -154,7 +155,9 @@ not its child promise.
 
 Here is another attempt, ignoring regular promises for the moment:
 
-@racketblock[
+@examples[
+    #:eval (make-base-eval '(require racket/function))
+    #:label #f
     (struct composable-promise (thunk [result #:mutable] [forced? #:mutable]))
     (define (make-composable-promise thunk) (composable-promise thunk #f #f))
     (define (force promise)
@@ -168,8 +171,12 @@ Here is another attempt, ignoring regular promises for the moment:
                       result)
                     (begin (set-composable-promise-result! promise initial-result)
                            (set-composable-promise-forced?! promise #t)
-                           result)))]))
-(define-syntax-rule (lazy body) (make-composable-promise (lambda () body)))
+                           initial-result)))]))
+(define-syntax-rule (lazy body ...) (make-composable-promise (lambda () body ...)))
+(define p (lazy (lazy (displayln "hello") 2)))
+(force p)
+(composable-promise-result p)
+(force p)
 ]
 
 As before, if the promise has already been forced, we return the stored result. Otherwise, we start by calling the thunk to get an initial result.
@@ -188,7 +195,11 @@ This is better. If we have a chain of promises and we force it, each promise wil
 
 That's exactly what we want! Forcing @code{p1} once more will immediately return the stored result and wouldn't
 have to traverse the chain again. But there is still one problem: that @code{(force initial-result)} does not occur in tail position. This means that the forcing algorithm will use stack space
-that grows linearly with respect to the chain length. How can we implement this with tail recursion?
+that grows linearly with respect to the chain length.
+
+@;To give some intuition as to why, think about this recursive case: We recursively force the inner promise and then store that result and return it. This means that during the recursive call, the program must remember to go back here after it returns. And the recursive call does the same thing one level deeper with its inner result. We end up with a bunch of recursive calls, each one remembering to go back to its parent's call-frame.
+
+How can we implement this with tail recursion?
 
 Consider this diagram:
 
@@ -196,13 +207,13 @@ Consider this diagram:
     a -?> b -?> c -?> ...
 }
 
-Let's say we shallow-ly force @code{a}.
+Let's say we shallowly force @code{a}.
 
 @codeblock{
     a -> b -?> c -?> ...
 }
 
-We realize that @code{a} results in another promise, so we shallow-ly force that too.
+We realize that @code{a} results in another promise, so we shallowly force that too.
 
 @codeblock{
     a -> b -> c -?> ...
@@ -216,13 +227,13 @@ Next, we swap @code{a} and @code{b}.
 
 Then, we repeat from @code{a}.
 
-Shallow-ly force it.
+shallowly force it.
 
 @codeblock{
     b -> a -> c -?> ...
 }
 
-It was already forced, so nothing changed. Next, we realize that the result is another promise, namely @code{c}. So we shallow-ly force that too.
+It was already forced, so nothing changed. Next, we realize that the result is another promise, namely @code{c}. So we shallowly force that too.
 
 @codeblock{
     b -> a -> c -> ...
@@ -237,7 +248,7 @@ Next, swap @code{a} and @code{c}.
 }
 
 Then, we repeat from @code{a} and continue until @code{a} points to a non-promise or its child points to a non-promise. In either of those two cases,
-We store the non-promise.
+we store the non-promise.
 
 Here is what we'd get if we ran this algorithm on @code{p1}:
 
@@ -260,20 +271,23 @@ Intermediate promises will store the outer-most promise, the outer-most promise 
 Each promise is at most 2 levels of indirection away from the final value. If we forced @code{p2} from this example after forcing @code{p1}, it would end up pointing directly to the final value.
 
 This is not quite what we wanted. We wanted all promises to store the final value directly. Realistically, however, a single layer of indirection for inner promises doesn't matter. Especially when it would end up being collapsed
-if an inner promise was forced afterwards. Asymptotically, we still get linear time with respect to chain length on the first force and constant time on any subsequent force on a promise in the chain. That's the same as our
+if an intermediate promise was forced afterwards. Asymptotically, we still get linear time with respect to chain length on the first force and constant time on any subsequent force on a promise in the chain. That's the same as our
 naive algorithm. However, our naive algorithm used linear space, whereas this algorithm uses constant space. This is a tradeoff.
 
 Either way, I think this algorithm is pretty cool! In a single, linear-time, constant-space pass, we collapse the indirection. Here is the code:
 
-@codeblock{
+@(define final-eval (make-base-eval '(require racket/function)))
+@examples[
+    #:eval final-eval
+    #:label #f
     (struct composable-promise (thunk [result #:mutable] [forced? #:mutable]))
     (define (make-composable-promise thunk) (composable-promise thunk #f #f))
     (define (shallow-force promise)
       (cond
         [(composable-promise-forced? promise) (composable-promise-result promise)]
         [else (let ([result ((composable-promise-thunk promise))])
-                (set-composable-promise-result! result)
-                (set-composable-promise-forced?! #t)
+                (set-composable-promise-result! promise result)
+                (set-composable-promise-forced?! promise #t)
                 result)]))
     (define (force promise)
       (let ([result (shallow-force promise)])
@@ -283,16 +297,29 @@ Either way, I think this algorithm is pretty cool! In a single, linear-time, con
              (cond
                [(composable-promise? inner-result)
                 ; swap and recur
-                (set-promise-result! result promise)
-                (set-promise-result! promise inner-result)
+                (set-composable-promise-result! result promise)
+                (set-composable-promise-result! promise inner-result)
                 (force promise)]
                [else
-                (set-promise-result! promise inner-result)
+                (set-composable-promise-result! promise inner-result)
                 inner-result]))]
           [else result])))
-    (define-syntax-rule (lazy body) (make-composable-promise (lambda () body)))
-}
+    (define-syntax-rule (lazy body ...) (make-composable-promise (lambda () body ...)))
+    (define p4 (lazy (displayln "hello") 42))
+    (define p3 (lazy p4))
+    (define p2 (lazy p3))
+    (define p1 (lazy p2))
+    (force p1)
+    (composable-promise-result p1)
+    (composable-promise-result p2)
+    (eq? p1 (composable-promise-result p2))
+    (eq? p1 (composable-promise-result p3))
+    (composable-promise-result p4)
+    (force p1)
+]
 
-This implementation is missing a lot of things. There are no regular promises, @code{lazy} doesn't support multi-expression bodies,
+We can examine the stored results of the promises directly to see that it does, in fact, produce the graph we predicted.
+
+This implementation is missing a lot of things. There are no regular promises,
 there is no error handling, there is no support for @racket[values], and many more subtle things the real promise library handles. Regardless,
-this provides insights into the inner workings of the library.
+this provides insights into the inner workings of the library and an interesting algorithm for collapsing indirection.
