@@ -9,3 +9,4 @@ I write about concepts I find interesting and some of my projects.
 @local-table-of-contents[]
 
 @include-section["./composable-promises.scrbl"]
+@include-section["./regexp-derivative.scrbl"]
