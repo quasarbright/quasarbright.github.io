@@ -56,15 +56,16 @@ First, we must define a helper function that determines whether a regular expres
     ['null 'null]
     ['empty 'empty]
     [(? char?) 'null]
-    [(list '* _) 'null]
-    [(list (or 'and 'seq) a b) (if (equal? (v a) 'null) 'null (v b))]
+    [`(* ,a) 'empty]
+    [`(,(or 'and 'seq) ,a ,b) (if (equal? (v a) 'null) 'null (v b))]
     [`(or ,a ,b) (if (equal? (v a) 'empty) 'empty (v b))]
     [`(not ,a) (if (equal? (v a) 'null) 'empty 'null)]))
 (v 'empty)
 (v 'null)
 (v #\a)
 (v '(and empty #\a))
-(v '(or #\a empty))
+(v '(or empty #\a))
+(v '(* #\a))
 ]
 
 Now, we're ready to implement the derivative:
@@ -89,8 +90,12 @@ Now, we're ready to implement the derivative:
 (d/dc #\a #\b)
 (d/dc `(seq #\a #\b) #\a)
 (d/dc `(seq #\a #\b) #\z)
+(d/dc '(or (seq #\a #\b) (seq #\a #\c)) #\a)
+(d/dc '(or (seq #\a #\b) (seq #\a #\c)) #\z)
 (d/dc '(and (seq #\a #\b) (seq #\a #\c)) #\a)
 (d/dc '(and (seq #\a #\b) (seq #\a #\c)) #\z)
+(d/dc '(* #\a) #\a)
+(d/dc '(* (seq #\a #\b)) #\a)
 ]
 
 For the character case, we check if the target character matches the regular expression character. If it does, then the only thing that can follow the target character in a string
@@ -113,8 +118,142 @@ when @racket[a] matches the empty string.
 
 We want the derivative to match all strings matched by either of these two cases, so we use @racket['or].
 
-The other cases are just simple recursive cases, threading the derivative through the sub-expressions.
+The other cases are just straightforward recursive cases, threading the derivative through the sub-expressions.
 
 The  first two examples show the simple character cases. The following examples seem complicated, but if we use the properties of regular expressions, we can simplify the results.
 For example, @racket[(d/dc `(seq #\a #\b) #\a)] evaluates to @racket['(or (seq empty #\b) (seq null null))], which is equivalent to @racket[#\b]. Try to simplify the other outputs and make sure the results are what you expect.
-@;TODO string derivative and put it all together in a match predicate
+
+@subsection{Detour: A Simplifier}
+
+If you simplified those by hand, you'd probably agree that this is a computer's job. So let's make a function to do it for us!
+This will make it easier to analyze our derivatives and it's a fun exercise.
+
+We'll start by writing the rewrite rules:
+
+@examples[
+  #:eval eval
+  #:label #f
+(define (simplify-step re)
+  (match re
+    [(or 'empty 'null (? char?)) re]
+    [`(* null) 'empty]
+    [`(* empty) 'empty]
+    [`(seq null ,b) 'null]
+    [`(seq ,a null) 'null]
+    [`(seq empty ,b) b]
+    [`(seq ,a empty) a]
+    [`(and null ,b) 'null]
+    [`(and ,a null) 'null]
+    [`(and ,(? char? a) ,(? char? b)) (if (eq? a b) a 'null)]
+    [`(and ,a ,a) a]
+    [`(or null ,b) b]
+    [`(or ,a null) a]
+    [`(or ,a ,a) a]
+    [`(not (not ,a)) a]
+    [_ re]))
+]
+
+These are some simple rewrite rules for simplifying regular expressions. For example, the rule @racket[`(and null ,b) ~> 'null] makes sense because a string has to match both @racket['null] and some regular expression @racket[b]
+to match @racket[`(and null ,b)], but it won't match @racket['null], so the whole thing is equivalent to @racket['null]. Make sure all of the rules make sense to you.
+
+Now we'll implement the recursive part:
+
+@examples[
+  #:eval eval
+  #:label #f
+(define (simplify-step* re)
+  (let ([re^ (simplify-step re)])
+    (if (equal? re re^)
+        re^
+        (simplify-step* re^))))
+(define (simplify re)
+  (match re
+    [(or 'empty 'null (? char?)) re]
+    [`(* ,a) (simplify-step* `(* ,(simplify a)))]
+    [`(seq ,a ,b) (simplify-step* `(seq ,(simplify a) ,(simplify b)))]
+    [`(and ,a ,b) (simplify-step* `(and ,(simplify a) ,(simplify b)))]
+    [`(or ,a ,b) (simplify-step* `(or ,(simplify a) ,(simplify b)))]
+    [`(not ,a) (simplify-step* `(not ,(simplify a)))]))
+]
+
+@racket[simplify-step*] repeatedly applies @racket[simplify-step] until the result is unchanged.
+This is guaranteed to terminate because our rewrite rules either produce a sub-expression, an atomic expression,
+or the unchanged input expression. Atomic expressions are returned unchanged, so eventually, we'll either produce
+an expression with no rewrite rule (gets returned unchanged) or an atomic and then terminate.
+
+@racket[simplify] simplifies the expression bottom-up, simplifying sub-expressions first and then repeatedly
+applying our rewrite rules on the input expression with simplified children.
+
+This is by no means an exhaustive, rigorous simplifier, but it gets the job done for our purposes.
+
+Finally, we can simplify those derivatives:
+
+@examples[
+  #:eval eval
+  #:label #f
+(simplify (d/dc #\a #\a))
+(simplify (d/dc #\a #\b))
+(simplify (d/dc `(seq #\a #\b) #\a))
+(simplify (d/dc `(seq #\a #\b) #\z))
+(simplify (d/dc '(or (seq #\a #\b) (seq #\a #\c)) #\a))
+(simplify (d/dc '(or (seq #\a #\b) (seq #\a #\c)) #\z))
+(simplify (d/dc '(and (seq #\a #\b) (seq #\a #\c)) #\a))
+(simplify (d/dc '(and (seq #\a #\b) (seq #\a #\c)) #\z))
+(simplify (d/dc '(* #\a) #\a))
+(simplify (d/dc '(* (seq #\a #\b)) #\a))
+]
+
+Beautiful!
+
+@section{Putting it All Together}
+
+Now that we can differentiate a regular expression with respect to a character, we can differentiate with respect to a string by
+sequencing character derivatives.
+
+@examples[
+  #:eval eval
+  #:label #f
+(define (d/ds re s)
+  (for/fold ([re re])
+            ([c (in-string s)])
+    (d/dc re c)))
+(simplify (d/ds '(seq #\a #\b) "ab"))
+(simplify (d/ds '(seq (seq #\a #\b) #\c) "ab"))
+(simplify (d/ds '(* #\a) ""))
+(simplify (d/ds '(* #\a) "a"))
+(simplify (d/ds '(* #\a) "aaaaa"))
+(simplify (d/ds '(* (seq #\a #\b)) ""))
+(simplify (d/ds '(* (seq #\a #\b)) "a"))
+(simplify (d/ds '(* (seq #\a #\b)) "ab"))
+(simplify (d/ds '(* (seq #\a #\b)) "ababababa"))
+]
+
+With this, we can finally determine if a string matches a regular expression:
+
+@examples[
+  #:eval eval
+  #:label #f
+(define (our-regexp-match re s)
+  (match (v (d/ds re s))
+    ['empty #t]
+    ['null #f]))
+(our-regexp-match #\a "a")
+(our-regexp-match #\a "b")
+(our-regexp-match '(seq #\a #\b) "ab")
+(our-regexp-match '(seq #\a #\b) "az")
+(our-regexp-match '(seq #\a #\b) "abc")
+(our-regexp-match '(or (seq #\a #\b) (seq #\a #\c)) "ab")
+(our-regexp-match '(or (seq #\a #\b) (seq #\a #\c)) "ac")
+(our-regexp-match '(or (seq #\a #\b) (seq #\a #\c)) "az")
+(our-regexp-match '(* #\a) "")
+(our-regexp-match '(* #\a) "a")
+(our-regexp-match '(* #\a) "aaaaaaaaaa")
+(our-regexp-match '(* (seq #\a #\b)) "")
+(our-regexp-match '(* (seq #\a #\b)) "a")
+(our-regexp-match '(* (seq #\a #\b)) "ab")
+(our-regexp-match '(* (seq #\a #\b)) "aba")
+(our-regexp-match '(* (seq #\a #\b)) "abab")
+]
+
+This method is cool and simple, but does not generalize well to features like capture groups. Regardless,
+I think it is a very interesting idea and a fun exercise.
