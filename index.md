@@ -3,10 +3,10 @@ title: QuasarBright
 ---
 ![me](https://quasarbright.github.io/images/shallot-cropped-small.jpg)
 # Michael Delmonaco
-I am a third-year computer science undergraduate student at Northeastern University. I'm interested in machine learning, programming languages, mathematics, physics, videogames, and rock climbing. I also make digital art based on characters from videogames and shows I like.  
+I am a fourth-year computer science undergraduate student at Northeastern University. I'm interested in machine learning, programming languages, mathematics, physics, videogames, and rock climbing. I also make digital art based on characters from videogames and shows I like.  
 
 This is my personal website. Here, I have a variety of different kinds of projects I've worked on for fun over the years. Check out my [repositories on GitHub](https://github.com/quasarbright) if you want to see source code and even more projects!
-# [Blog](https://quasarbright.github.io/blog/racket-blog/main/index.html)
+# [Blog](https://quasarbright.github.io/blog/index.html)
 This is my blog where I talk about cool concepts and projects I've worked on.
 # [Programming Languages](https://quasarbright.github.io/programming-languages)
 These are some programming languages I've made
