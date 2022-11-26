@@ -1,2 +1,2 @@
 # [quasarbright.github.io](https://quasarbright.github.io/)
-This repository contains hobby projects as well as my personal website
+This repository contains some old hobby projects as well as my personal website
