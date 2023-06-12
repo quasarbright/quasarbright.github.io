@@ -19,7 +19,7 @@ var tiles = [GRASS, SAND, WATER]
 // A Coord is a {row: Nat, col: Nat}
 
 var connections = {
-  [GRASS]: [SAND, GRASS],
+  [GRASS]: [GRASS, SAND],
   [SAND]: [SAND, WATER, GRASS],
   [WATER]: [WATER, SAND]
 }
@@ -136,10 +136,16 @@ function getNeighbors(coord, gridWidth, gridHeight) {
 function constrainNeighbor(possibilities, coord, coordToConstrain) {
   const coordSuperposition = possibilities[coord.row][coord.col]
   const superpositionToConstrain = possibilities[coordToConstrain.row][coordToConstrain.col]
-  let constrained = superpositionToConstrain
-  for(const tile of iterateSuperposition(coordSuperposition)) {
-    constrained = filterSuperposition(constrained, otherTile => isValid(tile, otherTile))
-  }
+  // remove tiles which are incompatible with all tiles in coordSuperposition
+  // keep tiles which are compatible with at least one tile in coordSuperposition
+  let constrained = filterSuperposition(superpositionToConstrain, constrainedTile => {
+    for(const tile of iterateSuperposition(coordSuperposition)) {
+      if (isValid(tile, constrainedTile)) {
+        return true
+      }
+    }
+    return false
+  })
   possibilities[coordToConstrain.row][coordToConstrain.col] = constrained
   return superpositionSize(superpositionToConstrain) !== superpositionSize(constrained)
 }
