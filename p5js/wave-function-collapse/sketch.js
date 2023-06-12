@@ -165,11 +165,11 @@ function superpositionSize(superposition) {
 }
 
 function getGridWidth() {
-  return 20
+  return 50
 }
 
 function getGridHeight() {
-  return 20
+  return 50
 }
 
 function getCellWidth() {
@@ -183,17 +183,12 @@ function getCellHeight() {
 var grid = generateWorld(getGridWidth(), getGridHeight())
 
 function setup() {
-  if(frameCount < 1) {
-    return
-  }
   createCanvas(800, 800);
-  background(51);
 }
 
 function draw() {
-  if (frameCount < 2) {
-    return
-  }
+  noStroke()
+  background(51);
   if (grid) {
     drawGrid(grid);
   }
