@@ -18,10 +18,17 @@ var tiles = [GRASS, SAND, WATER]
 
 // A Coord is a {row: Nat, col: Nat}
 
+// A Distribution<A> is a Record<A, Number> representing a probability distribution
+// CONSTRAINT: The sum of probabilities should add to 1
+// CONSTRAINT: Each probabiltity should be between 0 and 1 (inclusive)
+
+// An UnNormalizedDistribution<A> is a distribution whose probabiltiies may not add to 1
+
+// Record<Tile, Distribution<Tile>>
 var connections = {
-  [GRASS]: [GRASS, SAND],
-  [SAND]: [SAND, WATER, GRASS],
-  [WATER]: [WATER, SAND]
+  [GRASS]: {[GRASS]: .67, [SAND]: .33},
+  [SAND]: {[SAND]: .67, [GRASS]: .1, [WATER]: .23},
+  [WATER]: {[WATER]: .67, [SAND]: .33},
 }
 
 // Nat Nat -> Tile[][]
@@ -100,7 +107,12 @@ function collapse(possibilities, coordToCollapse) {
     const coord = stack.pop()
     const neighborCoords = getNeighbors(coord, possibilities[0].length, possibilities.length)
     for (const neighborCoord of neighborCoords) {
+      const oldNeighborSuperposition = possibilities[neighborCoord.row][neighborCoord.col]
       const didShrink = constrainNeighbor(possibilities, coord, neighborCoord)
+      const newNeighborSuperposition = possibilities[neighborCoord.row][neighborCoord.col]
+      if (superpositionSize(newNeighborSuperposition) === 0) {
+        debugger
+      }
       if (didShrink && !stack.find(coord => coord.row === neighborCoord.row && coord.col === neighborCoord.col)) {
         stack.push(neighborCoord)
       }
@@ -111,13 +123,120 @@ function collapse(possibilities, coordToCollapse) {
 // Superposition[][] Coord -> Void
 function collapseSuperposition(possibilities, coordToCollapse) {
   const superposition = possibilities[coordToCollapse.row][coordToCollapse.col]
-  const tile = sampleSuperposition(superposition)
+  const neighborCoords = getNeighbors(coordToCollapse, possibilities[0].length, possibilities.length)
+  const neighborSuperpositions = neighborCoords.map(coord => possibilities[coord.row][coord.col])
+  const neighborDistributions = neighborSuperpositions.map(getDistributionFromNeighborSuperposition)
+  const collapseDistribution = getDistributionFromSuperposition(superposition)
+  const distribution = intersectDistributions(averageDistributions(...neighborDistributions), collapseDistribution)
+  const tile = sampleDistribution(distribution)
+  if (!superposition.includes(tile)) {
+    debugger
+  }
+  if (tile === undefined) {
+    debugger
+  }
   possibilities[coordToCollapse.row][coordToCollapse.col] = [tile]
 }
 
-// Superposition -> Tile
-function sampleSuperposition(superposition) {
-  return superposition[Math.floor(Math.random() * superpositionSize(superposition))]
+// Superposition[] Superposition -> Distribution<Tile>
+// first arg is neighbors' superpositions, second arg is superposition to collapse
+function getDistributionFromSuperpositions(contributingSuperpositions, superposition) {
+  const contributingDistributions = contributingSuperpositions.map(getDistributionFromSuperposition)
+  const  distribution = getDistributionFromSuperposition(superposition)
+  return intersectDistributions(averageDistributions(...contributingDistributions), distribution)
+}
+
+// Superposition -> Distribution<Tile>
+function getDistributionFromSuperposition(superposition) {
+  return Object.fromEntries(superposition.map(tile => [tile, 1 / superpositionSize(superposition)]))
+}
+
+// Superposition -> Distribution<Tile>
+function getDistributionFromNeighborSuperposition(superposition) {
+  const distribution = getDistributionFromSuperposition(superposition)
+  // the connection probabilities averaged, weighted by the probability of each tile in the superposition
+  return bindDistribution(distribution, tile => connections[tile]) 
+}
+
+// Distribution<A> (A -> Distribution<B>) -> Distribution<B>
+// create a distribution from each item using func and average the distributions,
+// weighted by each item's probability
+// call it bind bc it's like monadic bind
+function bindDistribution(distribution, func) {
+  const items = Object.keys(distribution)
+  const probs = items.map(item => distribution[item])
+  const distributions = items.map(func)
+  const ans = {}
+  for (let i = 0; i < items.length; i++) {
+    const distribution = distributions[i]
+    const prob = probs[i]
+    for (const item of Object.keys(distribution)) {
+      if (!ans[item]) {
+        ans[item] = distribution[item] * prob
+      } else {
+        ans[item] += distribution[item] * prob
+      }
+    }
+  }
+  // shouldn't be necessary, but just to be safe, normalize
+  return normalizeDistribution(ans)
+}
+
+// TODO abstract average with bind?
+
+// Distribution<A> ... -> Distribution<A>
+function averageDistributions(...distributions) {
+  const N = distributions.length
+  const ans = {}
+  for (const distribution of distributions) {
+    for (const item of Object.keys(distribution)) {
+      if (!ans[item]) {
+        ans[item] = distribution[item] / N
+      } else {
+        ans[item] += distribution[item] / N
+      }
+    }
+  }
+  return ans
+}
+
+// Distribution<A> Distribution<A> -> Distribution<A>
+function intersectDistributions(distribution1, distribution2) {
+  const ans = {}
+  for (const item of Object.keys(distribution1)) {
+    if (distribution2[item]) {
+      ans[item] = distribution1[item] * distribution2[item]
+    }
+  }
+  return normalizeDistribution(ans)
+}
+
+// UnNormalizedDistribution<A> -> Distribution<A>
+function normalizeDistribution(distribution) {
+  let total = 0
+  for (const prob of Object.values(distribution)) {
+    total += prob
+  }
+
+  const ans = {}
+  for (const item of Object.keys(distribution)) {
+    ans[item] = distribution[item] / total
+  }
+
+  return ans
+}
+
+// Distribution<A> -> Tile
+function sampleDistribution(distribution) {
+  const x = Math.random()
+  let total = 0
+  for(const item of Object.keys(distribution)) {
+    total += distribution[item]
+    if (total >= x) {
+      return item
+    }
+  }
+  throw new Error("failed to sample from distribution")
 }
 
 // Coord Nat Nat -> Coord[]
@@ -162,7 +281,7 @@ function iterateSuperposition(superposition) {
 
 // Tile Tile -> Boolean
 function isValid(tile1, tile2) {
-  return connections[tile1].includes(tile2)
+  return Object.keys(connections[tile1]).includes(tile2)
 }
 
 // Superposition -> Nat
