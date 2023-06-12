@@ -26,10 +26,14 @@ var tiles = [GRASS, SAND, WATER]
 
 // Record<Tile, Distribution<Tile>>
 var connections = {
-  [GRASS]: {[GRASS]: .67, [SAND]: .33},
-  [SAND]: {[SAND]: .67, [GRASS]: .1, [WATER]: .23},
-  [WATER]: {[WATER]: .67, [SAND]: .33},
+  [GRASS]: normalizeDistribution({[GRASS]: 10, [SAND]: 1}),
+  [SAND]: normalizeDistribution({[SAND]: 50, [GRASS]: 1, [WATER]: 1}),
+  [WATER]: normalizeDistribution({[WATER]: 10, [SAND]: 1}),
 }
+
+// > 0
+// doesn't really do much
+var smoothing = 100
 
 // Nat Nat -> Tile[][]
 function generateWorld(gridWidth, gridHeight) {
@@ -92,6 +96,15 @@ function superpositionEntropy(superposition) {
   return -1 * N * Math.log2(1 / N) * (1 / N)
 }
 
+// Distribution<A> -> Number
+function distributionEntropy(distribution) {
+  let ans = 0
+  for(const prob of Object.values(distribution)) {
+    ans -= prob * Math.log2(prob)
+  }
+  return ans
+}
+
 // Superposition[][] Coord -> Void
 // Run one round of collapsing.
 // Collapses the cell at coordToCollapse, then filters
@@ -101,19 +114,16 @@ function collapse(possibilities, coordToCollapse) {
   const stack = []
   stack.push(coordToCollapse)
   while (stack.length !== 0) {
-    if (stack.length > 10000) {
-      throw new Error("oh no")
-    }
     const coord = stack.pop()
     const neighborCoords = getNeighbors(coord, possibilities[0].length, possibilities.length)
     for (const neighborCoord of neighborCoords) {
-      const oldNeighborSuperposition = possibilities[neighborCoord.row][neighborCoord.col]
       const didShrink = constrainNeighbor(possibilities, coord, neighborCoord)
       const newNeighborSuperposition = possibilities[neighborCoord.row][neighborCoord.col]
       if (superpositionSize(newNeighborSuperposition) === 0) {
         debugger
       }
-      if (didShrink && !stack.find(coord => coord.row === neighborCoord.row && coord.col === neighborCoord.col)) {
+      const alreadyInStack = stack.find(coord => coord.row === neighborCoord.row && coord.col === neighborCoord.col)
+      if (didShrink && !alreadyInStack) {
         stack.push(neighborCoord)
       }
     }
@@ -121,14 +131,20 @@ function collapse(possibilities, coordToCollapse) {
 }
 
 // Superposition[][] Coord -> Void
+// collapse a tile's superposition randomly
 function collapseSuperposition(possibilities, coordToCollapse) {
   const superposition = possibilities[coordToCollapse.row][coordToCollapse.col]
   const neighborCoords = getNeighbors(coordToCollapse, possibilities[0].length, possibilities.length)
   const neighborSuperpositions = neighborCoords.map(coord => possibilities[coord.row][coord.col])
   const neighborDistributions = neighborSuperpositions.map(getDistributionFromNeighborSuperposition)
+  // weight neighbor contributions by inverse entropy
+  // reduces noise
+  const neighborsDistribution = weightedAverageDistributions(neighborDistributions, distribution => 1 / (1 / smoothing + distributionEntropy(distribution)))
   const collapseDistribution = getDistributionFromSuperposition(superposition)
-  const distribution = intersectDistributions(averageDistributions(...neighborDistributions), collapseDistribution)
+  const distribution = intersectDistributions(neighborsDistribution, collapseDistribution)
   const tile = sampleDistribution(distribution)
+  console.log(neighborSuperpositions.map(superpositionEntropy))
+  console.log(distributionEntropy(distribution))
   if (!superposition.includes(tile)) {
     debugger
   }
@@ -180,6 +196,27 @@ function bindDistribution(distribution, func) {
   }
   // shouldn't be necessary, but just to be safe, normalize
   return normalizeDistribution(ans)
+}
+
+// Distribution<A>[] (Distribution<A> -> Number) -> Distribution<A>
+function weightedAverageDistributions(distributions, weightFunc) {
+  const ans = {}
+  for (const distribution of distributions) {
+    const weight = weightFunc(distribution)
+    for (const item of Object.keys(distribution)) {
+      if (!ans[item]) {
+        ans[item] = distribution[item] * weight
+      } else {
+        ans[item] += distribution[item] * weight
+      }
+    }
+  }
+  return normalizeDistribution(ans)
+}
+
+// Distribution<Distribution<A>> -> Distribution<A>
+function joinDistribution(distribution) {
+  return bindDistribution(distribution, x => x)
 }
 
 // TODO abstract average with bind?
@@ -246,6 +283,10 @@ function getNeighbors(coord, gridWidth, gridHeight) {
     {row: coord.row, col: coord.col - 1},
     {row: coord.row + 1, col: coord.col},
     {row: coord.row - 1, col: coord.col},
+    {row: coord.row - 1, col: coord.col - 1},
+    {row: coord.row - 1, col: coord.col + 1},
+    {row: coord.row + 1, col: coord.col - 1},
+    {row: coord.row + 1, col: coord.col + 1},
   ].filter(coord => coord.row >= 0 && coord.row < gridHeight && coord.col >= 0 && coord.col < gridWidth)
 }
 
@@ -290,11 +331,11 @@ function superpositionSize(superposition) {
 }
 
 function getGridWidth() {
-  return 50
+  return 100
 }
 
 function getGridHeight() {
-  return 50
+  return 100
 }
 
 function getCellWidth() {
