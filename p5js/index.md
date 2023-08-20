@@ -60,6 +60,13 @@ There are braille characters in computers and they look like this: ⠃⠗⠁⠊�
 In the [Unicode encoding for Braille characters](https://www.unicode.org/charts/PDF/U2800.pdf), every possible configuration of dots in a 2x4 grid are encoded, meaning they can basically act as a grid of black and white pixels.  
 
 I combined dithering and Braille together to render an image as text. I resize the image, dither it to black and white, divide it up into little 2x4 grids, and put in the Braille character corresponding to that 2x8 grid of 0s and 1s.
+
+## [Boids](https://quasarbright.github.io/p5js/boids)
+
+A simulation of bird flocking behavior. The boids try to stay near the center of the flock, avoid getting too close to other boids, and try to head in the same direction and speed as nearby boids. These simple rules lead to some life-like behavior.
+
+[![screenshot of boids](https://quasarbright.github.io/p5js/boids/screenshot.png)](https://quasarbright.github.io/p5js/boids)
+
 ## [Conway's Game of Life](https://quasarbright.github.io/p5js/conway)
 This is [John Conway's game of life](https://www.wikiwand.com/en/Conway%27s_Game_of_Life), a cellular automaton where cells live or die depending on the state of their neighbors. Click on the cells to toggle their life state and hit start to see what happens.
 ## [Display Graph](https://quasarbright.github.io/p5js/display%20graph)
