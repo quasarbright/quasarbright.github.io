@@ -34,7 +34,7 @@ float map(float x, float min1, float max1, float min2, float max2) {
   float d1 = max1 - min1;
   float d2 = max2 - min2;
   float disp1 = (x - min1) / d1;
-  return min2 + x * d2;
+  return min2 + disp1 * d2;
 }
 
 float atanNorm(float x) {
