@@ -6,10 +6,16 @@ precision mediump float;
 
 const float PI=3.1415926535897932384626433;
 const float TAU = 2.0 * PI;
-const int MAX_ITER = 1000;
-const int MAX_BOUNCES = 10;
-const float MAX_DISTANCE = 10000.0;
-const float HIT_DISTANCE = 0.0001;
+const int MAX_ITER = 100;
+const int MAX_BOUNCES = 3;
+const float MAX_DISTANCE = 100.0;
+const float HIT_DISTANCE = 0.001;
+const int RAYS_PER_PIXEL = 10;
+const vec3 cameraPosition = vec3(0,2,0);
+const vec3 cameraForward = vec3(1,-.3,0);
+const float horizontalFov = 80.0;
+const bool glowEnabled = false;
+const vec3 glowColor = vec3(0,1,0);
 
 uniform float u_time;// the time in seconds
 uniform vec2 u_resolution;// the display width and height
@@ -28,14 +34,19 @@ struct Ray {
 struct Material {
   vec3 color;
   float specularProbability;
+  vec3 emittedColor;
 };
 
 Material pureMirror() {
-  return Material(vec3(1,1,1), 1.0);
+  return Material(vec3(1,1,1), 1.0, vec3(0));
+}
+
+Material diffuse(vec3 color) {
+  return Material(color, 0.0, vec3(0));
 }
 
 Material emissive(vec3 color) {
-  return Material(color, 0.0);
+  return Material(vec3(0), 0.0, color);
 }
 
 float map(float x, float min1, float max1, float min2, float max2) {
@@ -65,6 +76,29 @@ vec3 rgb2hsv(vec3 c)
 
 vec2 toCoord(vec2 pos) {
   return(pos.xy-u_resolution*.5)/min(u_resolution.x,u_resolution.y)*3./zoom+center;
+}
+
+// Gold Noise ©2015 dcerisano@standard3d.com
+// - based on the Golden Ratio
+// - uniform normalized distribution
+// - fastest static noise generator function (also runs at low precision)
+// - use with indicated fractional seeding method. 
+
+float PHI = 1.61803398874989484820459;  // Φ = Golden Ratio   
+
+float random(vec2 xy, float seed){
+  return fract(tan(distance(xy*PHI, xy)*seed)*(xy.y+xy.x*u_resolution.x));
+}
+
+float randomNormal(vec2 xy, float seed) {
+  // Thanks to https://stackoverflow.com/a/6178290
+  float theta = 2.0 * 3.1415926 * random(xy, seed);
+  float rho = sqrt(-2.0 * log(random(xy, seed + 1000.0)));
+  return rho * cos(theta);
+}
+
+vec3 randomDirection(vec2 xy, float seed) {
+  return normalize(vec3(randomNormal(xy, seed), randomNormal(xy, seed + 300.0), randomNormal(xy, seed + 400.0)));
 }
 
 // TODO rename
@@ -122,18 +156,17 @@ DistanceEstimation maxDistanceEstimation(DistanceEstimation distEst1, DistanceEs
 
 // lower bound on distance to nearest object in the scene
 DistanceEstimation distanceEstimation(vec3 position) {
+  
   return minDistanceEstimation(
-    // mirrors
     minDistanceEstimation(
-    sphereDistance(position, Sphere(vec3(5,1,0), 1.0, pureMirror())),
-    sphereDistance(position, Sphere(vec3(5,1,-2.1), 1.0, pureMirror()))
+    sphereDistance(position, Sphere(vec3(9,1,.5), 2.0, diffuse(vec3(1,1,0.5)))),
+    sphereDistance(position, Sphere(vec3(6,0,-.5), 1.0, diffuse(vec3(1,0.3,1))))
     ),
-    // emitters
     minDistanceEstimation(
-      sphereDistance(position, Sphere(vec3(5,2,2), 1.0, emissive(vec3(0,1,0)))),
+      sphereDistance(position, Sphere(vec3(6,5,5), 3.5, emissive(vec3(1,1,1)))),
       minDistanceEstimation(
-      sphereDistance(position, Sphere(vec3(4,-1,-1), 1.0, emissive(vec3(0,0,1)))),
-      horizontalPlaneDistance(position, HorizontalPlane(-2.0, emissive(vec3(1,0,0))))
+      sphereDistance(position, Sphere(vec3(4,-1,-.5), 1.0, diffuse(vec3(0.3,0.4,1)))),
+      horizontalPlaneDistance(position, HorizontalPlane(-2.0, diffuse(.3*vec3(1,1,1))))
     ))
   );
 }
@@ -142,73 +175,76 @@ struct HitInfo {
   bool didHit;
   DistanceEstimation distanceEstimation;
   vec3 hitPosition;
+  int iterations;
+  // closest it ever got
+  float minDistance;
 };
 
 // March the ray until it hits something
 HitInfo calculateRayCollision(Ray ray) {
   float totalDistance = 0.0;
+  float minDistance = 1e99;
   for(int i = 0; i < MAX_ITER; i++) {
     if (totalDistance > MAX_DISTANCE) {
       break;
     } else {
       DistanceEstimation distEst = distanceEstimation(ray.position);
       float dist = distEst.dist;
+      if (dist < minDistance) {
+        minDistance = dist;
+      }
       // close and going into the surface
       if (dist < HIT_DISTANCE && dot(distEst.normal, (ray.direction)) < 0.0) {
-        return HitInfo(true, distEst, ray.position);
+        return HitInfo(true, distEst, ray.position, i, minDistance);
       } else {
         ray.position += ray.direction * dist;
       }
     }
   }
-  return HitInfo(false, DistanceEstimation(0.0, vec3(0), emissive(vec3(0))), ray.position);
+  return HitInfo(false, DistanceEstimation(0.0, vec3(0), emissive(vec3(0))), ray.position, MAX_ITER, minDistance);
 }
 
 // return color
-vec3 trace(Ray ray) {
+vec3 trace(Ray ray, int seed) {
   vec3 color = vec3(1,1,1);
+  vec3 incomingLight = vec3(0);
   // otherwise, with only reflections and no misses, you get white light
-  bool hitEmitter = false;
   for(int reflections = 0; reflections < MAX_BOUNCES + 1; reflections++) {
+    int seed = 3 * (seed + 1) + 5 * (reflections + 1);
     HitInfo hitInfo = calculateRayCollision(ray);
+    if (glowEnabled && !hitInfo.didHit) {
+      vec3 glow = glowColor * pow(400.0, -float(hitInfo.minDistance));
+      incomingLight += glow * color;
+    }
     if(hitInfo.didHit) {
-      if(hitInfo.distanceEstimation.material.specularProbability > 0.0) {
-        // TODO random
+      vec3 reflectedDirection;
+      incomingLight += (hitInfo.distanceEstimation.material.emittedColor * color);
+      color *= hitInfo.distanceEstimation.material.color;
+      if(random(gl_FragCoord.xy, float(seed)) < hitInfo.distanceEstimation.material.specularProbability) {
         // specular reflection
-        vec3 reflectedDirection = reflect(ray.direction, hitInfo.distanceEstimation.normal);
-        // step in the direction of the new ray to avoid getting trapped on a surface
-        // if you're on the mirror, your distance is 0, and you will march 0 distance
-        ray = Ray(hitInfo.hitPosition + reflectedDirection * HIT_DISTANCE, reflectedDirection);
+        reflectedDirection = reflect(ray.direction, hitInfo.distanceEstimation.normal);
       } else {
         // diffuse reflection
-        // TODO
-        // for now, just 
-        hitEmitter = true;
-        color *= hitInfo.distanceEstimation.material.color;
-        break;
+        reflectedDirection = normalize(hitInfo.distanceEstimation.normal + randomDirection(gl_FragCoord.xy, float(seed)));
       }
+      // step in the direction of the new ray to avoid getting trapped on a surface
+      // if you're on the mirror, your distance is 0, and you will march 0 distance
+      ray = Ray(hitInfo.hitPosition + reflectedDirection * HIT_DISTANCE, reflectedDirection);
     } else {
       // miss
-      color *= 0.0;
+      // TODO skybox?
       break;
     }
   }
-  if (!hitEmitter) {
-    color *= 0.0;
-  }
-  return color;
+  return incomingLight;
 }
 
 // get the ray for the current pixel
 Ray getRay() {
-  vec3 cameraPosition = vec3(0,0,0);
-  vec3 cameraForward = vec3(1,0,0);
-  vec3 cameraUp = vec3(0,1,0);
+  vec3 cameraUp = vec3(-cameraForward.y,cameraForward.x,cameraForward.z);
   vec3 cameraRight = cross(cameraForward, cameraUp);
-  float horizontalFov = 70.0;
-  float verticalFov = 2.0 * atan(tan(horizontalFov / 2.0) * u_resolution.y / u_resolution.x);
   // physical size of image plane 1 unit in front of the camera to satisfy fov
-  float imagePlaneWidth = 2.0 * tan(horizontalFov / 2.0);
+  float imagePlaneWidth = 2.0 * tan(radians(horizontalFov) / 2.0);
   vec2 imagePlaneDimensions = vec2(imagePlaneWidth, imagePlaneWidth * u_resolution.y / u_resolution.x);
   vec2 imagePlaneCoords = vec2(
     map(gl_FragCoord.x, 0.0, u_resolution.x, -imagePlaneDimensions.x / 2.0, imagePlaneDimensions.x / 2.0),
@@ -221,15 +257,14 @@ Ray getRay() {
 
 void main(void) {
   Ray ray = getRay();
-  gl_FragColor = vec4(trace(ray),1);
 
-  // gl_FragColor = vec4(1., 0., 1., 1.);
-  // vec2 position=toCoord(gl_FragCoord.xy);
+  vec3 color = vec3(0);
+  for(int i = 0; i < RAYS_PER_PIXEL; i++) {
+    vec3 newColor = trace(ray, i);
+    // vec3 newColor = vec3(1,1,0);
+    color += newColor * newColor;
+  }
+  color = pow(color / float(RAYS_PER_PIXEL), vec3(0.5,0.5,0.5));
 
-  // float hu = sin(position.x * 5.0) + sin(position.y * 5.0);
-  // hu = mod(hu + offset * 2.0 + u_time / 10.0, 1.0);
-  // float br = float(brightness) / 10.0;
-
-  // vec3 color = hsv2rgb(vec3(hu,1.0,br));
-  // gl_FragColor = vec4(color, 1.0);
+  gl_FragColor = vec4(color,1);
 }
