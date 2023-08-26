@@ -9,7 +9,7 @@ const int MAX_BOUNCES = 4;
 const float MAX_DISTANCE = 100.0;
 const float HIT_DISTANCE = 0.001;
 const int RAYS_PER_PIXEL = 10;
-const vec3 cameraPosition = vec3(0,2,0);
+const vec3 cameraPosition = vec3(0,1,0);
 const vec3 cameraForward = vec3(1,-.3,0);
 const float horizontalFov = 80.0;
 const bool glowEnabled = false;
@@ -97,78 +97,16 @@ vec3 randomDirection(vec2 xy, float seed) {
   return normalize(vec3(randomNormal(xy, seed), randomNormal(xy, seed + 300.0), randomNormal(xy, seed + 400.0)));
 }
 
-// TODO rename
-struct DistanceEstimation {
-  float dist;
-  vec3 normal;
-  Material material;
-};
-
 struct Sphere {
   vec3 center;
   float radius;
   Material material;
 };
 
-// signed distance to sphere
-DistanceEstimation sphereDistance(vec3 position, Sphere sphere) {
-  return DistanceEstimation(
-    length(position - sphere.center) - sphere.radius,
-    normalize(position - sphere.center),
-    sphere.material
-  );
-}
-
 struct HorizontalPlane {
   float y;
   Material material;
 };
-
-DistanceEstimation horizontalPlaneDistance(vec3 position, HorizontalPlane plane) {
-  return DistanceEstimation(
-    position.y - plane.y,
-    vec3(0,1,0),
-    plane.material
-  );
-}
-
-// use this to take the union of two objects in a scene
-DistanceEstimation minDistanceEstimation(DistanceEstimation distEst1, DistanceEstimation distEst2) {
-  if (distEst1.dist < distEst2.dist) {
-    return distEst1;
-  } else {
-    return distEst2;
-  }
-}
-
-// use this to take the intersection of two objects in a scene
-DistanceEstimation maxDistanceEstimation(DistanceEstimation distEst1, DistanceEstimation distEst2) {
-  if (distEst1.dist > distEst2.dist) {
-    return distEst1;
-  } else {
-    return distEst2;
-  }
-}
-
-// lower bound on distance to nearest object in the scene
-DistanceEstimation distanceEstimation(vec3 position) {
-  
-  return minDistanceEstimation(
-    minDistanceEstimation(
-    sphereDistance(position, Sphere(vec3(9,1,.5), 2.0, diffuse(vec3(1,1,0.5)))),
-    minDistanceEstimation(
-    sphereDistance(position, Sphere(vec3(6,0,-.5), 1.0, diffuse(vec3(1,0.3,1)))),
-    sphereDistance(position, Sphere(vec3(6,0,-3), 1.0, pureMirror()))
-    )
-    ),
-    minDistanceEstimation(
-      sphereDistance(position, Sphere(vec3(6,5,5), 3.5, emissive(vec3(1,1,1)))),
-      minDistanceEstimation(
-      sphereDistance(position, Sphere(vec3(4,-1,-.5), 1.0, diffuse(vec3(0.3,0.4,1)))),
-      horizontalPlaneDistance(position, HorizontalPlane(-2.0, diffuse(.3*vec3(1,1,1))))
-    ))
-  );
-}
 
 vec3 skyBox(vec3 direction) {
   vec3 groundColor = vec3(.5,.5,.5);
@@ -188,35 +126,56 @@ vec3 skyBox(vec3 direction) {
 
 struct HitInfo {
   bool didHit;
-  DistanceEstimation distanceEstimation;
-  vec3 hitPosition;
-  int iterations;
-  // closest it ever got
-  float minDistance;
+  vec3 position;
+  vec3 normal;
+  Material material;
 };
+
+HitInfo miss() {
+  return HitInfo(false, vec3(0), vec3(0), diffuse(vec3(0)));
+}
+
+HitInfo sphereCollision(Ray ray, Sphere sphere) {
+  vec3 fromCenter = ray.position - sphere.center;
+  // from quadratic equation |ray.position + ray.direction * dist - center|^2 = radius^2
+  float a = dot(ray.direction, ray.direction);
+  float b = 2.0 * dot(fromCenter, ray.direction);
+  float c = dot(fromCenter, fromCenter) - sphere.radius * sphere.radius;
+  float discriminant = b * b - 4.0 * a * c;
+
+  if(discriminant >= 0.0) {
+    // use - sqrt to get nearest intersection
+    float dist = (-b - sqrt(discriminant)) / (2.0 * a);
+    
+    // ignore intersections behind the ray
+    // if + sqrt is positive, then we're in the sphere. ignore that too
+    if (dist >= 0.0) {
+      vec3 position = ray.position + ray.direction * dist;
+      return HitInfo(true, position, normalize(position - sphere.center), sphere.material);
+    }
+  }
+  return miss();
+}
+
+HitInfo closerHitInfo(Ray ray, HitInfo a, HitInfo b) {
+  if(!a.didHit) {
+    return b;
+  } else if (!b.didHit) {
+    return a;
+  } else if (dot(a.position - ray.position, a.position - ray.position) < dot(b.position - ray.position, b.position - ray.position)) {
+    return a;
+  } else {
+    return b;
+  }
+}
 
 // March the ray until it hits something
 HitInfo calculateRayCollision(Ray ray) {
-  float totalDistance = 0.0;
-  float minDistance = 1e99;
-  for(int i = 0; i < MAX_ITER; i++) {
-    if (totalDistance > MAX_DISTANCE) {
-      break;
-    } else {
-      DistanceEstimation distEst = distanceEstimation(ray.position);
-      float dist = distEst.dist;
-      if (dist < minDistance) {
-        minDistance = dist;
-      }
-      // close and going into the surface
-      if (dist < HIT_DISTANCE && dot(distEst.normal, (ray.direction)) < 0.0) {
-        return HitInfo(true, distEst, ray.position, i, minDistance);
-      } else {
-        ray.position += ray.direction * dist;
-      }
-    }
-  }
-  return HitInfo(false, DistanceEstimation(0.0, vec3(0), emissive(vec3(0))), ray.position, MAX_ITER, minDistance);
+  return closerHitInfo(
+    ray,
+    sphereCollision(ray, Sphere(vec3(6,0,-1), 1.0, diffuse(vec3(1,1,1)))),
+    sphereCollision(ray, Sphere(vec3(5,0,1), 1.0, emissive(vec3(1,1,1))))
+  );
 }
 
 // return color
@@ -227,24 +186,20 @@ vec3 trace(Ray ray, int seed) {
   for(int reflections = 0; reflections < MAX_BOUNCES + 1; reflections++) {
     int seed = 3 * (seed + 1) + 5 * (reflections + 1);
     HitInfo hitInfo = calculateRayCollision(ray);
-    if (glowEnabled && !hitInfo.didHit) {
-      vec3 glow = glowColor * pow(400.0, -float(hitInfo.minDistance));
-      incomingLight += glow * color;
-    }
     if(hitInfo.didHit) {
       vec3 reflectedDirection;
-      incomingLight += (hitInfo.distanceEstimation.material.emittedColor * color);
-      color *= hitInfo.distanceEstimation.material.color;
-      if(random(gl_FragCoord.xy, float(seed)) < hitInfo.distanceEstimation.material.specularProbability) {
+      incomingLight += (hitInfo.material.emittedColor * color);
+      color *= hitInfo.material.color;
+      if(random(gl_FragCoord.xy, float(seed)) < hitInfo.material.specularProbability) {
         // specular reflection
-        reflectedDirection = reflect(ray.direction, hitInfo.distanceEstimation.normal);
+        reflectedDirection = reflect(ray.direction, hitInfo.normal);
       } else {
         // diffuse reflection
-        reflectedDirection = normalize(hitInfo.distanceEstimation.normal + randomDirection(gl_FragCoord.xy, float(seed)));
+        reflectedDirection = normalize(hitInfo.normal + randomDirection(gl_FragCoord.xy, float(seed)));
       }
       // step in the direction of the new ray to avoid getting trapped on a surface
       // if you're on the mirror, your distance is 0, and you will march 0 distance
-      ray = Ray(hitInfo.hitPosition + reflectedDirection * HIT_DISTANCE, reflectedDirection);
+      ray = Ray(hitInfo.position + reflectedDirection * HIT_DISTANCE, reflectedDirection);
     } else {
       // miss
       if (skyBoxEnabled) {
