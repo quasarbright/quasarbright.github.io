@@ -6,8 +6,8 @@ precision mediump float;
 
 const float PI=3.1415926535897932384626433;
 const float TAU = 2.0 * PI;
-const int MAX_ITER = 100;
-const int MAX_BOUNCES = 3;
+const int MAX_ITER = 200;
+const int MAX_BOUNCES = 4;
 const float MAX_DISTANCE = 100.0;
 const float HIT_DISTANCE = 0.001;
 const int RAYS_PER_PIXEL = 10;
@@ -16,6 +16,7 @@ const vec3 cameraForward = vec3(1,-.3,0);
 const float horizontalFov = 80.0;
 const bool glowEnabled = false;
 const vec3 glowColor = vec3(0,1,0);
+const bool skyBoxEnabled = false;
 
 uniform float u_time;// the time in seconds
 uniform vec2 u_resolution;// the display width and height
@@ -160,7 +161,10 @@ DistanceEstimation distanceEstimation(vec3 position) {
   return minDistanceEstimation(
     minDistanceEstimation(
     sphereDistance(position, Sphere(vec3(9,1,.5), 2.0, diffuse(vec3(1,1,0.5)))),
-    sphereDistance(position, Sphere(vec3(6,0,-.5), 1.0, diffuse(vec3(1,0.3,1))))
+    minDistanceEstimation(
+    sphereDistance(position, Sphere(vec3(6,0,-.5), 1.0, diffuse(vec3(1,0.3,1)))),
+    sphereDistance(position, Sphere(vec3(6,0,-3), 1.0, pureMirror()))
+    )
     ),
     minDistanceEstimation(
       sphereDistance(position, Sphere(vec3(6,5,5), 3.5, emissive(vec3(1,1,1)))),
@@ -169,6 +173,22 @@ DistanceEstimation distanceEstimation(vec3 position) {
       horizontalPlaneDistance(position, HorizontalPlane(-2.0, diffuse(.3*vec3(1,1,1))))
     ))
   );
+}
+
+vec3 skyBox(vec3 direction) {
+  vec3 groundColor = vec3(.5,.5,.5);
+  vec3 skyHorizonColor = vec3(197, 218, 250) / 255.0;
+  vec3 skyZenithColor = vec3(84, 150, 255) / 255.0;
+
+  // no idea why, but we need to handle 0 separately
+  if (direction.y < 0.0) {
+    return groundColor;
+  } else if (direction.y > 0.0) {
+    float lerpRate = direction.y;
+    return mix(skyHorizonColor, skyZenithColor, lerpRate);
+  } else {
+    return vec3(0);
+  }
 }
 
 struct HitInfo {
@@ -232,7 +252,9 @@ vec3 trace(Ray ray, int seed) {
       ray = Ray(hitInfo.hitPosition + reflectedDirection * HIT_DISTANCE, reflectedDirection);
     } else {
       // miss
-      // TODO skybox?
+      if (skyBoxEnabled) {
+        incomingLight += skyBox(ray.direction) * color ;
+      }
       break;
     }
   }
@@ -241,7 +263,13 @@ vec3 trace(Ray ray, int seed) {
 
 // get the ray for the current pixel
 Ray getRay() {
-  vec3 cameraUp = vec3(-cameraForward.y,cameraForward.x,cameraForward.z);
+  vec3 up = vec3(0,1,0);
+  // (a dot b) a
+  // is the parallel component of b projected onto a
+  // b - (a dot b) a
+  // is the perpendicular component of b projected onto a
+  // we want cameraUp to be cameraForward rotated 90 degrees towards the direction of up
+  vec3 cameraUp = normalize(up - cameraForward * dot(cameraForward, up));
   vec3 cameraRight = cross(cameraForward, cameraUp);
   // physical size of image plane 1 unit in front of the camera to satisfy fov
   float imagePlaneWidth = 2.0 * tan(radians(horizontalFov) / 2.0);
@@ -261,7 +289,6 @@ void main(void) {
   vec3 color = vec3(0);
   for(int i = 0; i < RAYS_PER_PIXEL; i++) {
     vec3 newColor = trace(ray, i);
-    // vec3 newColor = vec3(1,1,0);
     color += newColor * newColor;
   }
   color = pow(color / float(RAYS_PER_PIXEL), vec3(0.5,0.5,0.5));
