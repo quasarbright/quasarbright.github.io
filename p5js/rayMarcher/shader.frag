@@ -2,8 +2,6 @@
 precision mediump float;
 #endif
 
-# define NUM_MAGNETS 3
-
 const float PI=3.1415926535897932384626433;
 const float TAU = 2.0 * PI;
 const int MAX_ITER = 200;
@@ -23,9 +21,6 @@ uniform vec2 u_resolution;// the display width and height
 uniform vec2 u_mouse;// the pixel coordinate for the mouse pointer
 uniform vec2 center;// the complex number for the center of the display
 uniform float zoom;// how zoomed in the display should be
-
-uniform float offset;
-uniform int brightness;
 
 struct Ray {
  vec3 position;

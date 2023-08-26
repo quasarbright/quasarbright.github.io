@@ -58,34 +58,12 @@ const INT = "int"
 const FLOAT = "float"
 
 const inputParams = [
-  {
-    "name" : "brightness",
-    "label" : "brightness",
-    "type": INT_FIELD,
-    "numtype" : INT,
-    "default" : 10,
-    "min" : 0,
-    "max" : 10,
-    "step" : 2,
-  },
-  {
-    "name" : "offset",
-    "label" : "hue offset",
-    "type": SLIDER,
-    "numtype" : FLOAT,
-    "default" : .5,
-    "min" : 0,
-    "max" : 1,
-    "step" : .01
-  }
 ]
 
 // uniform variables to pass to the shader
 let shaderData = {
   'u_mouse': (gl, loc) => gl.uniform2fv(loc, [mouseX, mouseY]),
-  'c': (gl, loc) => gl.uniform2fv(loc, [cx, cy]), // the c-value used for the current julia set (set by the user interactively)
   'zoom': (gl, loc) => gl.uniform1f(loc, zoom),
-  'center': (gl, loc) => gl.uniform2fv(loc, [centerx, centery]), // the center of the display area as a complex number
 }
 
 function addInputParams() {
