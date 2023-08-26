@@ -1,6 +1,10 @@
+// a lot of stuff copied from
+// sebastian lague youtube
 #ifdef GL_ES
 precision mediump float;
 #endif
+
+#define MAX_OBJECTS 100
 
 const float PI=3.1415926535897932384626433;
 const float TAU = 2.0 * PI;
@@ -10,11 +14,9 @@ const float MAX_DISTANCE = 100.0;
 const float HIT_DISTANCE = 0.001;
 const int RAYS_PER_PIXEL = 10;
 const vec3 cameraPosition = vec3(0,1,0);
-const vec3 cameraForward = vec3(1,-.3,0);
+const vec3 cameraForward = normalize(vec3(1,-.3,0));
 const float horizontalFov = 80.0;
-const bool glowEnabled = false;
-const vec3 glowColor = vec3(0,1,0);
-const bool skyBoxEnabled = false;
+const bool skyBoxEnabled = true;
 
 uniform float u_time;// the time in seconds
 uniform vec2 u_resolution;// the display width and height
@@ -39,6 +41,10 @@ Material pureMirror() {
 
 Material diffuse(vec3 color) {
   return Material(color, 0.0, vec3(0));
+}
+
+Material diffuseMirror(vec3 color) {
+  return Material(color, 1.0, vec3(0));
 }
 
 Material emissive(vec3 color) {
@@ -103,6 +109,16 @@ struct Sphere {
   Material material;
 };
 
+struct Triangle {
+  // order determines orientation, so it matters
+  // normal is determined by right hand rule
+  // (ABC counter clockwise)
+  vec3 positionA;
+  vec3 positionB;
+  vec3 positionC;
+  Material material;
+};
+
 struct HorizontalPlane {
   float y;
   Material material;
@@ -126,13 +142,14 @@ vec3 skyBox(vec3 direction) {
 
 struct HitInfo {
   bool didHit;
+  float dist;
   vec3 position;
   vec3 normal;
   Material material;
 };
 
 HitInfo miss() {
-  return HitInfo(false, vec3(0), vec3(0), diffuse(vec3(0)));
+  return HitInfo(false, 0.0, vec3(0), vec3(0), diffuse(vec3(0)));
 }
 
 HitInfo sphereCollision(Ray ray, Sphere sphere) {
@@ -151,29 +168,57 @@ HitInfo sphereCollision(Ray ray, Sphere sphere) {
     // if + sqrt is positive, then we're in the sphere. ignore that too
     if (dist >= 0.0) {
       vec3 position = ray.position + ray.direction * dist;
-      return HitInfo(true, position, normalize(position - sphere.center), sphere.material);
+      return HitInfo(true, dist, position, normalize(position - sphere.center), sphere.material);
     }
   }
   return miss();
 }
 
-HitInfo closerHitInfo(Ray ray, HitInfo a, HitInfo b) {
+HitInfo triangleCollision(Ray ray, Triangle triangle) {
+  vec3 edgeAB = triangle.positionB - triangle.positionA;
+  vec3 edgeAC = triangle.positionC - triangle.positionA;
+  vec3 normal = cross(edgeAB, edgeAC);
+  vec3 fromA = ray.position - triangle.positionA;
+  vec3 fromACrossDirection = cross(fromA, ray.direction);
+
+  float determinant = -dot(ray.direction, normal);
+  float inverseDeterminant = 1.0 / determinant;
+
+  float dist = dot(fromA, normal) * inverseDeterminant;
+  float u = dot(edgeAC, fromACrossDirection) * inverseDeterminant;
+  float v = -dot(edgeAB, fromACrossDirection) * inverseDeterminant;
+  float w = 1.0 - u - v;
+
+  bool didHit = determinant >= 1e-6 && dist >= 0.0 && u >= 0.0 && v >= 0.0 && w >= 0.0;
+  if (!didHit) {
+    return miss();
+  }
+  vec3 position = ray.position + ray.direction * dist;
+  vec3 hitNormal = normalize(normal);
+  // if you want vertices to have normals
+  // vec3 hitNormal = normalize(triangle.normalA * w + triangle.normalB * u = triangle.normalC * v);
+  return HitInfo(true, dist, position, hitNormal, triangle.material);
+}
+
+// can be used to combine objects. like a mesh is the closest hit info of a bunch of triangle hit infos
+HitInfo closestHitInfo(HitInfo a, HitInfo b) {
   if(!a.didHit) {
     return b;
   } else if (!b.didHit) {
     return a;
-  } else if (dot(a.position - ray.position, a.position - ray.position) < dot(b.position - ray.position, b.position - ray.position)) {
+  } else if (a.dist < b.dist) {
     return a;
   } else {
     return b;
   }
 }
 
-// March the ray until it hits something
-HitInfo calculateRayCollision(Ray ray) {
-  return closerHitInfo(
-    ray,
-    sphereCollision(ray, Sphere(vec3(6,0,-1), 1.0, diffuse(vec3(1,1,1)))),
+HitInfo sceneCollision(Ray ray) {
+  return closestHitInfo(
+    closestHitInfo(
+      triangleCollision(ray, Triangle(vec3(9,5,0), vec3(10,-1,-5), vec3(10,-1,10), diffuseMirror(vec3(1,1,0.5)))),
+      sphereCollision(ray, Sphere(vec3(6,0,-1), 1.0, diffuse(vec3(1,1,1))))
+    ),
     sphereCollision(ray, Sphere(vec3(5,0,1), 1.0, emissive(vec3(1,1,1))))
   );
 }
@@ -185,7 +230,7 @@ vec3 trace(Ray ray, int seed) {
   // otherwise, with only reflections and no misses, you get white light
   for(int reflections = 0; reflections < MAX_BOUNCES + 1; reflections++) {
     int seed = 3 * (seed + 1) + 5 * (reflections + 1);
-    HitInfo hitInfo = calculateRayCollision(ray);
+    HitInfo hitInfo = sceneCollision(ray);
     if(hitInfo.didHit) {
       vec3 reflectedDirection;
       incomingLight += (hitInfo.material.emittedColor * color);
