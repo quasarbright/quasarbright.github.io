@@ -2,14 +2,21 @@
 
 // A Grid is a 2D array of Cells
 
-const C = 1
+const C = .1
+const dt = .5
+
 
 function initialize(width, height) {
   const grid = []
-  for (let c = 0; c < height; c++) {
+  for (let r = 0; r < height; r++) {
     const row = []
-    for (let r = 0; r < width; r++) {
-      row.push({displacement: c <= 5 && r <= 5 ? 1 : 0, velocity: 0, acceleration: 0})
+    for (let c = 0; c < width; c++) {
+      // plane wave from left
+      // row.push({displacement: c == 0 ? 1 : 0, velocity: 0, acceleration: 0})
+      // positive displacement at top left
+      // row.push({displacement: c <= 5 && r <= 5 ? 1 : 0, velocity: 0, acceleration: 0})
+      // impulse at the center
+      row.push({displacement: 0, velocity: c === Math.floor(width / 2) && r === Math.floor(width / 2) ? 1 : 0, acceleration: 0})
     }
     grid.push(row)
   }
@@ -21,14 +28,18 @@ function step(grid) {
   const width = grid[0].length
   
   const newGrid = []
-  for (let c = 0; c < height; c++) {
+  for (let r = 0; r < height; r++) {
     const row = []
-    for (let r = 0; r < width; r++) {
-      const du2dx2 = getDu2dx2(grid, r, c)
-      const du2dy2 = getDu2dy2(grid, r, c)
-      const acceleration = C * (du2dx2 + du2dy2)
-      const velocity = grid[r][c].velocity + acceleration
-      const displacement = grid[r][c].displacement + velocity
+    for (let c = 0; c < width; c++) {
+      const displacement = constrain(grid[r][c].displacement + grid[r][c].velocity * dt, -1, 1)
+      const d2udx2 = getD2Udx2(grid, r, c)
+      const d2udy2 = getD2udy2(grid, r, c)
+      // from the wave equation
+      const acceleration = C * C * (d2udx2 + d2udy2)
+      const velocity = grid[r][c].velocity + acceleration * dt
+      if (r == 5 && c === 5) {
+        // debugger
+      }
       row.push({displacement, velocity, acceleration})
     }
     newGrid.push(row)
@@ -36,30 +47,48 @@ function step(grid) {
   return newGrid
 }
 
-function getDu2dx2(grid, r, c) {
+function getD2Udx2(grid, r, c) {
   const width = grid[0].length
-  const leftVelocity = c === 0 ? 0 : grid[r][c-1].velocity
-  const velocity = grid[r][c].velocity
-  const rightVelocity = c === width - 1 ? 0 : grid[r][c+1].velocity
-  // const leftDisplacement = c === 0 ? 0 : grid[r][c-1].displacement
-  // const displacement = grid[r][c].displacement
-  // const rightDisplacement = c === width - 1 ? 0 : grid[r][c+1].displacement
-  // velocity can be cancelled out, left in for clarity
-  return ((rightVelocity - velocity) + (velocity - leftVelocity)) / 2
+  const left = c === 0 ? 0 : grid[r][c-1].displacement
+  const displacement = grid[r][c].displacement
+  const right = c === width - 1 ? 0 : grid[r][c+1].displacement
+  return right + left - 2 * displacement
 }
 
-function getDu2dy2(grid, r, c) {
+function getD2udy2(grid, r, c) {
   const height = grid.length
-  const up = c === 0 ? 0 : grid[r][c-1].velocity
-  const velocity = grid[r][c].velocity
-  const down = c === height - 1 ? 0 : grid[r][c+1].velocity
-  return ((up - velocity) + (velocity - down)) / 2
+  const up = r === 0 ? 0 : grid[r-1][c].displacement
+  const displacement = grid[r][c].displacement
+  const down = r === height - 1 ? 0 : grid[r+1][c].displacement
+  return up + down - 2 * displacement
 }
+
+function show(grid) {
+  const gridHeight = grid.length
+  const gridWidth = grid[0].length
+  const cellWidth = width / gridWidth
+  const cellHeight = height / gridHeight
+  for (let r = 0; r < gridHeight; r++) {
+    for (let c = 0; c < gridWidth; c++) {
+      const displacement = grid[r][c].displacement
+      const hue = map(displacement, -1, 1, 172, 0)
+      fill(hue, 255, 255)
+      rect(c*cellWidth, r*cellHeight, cellWidth, cellHeight)
+    }
+  }
+}
+
+let grid
 
 function setup() {
   createCanvas(400, 400);
+  noStroke()
+  colorMode(HSB)
+  grid = initialize(50,50)
 }
 
 function draw() {
   background(51);
+  grid = step(grid)
+  show(grid)
 }
