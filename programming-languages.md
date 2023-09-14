@@ -133,4 +133,4 @@ An implementation of the [pi calculus](https://en.wikipedia.org/wiki/%CE%A0-calc
 
 An implementation of mini kanren, a logic programming language like prolog.
 
-Repository includes a type checker implemented using mini kanren: https://github.com/quasarbright/mike-kanren/blob/master/private/type-checker.rkt
+Repository includes a [type checker implemented using mini kanren](https://github.com/quasarbright/mike-kanren/blob/master/private/type-checker.rkt)
