@@ -67,6 +67,12 @@ A simulation of bird flocking behavior. The boids try to stay near the center of
 
 [![screenshot of boids](https://quasarbright.github.io/p5js/boids/screenshot.png)](https://quasarbright.github.io/p5js/boids)
 
+## [Wave Equation](https://quasarbright.github.io/p5js/wave-equation)
+
+A numerical approximation of the [wave equation](https://en.wikipedia.org/wiki/Wave_equation), visualized as a heat map. It's like a simulation of the surface of a pond, starting off flat with a few splashes. The error in the approximation leads to interesting behavior where you have regions which are checkerd with maximum and minimum displacement bordering regions with zero displacement. And these regions are stable. So stable that they form a new type of wave that dominates the simulation. It pretty much always ends up in a "checkered wave" state. This looks way cooler than what it would look like if it worked properly, so I left it like this instead of fixing it.
+
+[![screenshot of wave equation](https://quasarbright.github.io/p5js/wave-equation/screenshot.png)](https://quasarbright.github.io/p5js/wave-equation)
+
 ## [Conway's Game of Life](https://quasarbright.github.io/p5js/conway)
 This is [John Conway's game of life](https://www.wikiwand.com/en/Conway%27s_Game_of_Life), a cellular automaton where cells live or die depending on the state of their neighbors. Click on the cells to toggle their life state and hit start to see what happens.
 ## [Display Graph](https://quasarbright.github.io/p5js/display%20graph)

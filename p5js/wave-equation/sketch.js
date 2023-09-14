@@ -2,21 +2,38 @@
 
 // A Grid is a 2D array of Cells
 
+// controls the wave speed
 const C = .1
-const dt = .5
-
+// controls the precision of the approximation. smaller is more precise.
+const dt = .07
+// simulation steps per frame. makes the "speed" of the animation independent of dt
+const stepsPerFrame = Math.ceil(10 / dt)
+// number of cells in a row/column of the grid
+const gridSize = 75
+const gridWidth = gridSize
+const gridHeight = gridSize
 
 function initialize(width, height) {
   const grid = []
   for (let r = 0; r < height; r++) {
     const row = []
     for (let c = 0; c < width; c++) {
-      // plane wave from left
+      // column with positive displacement on the left
       // row.push({displacement: c == 0 ? 1 : 0, velocity: 0, acceleration: 0})
       // positive displacement at top left
       // row.push({displacement: c <= 5 && r <= 5 ? 1 : 0, velocity: 0, acceleration: 0})
       // impulse at the center
-      row.push({displacement: 0, velocity: c === Math.floor(width / 2) && r === Math.floor(width / 2) ? 1 : 0, acceleration: 0})
+      // row.push({displacement: 0, velocity: c === Math.floor(width / 2) && r === Math.floor(width / 2) ? 1 : 0, acceleration: 0})
+      // random impulses
+      if (Math.random() < 0.001) {
+        if (Math.random() < 0.5) {
+          row.push({displacement: 0, velocity: 1, acceleration: 0})
+        } else {
+          row.push({displacement: 0, velocity: -1, acceleration: 0})
+        }
+      } else {
+        row.push({displacement: 0, velocity: 0, acceleration: 0})
+      }
     }
     grid.push(row)
   }
@@ -37,9 +54,6 @@ function step(grid) {
       // from the wave equation
       const acceleration = C * C * (d2udx2 + d2udy2)
       const velocity = grid[r][c].velocity + acceleration * dt
-      if (r == 5 && c === 5) {
-        // debugger
-      }
       row.push({displacement, velocity, acceleration})
     }
     newGrid.push(row)
@@ -71,7 +85,7 @@ function show(grid) {
   for (let r = 0; r < gridHeight; r++) {
     for (let c = 0; c < gridWidth; c++) {
       const displacement = grid[r][c].displacement
-      const hue = map(displacement, -1, 1, 172, 0)
+      const hue = map(displacement, -1, 1, 240, 0)
       fill(hue, 255, 255)
       rect(c*cellWidth, r*cellHeight, cellWidth, cellHeight)
     }
@@ -81,14 +95,16 @@ function show(grid) {
 let grid
 
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(800, 800);
   noStroke()
   colorMode(HSB)
-  grid = initialize(50,50)
+  grid = initialize(gridSize,gridSize)
 }
 
 function draw() {
   background(51);
-  grid = step(grid)
+  for(let i = 0; i < stepsPerFrame; i++) {
+    grid = step(grid)
+  }
   show(grid)
 }
