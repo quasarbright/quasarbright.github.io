@@ -1,6 +1,8 @@
 # [Processing](https://processing.org/)
 Here are some interesting projects I've done using Processing for Java. Since Processing sketches can't be directly displayed in browser like p5.js sketches, I have included screenshots and YouTube videos of my sketches running.
 
+Many of these were based on videos by [The Coding Train](https://www.youtube.com/channel/UCvjgXvBlbQiydffZU7m1_aw).
+
 ## Magnetic Pendulum
 ![](https://quasarbright.github.io/images/magnet%20pendulum.PNG)  
 
@@ -16,6 +18,27 @@ Here's how the color ploting works: The function is a function from one complex 
 The neutral, base graph starts out as a rainbow color wheel centered at the origin. It is black in the center and gets brighter as the distance from the origin increases. The complex numbers are plotted where they belong in the complex plane, and are colored accordingly. Now, each complex number has a color and location associated with it.  
 
 To graph a function, we go to each point in the complex plane, call that `z`, calculate `f(z)`, calculate the color of `f(z)` according to the base color map, and color in that point in the complex plane with that color. For example, if `f(1+2i) = 0`, the point `1+2i` in the complex plane will be black.  
+
+## 2D Random Walker
+<iframe width="560" height="315" src="https://www.youtube.com/embed/IPxwzn4a5uQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
+
+I create several [random walkers](https://www.wikiwand.com/en/Random_walk) and trace their paths. I made it so the color of each new walker slowly progresses through the color wheel. Once they go out of bounds, they despawn and a new walker spawns.
+
+## 3D Random Walker
+<iframe width="560" height="315" src="https://www.youtube.com/embed/Ldaid-rPy-g" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+3D version
+
+
+## 2D Ray Casting
+<iframe width="560" height="315" src="https://www.youtube.com/embed/rAVZWu2lDwQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
+
+Rays are cast from a point and surfaces are shaded based on the distance from the source. I made a 2D environment with some shapes and walls, extended it vertically, and made a user-controlled, first person camera. There is also a top-down view.
+
+## Square Marching Terrain
+<iframe width="560" height="315" src="https://www.youtube.com/embed/xzkkaIIIuj0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
+
+I made a 2D perlin noise scalar function that changes over time, thresholded it, and used a square marching algorithm to make shapes out of it. I thought it kind of looked like terrain, so I colored it like dirt and water.
 
 ## Perlin Cube Terrain
 <iframe width="560" height="315" src="https://www.youtube.com/embed/_ozs9ZBzMyw" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
@@ -46,26 +69,6 @@ When the mouse is pressed, the particles are attracted to the mouse cursor. I al
 <iframe width="560" height="315" src="https://www.youtube.com/embed/3SGk1oI-7N8" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 I colored the mandelbrot set by the number of steps required to escape the convergence zone, and allowed the user to pan and zoom. You can't zoom in arbitrarily far due to the limited precision of floating point numbers.
-## 2D Random Walker
-<iframe width="560" height="315" src="https://www.youtube.com/embed/IPxwzn4a5uQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
-
-I create several [random walkers](https://www.wikiwand.com/en/Random_walk) and trace their paths. I made it so the color of each new walker slowly progresses through the color wheel. Once they go out of bounds, they despawn and a new walker spawns.
-
-## 3D Random Walker
-<iframe width="560" height="315" src="https://www.youtube.com/embed/Ldaid-rPy-g" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-3D version
-
-
-## 2D Ray Casting
-<iframe width="560" height="315" src="https://www.youtube.com/embed/rAVZWu2lDwQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
-
-Rays are cast from a point and surfaces are shaded based on the distance from the source. I made a 2D environment with some shapes and walls, extended it vertically, and made a user-controlled, first person camera. There is also a top-down view.
-
-## Square Marching Terrain
-<iframe width="560" height="315" src="https://www.youtube.com/embed/xzkkaIIIuj0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
-
-I made a 2D perlin noise scalar function that changes over time, thresholded it, and used a square marching algorithm to make shapes out of it. I thought it kind of looked like terrain, so I colored it like dirt and water.
 
 ## 2D Vector Flow Field
 <iframe width="560" height="315" src="https://www.youtube.com/embed/MwrhJQ6_KUk" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  

@@ -2,8 +2,12 @@
 title: Programming Languages
 ---
 
-These are programming langauges I have made alone and with friends. Programming languages is currently my favorite area of computer science. There are so many great ideas in PL
-and I really love learning more about them and implementing them myself. I love interpreters, type systems, and compilers
+These are programming languages and programming langauge-related projects I have made alone and with friends. Programming language theory is currently my favorite area of computer science. There are so many great ideas
+and I really love learning more about languages and implementing them myself. I love interpreters, macros, type systems, and compilers.
+
+Some of these are general purpose languages made from scratch, some are domain-specific languages embedded in other languages, and some are in between.
+
+This is arranged roughly chronologically.
 
 # [Subduce](https://subduce.readthedocs.io/en/latest/#)
 [Subduce](https://github.com/quasarbright/Subduce) is the first programming language I made. It is a functional programming language based on Python and racket's advanced student language.
@@ -18,7 +22,7 @@ programming languages was my professor quickly showing me how to make a tiny lam
 # [PongChamp](https://github.com/quasarbright/PongChamp)
 
 [PongChamp](https://github.com/quasarbright/PongChamp) is an imperative programming language my friend [Ryan Mitchell](https://github.com/RyanRio) and I made together. It is a scripting language
-with syntax inspired by JavaScript. It was originally created as a scripting langauge for a game engine he was developing for a class on game engines. As such, it has
+with syntax inspired by JavaScript. It was originally created as a scripting language for a game engine he was developing for a class on game engines. As such, it has
 a foreign-function-interface for C/C++.
 
 The language was developed in Haskell. Currently, the language is directly interpreted by directly evaluating/running an AST,
@@ -88,3 +92,45 @@ are incremented by their differentials, which will result in `x = 1.1`, `dx = .1
 
 An small OCaml subset with type inference, arithmetic, boolean logic, and functions written in OCaml.
 I'm pretty sure I wrote this while reading Simon Peyton Jones' "the implementation of functional programming languages"
+
+<!-- # [A Dependently Typed Language](https://github.com/quasarbright/learn-racket/blob/master/dependent-types.rkt)
+
+A tiny dependently typed language based on [this paper](https://www.andres-loeh.de/LambdaPi/LambdaPi.pdf). In a dependently typed language, the return type of a function can depend on the _value_ of the argument passed to it. But it's still "statically" type checked. There is a little bit of evaluation during type checking. -->
+
+# [Counter Machine Language](https://github.com/quasarbright/learn-racket/blob/master/counter-machine.rkt)
+
+An assembly-like language for [counter machines](https://en.wikipedia.org/wiki/Counter_machine) inspired by [this computerphile video](https://www.youtube.com/watch?v=PXN7jTNGQIw&ab_channel=Computerphile).
+
+# [Delimited Continuations](https://github.com/quasarbright/learn-racket/blob/master/delimited-continuations.rkt)
+
+This isn't really a standalone programming language. It's a pre-processor for racket which transforms the program to continuation passing style supporting delimited continuations, then invokes racket's interpreter to evaluate the program. Delimited continuations allow control flow constructs like exceptions, generators, multi-threading, and non-determinism to be implemented as libraries. That's right, libraries! In a language with delimited continuations, these constructs don't have to be baked into the implementation of the language. For examples of what you can do with delimited continuations, see [my implementation of algebraic effects](https://github.com/quasarbright/learn-racket/blob/master/algebraic-effect-2.rkt).
+
+# [Pattern Matcher](https://github.com/quasarbright/learn-racket/blob/master/match.rkt)
+
+Pattern matching allows you to do case analysis and de-structure data based on its shape. See [the wikipedia page](https://en.wikipedia.org/wiki/Pattern_matching) for some examples. This is an extremely powerful and useful tool mostly from academic languages which is starting to [creep into the mainstream](https://peps.python.org/pep-0636/).
+
+This is a domain-specific language, not a general purpose programming language.
+
+# [Miniclass](https://github.com/quasarbright/miniclass)
+
+This is an implementation of a basic class system for Racket. It is a collection of macros that compiles class syntax to struct usages with some book-keeping. This repository actually contains a few implementations. It was developed to compare a few different methods of developing a macro-based DSL in Racket as part of a PL research paper I helped with.
+
+# [Sytax Spec](https://github.com/michaelballantyne/syntax-spec)
+
+This is a meta language for creating sophisticated domain specific languages in Racket. This is Michael Ballantyne's project, not mine. I was his research assistant and helped him develop it.
+
+It is a useful tool for developing the frontend (expander, binding checking, etc.) of a macro-based compiler for a DSL in Racket. Syntax spec makes it super easy to create sophisticated macro-extensible DSLs in racket without having to implement your own DSL expander.
+
+# [Functional Reactive Programming](https://github.com/quasarbright/frp/blob/master/main.rkt)
+
+A tiny functional reactive programming library/DSL. Reactive programming is like a spreadsheet with formulas. When You change a value, formula cells that depend on that value are updated automatically, and only when they need to be. This sort of system can be embedded in a general purpose programming langauge as a library, like React.js.
+
+# [Pi Calculus](https://github.com/quasarbright/pi-calculus/blob/master/main.rkt)
+
+An implementation of the [pi calculus](https://en.wikipedia.org/wiki/%CE%A0-calculus) as a DSL. The pi calculus is like the lambda calculus, but for concurrent programming instead of functional programming. It is a very tiny langauge that captures the essence of concurrency and is important to the theory of concurrent programming.
+
+# [Mini Kanren](https://github.com/quasarbright/mike-kanren/blob/master/main.rkt)
+
+An implementation of mini kanren, a logic programming language like prolog.
+
+Repository includes a type checker implemented using mini kanren: https://github.com/quasarbright/mike-kanren/blob/master/private/type-checker.rkt
