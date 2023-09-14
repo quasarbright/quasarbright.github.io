@@ -3,9 +3,7 @@ title: Shaders
 ---
 * TOC
 {:toc}
-These are Fragment shaders I've made using webgl. A fragment shader uses your GPU to do pick a color for every pixel on your screen.
-Since your GPU can run a shader for many pixels at the same time, it runs very fast despite the number of computations. This is perfect for when you
-want to compute something for every point on the screen.
+These are Fragment shaders I've made using webgl. A fragment shader is a program that computes the color for a pixel on the screen. Your GPU can run this program in parallel for every pixel on the screen, so it runs very fast despite there being a lot of pixels on the screen. This is perfect for something like visualizing the mandelbrot set, where each pixel is colored based on where it ends up in the complex plane after performing some computation.
 
 ## [Mandelbrot Set](https://quasarbright.github.io/p5js/mandelbrotShaderRenormalized/)
 [![mandelbrot set](https://quasarbright.github.io/p5js/mandelbrotShaderRenormalized/screenshot.png)](https://quasarbright.github.io/p5js/mandelbrotShaderRenormalized/)
@@ -28,5 +26,5 @@ on which magnet it ends up at and darkened based on how long it took to stop at 
 create an interesting visual effect. You can adjust all of the parameters of the simulation to change how it looks and moves.
 
 You can move around by clicking and dragging and zoom in and out by scrolling.
-### GPU Warning
+
 This one is really heavy on the GPU. If it runs too slowly, try decreasing the maximum iterations or making your browser-window smaller.
