@@ -134,3 +134,7 @@ An implementation of the [pi calculus](https://en.wikipedia.org/wiki/%CE%A0-calc
 An implementation of mini kanren, a logic programming language like prolog.
 
 Repository includes a [type checker implemented using mini kanren](https://github.com/quasarbright/mike-kanren/blob/master/private/type-checker.rkt)
+
+# [ZFC++](https://github.com/quasarbright/learn-racket/blob/master/zfcpp.rkt)
+
+An implementation of [ZFC++](https://github.com/quasarbright/learn-racket/blob/master/match.rkt), an esoteric language that operates on sets.
