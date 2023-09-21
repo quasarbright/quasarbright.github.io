@@ -1,6 +1,8 @@
 ---
 title: Programming Languages
 ---
+* TOC
+{:toc}
 
 These are programming languages and programming langauge-related projects I have made alone and with friends. Programming language theory is currently my favorite area of computer science. There are so many great ideas
 and I really love learning more about languages and implementing them myself. I love interpreters, macros, type systems, and compilers.
@@ -134,3 +136,9 @@ An implementation of the [pi calculus](https://en.wikipedia.org/wiki/%CE%A0-calc
 An implementation of mini kanren, a logic programming language like prolog.
 
 Repository includes a [type checker implemented using mini kanren](https://github.com/quasarbright/mike-kanren/blob/master/private/type-checker.rkt)
+
+# [Async Await](https://github.com/quasarbright/learn-racket/blob/master/async-await.rkt)
+
+An implementation of a language with JavaScript-style promises and the desugaring of async/await to using promises.
+Similar to delimited continuations, the desugaring is a pre-processing step, and the program that invokes the Racket interpreter afterwards. I'm not going to make a whole end-to-end language every time I want to do something interesting! With Racket, it's easy to make languages without having to implement the whole language. I trivially leveraged Racket's parser and evaluator, and was able to focus solely on the runtime features and the pre-processing.
+
