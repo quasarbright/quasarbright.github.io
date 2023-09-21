@@ -1,7 +1,7 @@
 ---
 title: QuasarBright
 ---
-![me](https://quasarbright.github.io/images/shallot-cropped-small.jpg)
+![me](https://quasarbright.github.io/images/me-2023-small.png)
 # Michael Delmonaco
 I am a software developer interested in programming languages, mathematics, physics, videogames, and rock climbing. I also make digital art based on characters from videogames and shows I like.
 

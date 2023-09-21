@@ -137,6 +137,10 @@ An implementation of mini kanren, a logic programming language like prolog.
 
 Repository includes a [type checker implemented using mini kanren](https://github.com/quasarbright/mike-kanren/blob/master/private/type-checker.rkt)
 
+# [ZFC++](https://github.com/quasarbright/learn-racket/blob/master/zfcpp.rkt)
+
+An implementation of [ZFC++](https://github.com/quasarbright/learn-racket/blob/master/match.rkt), an esoteric language that operates on sets.
+
 # [Async Await](https://github.com/quasarbright/learn-racket/blob/master/async-await.rkt)
 
 An implementation of a language with JavaScript-style promises and the desugaring of async/await to using promises.
