@@ -121,6 +121,7 @@ canvas.addEventListener('mousemove', (e) => {
   }
 })
 canvas.addEventListener('wheel', (e) => {
+  e.preventDefault()
   rect = canvas.getBoundingClientRect();
   let x = e.clientX - rect.left
   let y = canvas.height - (e.clientY - rect.top)
