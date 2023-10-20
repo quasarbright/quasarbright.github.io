@@ -34,8 +34,8 @@ Many of these were based on videos by [The Coding Train](https://www.youtube.com
 
 [![screenshot of wave equation](https://quasarbright.github.io/p5js/wave-equation/screenshot.png)](https://quasarbright.github.io/p5js/wave-equation)
 
-# [Unity Games](https://quasarbright.github.io/UnityProjects/)
-These are some webgl games I made in the Unity game engine. Since they run on webgl, they can run right from your browser. The code is stored in its own repository, UnityProjects.
+# [Games](https://quasarbright.github.io/UnityProjects/)
+These are some games I made, mostly in the Unity game engine. They are all playable in the browser.
 # [OCaml projects](https://quasarbright.github.io/OCaml/index)
 This is a collection of projects I made in [OCaml](https://ocaml.org/). OCaml is a statically typed, compiled, functional programming language. For me, its killer features are algebraic types, pattern matching, and type inference. I first learned about OCaml in a compilers course I'm taking and I instantly loved it. After using the visitor pattern for union types in Java for the 100th time, when I saw a union type defined in just a few lines in OCaml, I was very impressed. And pattern matching is such a beautiful way to break down structured data and algebraic types.  
 # [Haskell projects](https://quasarbright.github.io/Haskell)

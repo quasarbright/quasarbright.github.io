@@ -131,6 +131,8 @@ A tiny functional reactive programming library/DSL. Reactive programming is like
 
 An implementation of the [pi calculus](https://en.wikipedia.org/wiki/%CE%A0-calculus) as a DSL. The pi calculus is like the lambda calculus, but for concurrent programming instead of functional programming. It is a very tiny langauge that captures the essence of concurrency and is important to the theory of concurrent programming.
 
+[Here is a blog post about it.](https://quasarbright.github.io/blog/2023/10/pi-calculus-understanding-and-implementing-concurrency.html)
+
 # [Mini Kanren](https://github.com/quasarbright/mike-kanren/blob/master/main.rkt)
 
 An implementation of mini kanren, a logic programming language like prolog.
