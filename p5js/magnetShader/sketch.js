@@ -129,14 +129,14 @@ canvas.addEventListener('wheel', (e) => {
   y = z[1]
   let sign
   if (e.deltaY > 0) {
-    sign = 1
-  } else {
     sign = -1
+  } else {
+    sign = 1
   }
   let strength = .1 * sign
-  centerx = lerp(centerx, x, -strength)
-  centery = lerp(centery, y, -strength)
-  zoom *= 1 - strength
+  centerx = lerp(centerx, x, strength)
+  centery = lerp(centery, y, strength)
+  zoom /= 1 - strength
 
 })
 function resizeCanvas(gl) {

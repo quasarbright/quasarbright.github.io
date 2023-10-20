@@ -104,7 +104,9 @@ canvas.addEventListener('mousemove', (e) => {
     dragStart = curr
   }
 })
+
 canvas.addEventListener('wheel',(e) => {
+  e.preventDefault()
   rect = canvas.getBoundingClientRect();
   let x = e.clientX - rect.left
   let y = canvas.height - (e.clientY - rect.top)
@@ -113,15 +115,15 @@ canvas.addEventListener('wheel',(e) => {
   y = z[1]
   let sign
   if(e.deltaY > 0) {
-    sign = 1
-  } else {
     sign = -1
+  } else {
+    sign = 1
   }
   let strength = .1 * sign
-  centerx = lerp(centerx, x, -strength)
-  centery = lerp(centery, y, -strength)
-  console.log([sign, centerx, centery])
-  zoom *= 1 - strength
+  centerx = lerp(centerx, x, strength)
+  centery = lerp(centery, y, strength)
+  // console.log({sign, centerx, centery, x, y})
+  zoom /= 1 - strength
   
 })
 function resizeCanvas(gl) {
