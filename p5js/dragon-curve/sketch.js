@@ -36,7 +36,14 @@ function setup() {
   strokeWeight(1)
 }
 
+let seconds = 0
+
 function draw() {
+  const currentSeconds = Math.floor(millis() / 1000)
+  if (currentSeconds > seconds) {
+    seconds = currentSeconds
+    curve = nextCurve(curve)
+  }
   try {
     background(51);
     push()
