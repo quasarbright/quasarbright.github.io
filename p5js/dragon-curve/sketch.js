@@ -52,9 +52,16 @@ function draw() {
     translate(width / 2, height / 2)
     scale(Math.max(width, height) / (1.1 * 2 * radius))
     beginShape()
-    for (const v of curve) {
-      vertex(v.x, v.y)
+    vertex(curve[0].x, curve[0].y)
+    for (let i = 0; i < curve.length - 1; i++) {
+      const v = curve[i]
+      const u = curve[i+1]
+      const vvu = p5.Vector.lerp(v, u, 0.2928932188134525)
+      const vuu = p5.Vector.lerp(v, u, 1 - 0.2928932188134525)
+      vertex(vvu.x, vvu.y)
+      vertex(vuu.x, vuu.y)
     }
+    vertex(curve[curve.length-1].x, curve[curve.length-1].y)
     endShape()
     pop()
   } catch (e) {
