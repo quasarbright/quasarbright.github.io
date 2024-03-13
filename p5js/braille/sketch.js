@@ -149,7 +149,7 @@ function dither(arr) {
       if(down)
         arr[r+1][c] += error * 5.0/16
       if(left && down)
-        arr[r+1][c-1] += error * 1.0/16 
+        arr[r+1][c-1] += error * 3.0/16 
     }
   }
   return arr

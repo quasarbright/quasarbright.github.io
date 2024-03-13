@@ -125,6 +125,10 @@ I combined dithering and Braille together to render an image as text. I resize t
 
 Similar to braille dithering, but uses moon phase emojis.
 
+## [Image -> Conway's Game of Life](https://quasarbright.github.io/p5js/image-conway)
+
+Dithers an image to black and white pixels and then runs that in conway's game of life
+
 ## [Boids](https://quasarbright.github.io/p5js/boids)
 
 A simulation of bird flocking behavior. The boids try to stay near the center of the flock, avoid getting too close to other boids, and try to head in the same direction and speed as nearby boids. These simple rules lead to some life-like behavior.
