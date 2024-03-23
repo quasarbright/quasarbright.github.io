@@ -1,15 +1,15 @@
 ---
-title: p5.js stuff
+title: p5.js stuff (and some regular js stuff)
 ---
 * TOC
 {:toc}
-# [P5.js](https://p5js.org/) (and some plain javascript)
+# [P5.js](https://p5js.org/) stuff (and some regular js stuff)
 ### What is P5.js?
 P5.js is a javascript graphics library. A graphics library lets your program display things other than text, like shapes, pictures, animations, and pretty much anything you can think of.
 
-Many of these were based on videos by [The Coding Train](https://www.youtube.com/channel/UCvjgXvBlbQiydffZU7m1_aw).
+Some of these were based on videos by [The Coding Train](https://www.youtube.com/channel/UCvjgXvBlbQiydffZU7m1_aw). Most of the source code is [here](https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js)
 
-## [3 point perspective](https://quasarbright.github.io/p5js/3PointPerspective)
+## [3 Point Perspective](https://quasarbright.github.io/p5js/3PointPerspective)
 [3 point perspective](https://en.wikipedia.org/wiki/Perspective_(graphical)) is a drawing technique to draw realistic-looking objects in 3D. You pick 3 2D points far away from the object you're drawing and lines that would be parallel in 3D actually meet at one of these perspective points.
 
 In this visualization, you can click and drag the 3 white perspective points and one of the vertices of the cube. You can also change the dimensions of the cube with the sliders to the left. It's interesting to see how messing with things changes how the cube looks!
@@ -141,7 +141,7 @@ These creatures need to eat green food and avoid red poison to survive. They sta
 
 [![screenshot of genetic steering](https://quasarbright.github.io/p5js/screenshots/genetic-steering.png)](https://editor.p5js.org/mdelmonaco/present/HJpO5IJ7Z)
 
-## [smart rockets](https://editor.p5js.org/mdelmonaco/present/BkJquZ1Ae)
+## [Smart Rockets](https://editor.p5js.org/mdelmonaco/present/BkJquZ1Ae)
 There are two competing populations of rockets, each using gnetics and evolution to try to learn to reach the target by applying a series of forces to themselves. The populations don't interact with each other, but it's cool to see two at once. The better rockets have a higher chance of reproducing and there is genetic crossover between parents
 
 [![screenshot of smart rockets](https://quasarbright.github.io/p5js/screenshots/smart-rockets.png)](https://editor.p5js.org/mdelmonaco/present/BkJquZ1Ae)
@@ -176,3 +176,7 @@ This generates a [minimum spanning tree](https://www.wikiwand.com/en/Minimum_spa
 This allows you to display any graph and then edit the locations of vertices by clicking and dragging. Currently, it randomly generates a graph, but theoretically, the code can be used to display any graph.
 ## [Travelling salesman problem](https://quasarbright.github.io/p5js/travelling%20salesman)
 This solves the [travelling salesman problem](https://www.wikiwand.com/en/Travelling_salesman_problem) for a random collection of points.
+
+## [Sudoku](https://quasarbright.github.io/sudoku/)
+
+Sudoku, implemented using React. [Source code here](https://github.com/quasarbright/sudoku)
