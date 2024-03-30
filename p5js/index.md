@@ -11,7 +11,7 @@ Some of these were based on videos by [The Coding Train](https://www.youtube.com
 
 ## [Minesweeper](https://quasarbright.github.io/minesweeper)
 
-Guess-free minesweeper with an animated solver.
+Guess-free minesweeper with an animated solver. [Source code here](https://github.com/quasarbright/minesweeper)
 
 ## [3 Point Perspective](https://quasarbright.github.io/p5js/3PointPerspective)
 [3 point perspective](https://en.wikipedia.org/wiki/Perspective_(graphical)) is a drawing technique to draw realistic-looking objects in 3D. You pick 3 2D points far away from the object you're drawing and lines that would be parallel in 3D actually meet at one of these perspective points.
