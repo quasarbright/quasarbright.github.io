@@ -27,8 +27,8 @@ Many of these were based on videos by [The Coding Train](https://www.youtube.com
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/IPxwzn4a5uQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>  
 
-# [p5 js projects](https://quasarbright.github.io/p5js/index)
-This is a collection of visualizations I made using p5.js. They can run in browser, so just click on a link and it'll run. The code is stored in the quasarbright repository.
+# [JavaScript projects](https://quasarbright.github.io/p5js/index)
+This is a collection of JavaScript projects, mostly visualizations I made using p5.js. They can run in browser, so just click on a link and it'll run. The code is stored in the quasarbright repository.
 
 Many of these were based on videos by [The Coding Train](https://www.youtube.com/channel/UCvjgXvBlbQiydffZU7m1_aw).
 
