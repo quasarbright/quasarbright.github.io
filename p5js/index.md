@@ -144,6 +144,12 @@ A numerical approximation of the [wave equation](https://en.wikipedia.org/wiki/W
 ## [Conway's Game of Life](https://quasarbright.github.io/p5js/conway)
 This is [John Conway's game of life](https://www.wikiwand.com/en/Conway%27s_Game_of_Life), a cellular automaton where cells live or die depending on the state of their neighbors. Click on the cells to toggle their life state and hit start to see what happens.
 
+## [Unbounded Conway's Game of Life](https://quasarbright.github.io/p5js/unbounded-conway)
+
+[![screenshot of unbounded conway](https://quasarbright.github.io/p5js/screenshots/unbounded-conway.png)](https://quasarbright.github.io/p5js/unbounded-conway)
+
+Conway's game of life, but the size of the world is unlimited. Rather than storing a grid of cells, we store the positions of living cells and update those cells and their neighbors to compute the next generation. The camera automatically zooms out to fit the whole world into view.
+
 ## [Genetic Steering](https://editor.p5js.org/mdelmonaco/present/HJpO5IJ7Z)
 These creatures need to eat green food and avoid red poison to survive. They starve if they don't eat enough, and have a random chance of reproducing with some mutation at every moment. Each creature has a radius they can see food, a radius for poison, an attractive strength for food, and a repulsive force for poison. What configuration is optimal for survival?
 
