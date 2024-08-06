@@ -211,19 +211,27 @@ function removeSeam(seam) {
 }
 
 function go() {
-  requestAnimationFrame(animate)
+  requestAnimationFrame(animateShowMinimalSeam)
 }
 
-function animate(t) {
-  const image = getCanvasImage(editedCanvas)
-  if (image[0].length > 1) {
-    for (let i = 0; i < 1; i++) {
-      removeMinimalSeam()
+function animateShowMinimalSeam(t) {
+  if (getCanvasImage(editedCanvas).length > 1) {
+    const seam = findMinimalSeam()
+    for (const {r,c} of seam) {
+      // TODO draw red pixel
+      const ctx = displayCanvas.getContext('2d')
+      ctx.fillStyle = 'rgba(255,0,0,1)'
+      ctx.fillRect(c,r,2,2)
     }
-    // setCanvasToImage(displayCanvas, getEnergyImage())
-    // this shouldn't work. image shouldn't be getting mutated
+    requestAnimationFrame(animateRemoveSeam(seam))
+  }
+}
+
+function animateRemoveSeam(seam) {
+  return (t) => {
+    removeSeam(seam)
     setCanvasToImage(displayCanvas, isEnergyMode() ? getEnergyImage() : getCanvasImage(editedCanvas))
-    requestAnimationFrame(animate)
+    requestAnimationFrame(animateShowMinimalSeam)
   }
 }
 
