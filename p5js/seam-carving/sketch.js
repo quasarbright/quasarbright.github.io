@@ -19,7 +19,6 @@ function loadFile(event) {
     paintImgToCanvas(img, editedCanvas)
     displayCanvas = document.getElementById('canvas')
     paintImgToCanvas(img, displayCanvas)
-    setCanvasToImage(displayCanvas, getEnergyImage())
   }
 }
 
@@ -55,6 +54,7 @@ function fromImageData(imageData) {
 // Canvas [number, number, number][][] -> void
 function setCanvasToImage(canvas, image) {
   canvas.height = image.length
+  canvas.width = image[0].length
   const imageData = toImageData(image)
   const ctx = canvas.getContext('2d')
   ctx.clearRect(0, 0, canvas.width, canvas.height); 
@@ -131,19 +131,95 @@ function getEnergy() {
   }))
 }
 
+// -> void
+// remove vertical seam of lowest energy
+function removeMinimalSeam() {
+  const seam = findMinimalSeam()
+  return removeSeam(seam)
+}
+
+// -> {r: number, c: number}[]
+function findMinimalSeam() {
+  const minimalEnergyMap = findMinimalEnergyMap()
+  const height = minimalEnergyMap.length
+  const width = minimalEnergyMap[0].length
+  const seam = []
+  {
+    const r = height - 1
+    const children = minimalEnergyMap[r].map((_,c) => ({r,c}))
+    let minimalEnergyChild = argmin(children, ({r,c}) => minimalEnergyMap[r][c])
+    seam.push(minimalEnergyChild)
+  }
+  while (true) {
+    const {r,c} = seam[seam.length - 1]
+    if (r === 0) {
+      break
+    }
+    const parents = [-1,0,1].map(dc => ({r: r-1, c: c+dc})).filter(({r,c}) => c > 0 && c < width)
+    const minimalEnergyParent = argmin(parents, ({r,c}) => minimalEnergyMap[r][c])
+    seam.push(minimalEnergyParent)
+  }
+  return seam
+}
+
+// -> number[][]
+// the minimal energy of a seam from the top of the image to this pixel.
+function findMinimalEnergyMap() {
+  const energyMap = getEnergy()
+  const height = energyMap.length
+  const width = energyMap[0].length
+  const minimalEnergyMap = [energyMap[0].slice()]
+  for (let r = 1; r < height; r++) {
+    const row = []
+    for (let c = 0; c < width; c++) {
+      parentEnergies = [-1,0,1].map(
+        dc => minimalEnergyMap[r-1][c+dc]
+      ).filter(
+        energy => energy !== undefined
+      )
+      row.push(energyMap[r][c] + Math.min(...parentEnergies))
+    }
+    minimalEnergyMap.push(row)
+  }
+  return minimalEnergyMap
+}
+
+// any[] (any -> number) -> any | undefined
+function argmin(arr, fun) {
+  let min = Infinity
+  let minElement = undefined
+  for(const ele of arr) {
+    const val = fun(ele)
+    if (val < min) {
+      min = val
+      minElement = ele
+    }
+  }
+  return minElement
+}
+
+// {r: number, c: number}[] -> void
+function removeSeam(seam) {
+  const image = getCanvasImage(editedCanvas)
+  for (const {r,c} of seam) {
+    image[r].splice(c,1)
+  }
+  setCanvasToImage(editedCanvas, image)
+}
 
 function go() {
-  // requestAnimationFrame(animate)
+  requestAnimationFrame(animate)
 }
 
 function animate(t) {
   const image = getCanvasImage(editedCanvas)
-  if (image.length > 1) {
+  if (image[0].length > 1) {
     for (let i = 0; i < 1; i++) {
-      image.pop()
+      removeMinimalSeam()
     }
-    setCanvasToImage(editedCanvas, image)
-    setCanvasToImage(displayCanvas, image)
+    // setCanvasToImage(displayCanvas, getEnergyImage())
+    // this shouldn't work. image shouldn't be getting mutated
+    setCanvasToImage(displayCanvas, getCanvasImage(editedCanvas))
     requestAnimationFrame(animate)
   }
 }
