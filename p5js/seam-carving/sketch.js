@@ -19,6 +19,9 @@ function loadFile(event) {
     paintImgToCanvas(img, editedCanvas)
     displayCanvas = document.getElementById('canvas')
     paintImgToCanvas(img, displayCanvas)
+    if (isEnergyMode()) {
+      setCanvasToImage(displayCanvas, getEnergyImage())
+    }
   }
 }
 
@@ -219,7 +222,11 @@ function animate(t) {
     }
     // setCanvasToImage(displayCanvas, getEnergyImage())
     // this shouldn't work. image shouldn't be getting mutated
-    setCanvasToImage(displayCanvas, getCanvasImage(editedCanvas))
+    setCanvasToImage(displayCanvas, isEnergyMode() ? getEnergyImage() : getCanvasImage(editedCanvas))
     requestAnimationFrame(animate)
   }
+}
+
+function isEnergyMode() {
+  return document.getElementById('energy-mode').checked
 }
