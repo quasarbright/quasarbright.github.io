@@ -19,6 +19,7 @@ function loadFile(event) {
     paintImgToCanvas(img, editedCanvas)
     displayCanvas = document.getElementById('canvas')
     paintImgToCanvas(img, displayCanvas)
+    setCanvasToImage(displayCanvas, getEnergyImage())
   }
 }
 
@@ -84,7 +85,7 @@ function toImageData(image) {
 function getGrayscale() {
   // returns a 2d array of grayscale values
   // in range [0, 1)
-  getCanvasImage(editedCanvas).map((row) => row.map(([R,G,B]) => 0.2989 * R + 0.5870 * G + 0.1140 * B))
+  return getCanvasImage(editedCanvas).map((row) => row.map(([R,G,B]) => 0.2989 * R + 0.5870 * G + 0.1140 * B))
 }
 
 // Sobel and Scharr filter / kernel for energy
@@ -99,10 +100,24 @@ const gy = [
   [1,2,1]
 ]
 
+// -> [number, number, number][][]
+function getEnergyImage() {
+  const raw = getEnergy()
+  const smoothed = raw.map(row => row.map(energy => Math.sqrt(energy)))
+  let maxEnergy = -Infinity
+  for (const row of smoothed) {
+    maxEnergy = Math.max(maxEnergy, ...row)
+  }
+  const normalized = smoothed.map(row => row.map(energy => maxEnergy > 0 ? energy * 255 / maxEnergy : 0))
+  const image = normalized.map(row => row.map(energy => [energy, energy, energy]))
+  return image
+}
+
 // -> number[][]
 function getEnergy() {
   // convolve with those kernels treating pixels beyond the image as black
-  getGrayscale().map((row, r) => row.map((gray, c) => {
+  const grays = getGrayscale()
+  return grays.map((row, r) => row.map((gray, c) => {
     let energyX = 0
     let energyY = 0
     for (let dr = -1; dr < 2; dr++) {
@@ -116,8 +131,9 @@ function getEnergy() {
   }))
 }
 
+
 function go() {
-  requestAnimationFrame(animate)
+  // requestAnimationFrame(animate)
 }
 
 function animate(t) {
