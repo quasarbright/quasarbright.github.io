@@ -17,6 +17,12 @@ Guess-free minesweeper with an animated solver. [Source code here](https://githu
 
 A little tool to figure out how much you owe someone for dinner. [Source code here](https://github.com/quasarbright/dinner-debt)
 
+## [Seam Carving](./seam-carving)
+
+Shrinking an image by removing the "least interesting" seams of pixels.
+
+![broomstick](images/energy-broomstick.png)
+
 ## [3 Point Perspective](https://quasarbright.github.io/p5js/3PointPerspective)
 [3 point perspective](https://en.wikipedia.org/wiki/Perspective_(graphical)) is a drawing technique to draw realistic-looking objects in 3D. You pick 3 2D points far away from the object you're drawing and lines that would be parallel in 3D actually meet at one of these perspective points.
 
