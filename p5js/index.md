@@ -139,6 +139,14 @@ Similar to braille dithering, but uses moon phase emojis.
 
 Dithers an image to black and white pixels and then runs that in conway's game of life
 
+## [Sand](https://quasarbright.github.io/p5js/sand)
+
+Click make rainbow sand fall from your cursor. The canvas is small, so you'll want to zoom in.
+
+The sand is a simple cellular automaton. Each step, a grain falls if there is nothing under it. If there is a grain under it, it falls diagonally if possible.
+
+![sand](https://quasarbright.github.io/p5js/sand/screenshot.png)
+
 ## [Boids](https://quasarbright.github.io/p5js/boids)
 
 A simulation of bird flocking behavior. The boids try to stay near the center of the flock, avoid getting too close to other boids, and try to head in the same direction and speed as nearby boids. These simple rules lead to some life-like behavior.
