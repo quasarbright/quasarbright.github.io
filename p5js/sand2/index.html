@@ -3,17 +3,29 @@
 
 <head>
     <title>sand</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/p5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/addons/p5.dom.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/addons/p5.sound.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="style.css">
     <script src="jsonmap.js"></script>
     <script src="grain.js"></script>
     <meta charset="utf-8" />
 </head>
 
 <body>
-    <script src="sketch.js"></script>
+    <h1>Sand</h1>
+    <div>
+
+    <div>
+        <input type="radio" id="sand" name="grainType" value="SAND" checked>
+        <label for="sand">sand</label>
+        <input type="radio" id="water" name="grainType" value="WATER">
+        <label for="water">water</label>
+    </div>
+    <br><br>
+    <div>
+        <script src="sketch.js"></script>
+    </div>
 </body>
 
 </html>

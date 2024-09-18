@@ -103,8 +103,19 @@ function setup() {
 // add a grain to the world (mutates)
 // -> Void
 function addGrain(idx) {
-  const grain = Math.random() < 0.5 ? new Sand() : new Water()
-  world.set(idx, grain)
+  const grainType = document.querySelector('input[name="grainType"]:checked').value
+  let grain
+  switch (grainType) {
+    case 'SAND':
+      grain = new Sand()
+      break
+    case 'WATER':
+      grain = new Water()
+      break
+  }
+  if (grain) {
+    world.set(idx, grain)
+  }
 }
 
 function draw() {
@@ -116,9 +127,9 @@ function draw() {
   for (let i = 0; i < 1; i++) {
     step(world)
   }
-  if (keyIsPressed) {
-    frameRate(1)
-  } else {
-    frameRate(60)
-  }
+  // if (keyIsPressed) {
+  //   frameRate(1)
+  // } else {
+  //   frameRate(60)
+  // }
 }
