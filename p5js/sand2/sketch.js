@@ -121,9 +121,13 @@ function addGrain(idx) {
         case 'WATER':
           grain = new Water()
           break
+        case 'ERASER':
+          break
       }
       if (grain) {
         world.set({row, col}, grain)
+      } else {
+        world.delete({row, col})
       }
     }
   }
