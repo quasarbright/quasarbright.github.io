@@ -2,6 +2,7 @@
 const worldWidth = 100
 const worldHeight = 100
 const renderMode = 'RECTANGLES'
+const sandStrokeRadius = 3
 // const renderMode = 'PIXELS'
 
 let world
@@ -103,18 +104,28 @@ function setup() {
 // add a grain to the world (mutates)
 // -> Void
 function addGrain(idx) {
-  const grainType = document.querySelector('input[name="grainType"]:checked').value
-  let grain
-  switch (grainType) {
-    case 'SAND':
-      grain = new Sand()
-      break
-    case 'WATER':
-      grain = new Water()
-      break
-  }
-  if (grain) {
-    world.set(idx, grain)
+  for (let dr = -sandStrokeRadius; dr <= sandStrokeRadius; dr++) {
+    for (let dc = -sandStrokeRadius; dc <= sandStrokeRadius; dc++) {
+      const row = idx.row + dr
+      const col = idx.col + dc
+      const distSq = dr*dr + dc*dc
+      if (distSq > sandStrokeRadius * sandStrokeRadius) {
+        continue
+      }
+      const grainType = document.querySelector('input[name="grainType"]:checked').value
+      let grain
+      switch (grainType) {
+        case 'SAND':
+          grain = new Sand()
+          break
+        case 'WATER':
+          grain = new Water()
+          break
+      }
+      if (grain) {
+        world.set({row, col}, grain)
+      }
+    }
   }
 }
 
