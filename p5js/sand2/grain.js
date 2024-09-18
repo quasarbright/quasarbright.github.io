@@ -51,10 +51,14 @@ class Water {
     const right = {row, col: col + 1}
     if (canMoveTo(down)) {
       newIdx = down
+    } else if (canMoveTo(downLeft) && canMoveTo(downRight)) {
+      newIdx = Math.random() < 0.5 ? downLeft : downRight
     } else if (canMoveTo(downLeft)) {
       newIdx = downLeft
     } else if (canMoveTo(downRight)) {
       newIdx = downRight
+    } else if (canMoveTo(left) && canMoveTo(right)) {
+      newIdx = Math.random() < 0.5 ? left : right
     } else if (canMoveTo(left)) {
       newIdx = left
     } else if (canMoveTo(right)) {
