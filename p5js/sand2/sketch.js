@@ -116,4 +116,9 @@ function draw() {
   for (let i = 0; i < 1; i++) {
     step(world)
   }
+  if (keyIsPressed) {
+    frameRate(1)
+  } else {
+    frameRate(60)
+  }
 }

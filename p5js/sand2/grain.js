@@ -1,22 +1,39 @@
 class Sand {
+  // -> Color
   getColor() {
     return color(227, 180, 113)
   }
 
+  // Index -> Void
+  // update this grain's position in the world. mutates the world.
   update({row, col}) {
     let newIdx = {row, col}
     const down = {row: row + 1, col}
     const downLeft = {row: row + 1, col: col - 1}
     const downRight = {row: row + 1, col: col + 1}
-    if (canMoveTo(down)) {
+    const grainDown = world.get(down)
+    if (this.canMoveTo(down)) {
       newIdx = down
-    } else if (canMoveTo(downLeft)) {
+    } else if(this.canMoveTo(down)) {
+      newIdx = down
+    } else if (this.canMoveTo(downLeft)) {
       newIdx = downLeft
-    } else if (canMoveTo(downRight)) {
+    } else if (this.canMoveTo(downRight)) {
       newIdx = downRight
     }
-    world.delete({row, col})
+    const other = world.get(newIdx)
+    if (other) {
+      world.set({row, col}, other)
+    } else {
+      world.delete({row, col})
+    }
     world.set(newIdx, this)
+  }
+
+  canMoveTo(idx) {
+    // can sink in water
+    const canReplace = !world.get(idx) || world.get(idx) instanceof Water
+    return canMoveTo(idx) || (isInBounds(idx) && canReplace)
   }
 }
 
