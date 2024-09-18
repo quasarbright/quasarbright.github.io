@@ -106,7 +106,7 @@ class Acid {
     } else if (canMoveTo(right)) {
       newIdx = right
     }
-    for (const neighborIdx of [upLeft, up, upRight, left, right, downLeft, down, downRight]) {
+    for (const neighborIdx of neighboringIndices({row, col})) {
       const neighborGrain = world.get(neighborIdx)
       if (neighborGrain) {
         const acidVulnerability = this.ACID_VULNERABILITIES.get(neighborGrain.constructor)
@@ -114,6 +114,52 @@ class Acid {
           world.delete(neighborIdx)
         }
       }
+    }
+    world.delete({row, col})
+    world.set(newIdx, this)
+  }
+}
+
+// Spreads, replacing flammable grains with fire
+class Fire {
+  MAX_LIFESPAN = 60 * 8
+  FLAMMABILITIES = new Map([
+    [Wood, 0.01],
+  ])
+
+  constructor() {
+    this.remainingLifespan = this.MAX_LIFESPAN
+  }
+
+  getColor() {
+    return lerpColor(color(222, 57, 11), color(240, 171, 10), Math.sqrt(map(this.remainingLifespan, this.MAX_LIFESPAN, 0, 0, 1)))
+  }
+
+  update({row, col}) {
+    if (this.remainingLifespan <= 0) {
+      world.delete({row, col})
+      return
+    }
+    for (const neighborIdx of neighboringIndices({row, col})) {
+      const neighborGrain = world.get(neighborIdx)
+      if (neighborGrain) {
+        // try to burn
+        const flammability = this.FLAMMABILITIES.get(neighborGrain.constructor)
+        if (Math.random() < flammability) {
+          world.set(neighborIdx, new Fire())
+        }
+      } else {
+        // fire goes out if nothing is near it
+        // the more empty neighbors, the faster it goes out
+        this.remainingLifespan--
+      }
+    }
+
+    // can only move down
+    let newIdx = {row, col}
+    const down = {row: row + 1, col}
+    if (canMoveTo(down)) {
+      newIdx = down
     }
     world.delete({row, col})
     world.set(newIdx, this)
