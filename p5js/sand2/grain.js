@@ -11,7 +11,6 @@ class Sand {
     const down = {row: row + 1, col}
     const downLeft = {row: row + 1, col: col - 1}
     const downRight = {row: row + 1, col: col + 1}
-    const grainDown = world.get(down)
     if (this.canMoveTo(down)) {
       newIdx = down
     } else if(this.canMoveTo(down)) {
@@ -32,7 +31,7 @@ class Sand {
 
   canMoveTo(idx) {
     // can sink in water
-    const canReplace = !world.get(idx) || world.get(idx) instanceof Water
+    const canReplace = !world.get(idx) || world.get(idx) instanceof Water || world.get(idx) instanceof Acid
     return canMoveTo(idx) || (isInBounds(idx) && canReplace)
   }
 }
@@ -69,10 +68,13 @@ class Water {
   }
 }
 
+// Eats certain grains (deletes them), moves like water
 class Acid {
   // the probability of a piece of acid eating the substance
   ACID_VULNERABILITIES = new Map([
-    [Sand, 0.1],
+    [Sand, 0.05],
+    [Stone, 0.01],
+    [Wood, 0.1],
   ])
 
   getColor() {
@@ -116,4 +118,22 @@ class Acid {
     world.delete({row, col})
     world.set(newIdx, this)
   }
+}
+
+class Stone {
+  getColor() {
+    return color(128)
+  }
+
+  // Does not move
+  update() {}
+}
+
+class Wood {
+  getColor() {
+    return color(46, 35, 15)
+  }
+
+  // Does not move
+  update() {}
 }

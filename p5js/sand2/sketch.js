@@ -126,6 +126,12 @@ function addGrain(idx) {
         case 'ACID':
           grain = new Acid()
           break
+        case 'STONE':
+          grain = new Stone()
+          break
+        case 'WOOD':
+          grain = new Wood()
+          break
         case 'ERASER':
           break
       }
