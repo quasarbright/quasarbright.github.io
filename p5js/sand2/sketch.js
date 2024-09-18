@@ -155,12 +155,9 @@ function reset() {
   world = new JsonMap()
 }
 
-function play() {
-  playing = true
-}
-
-function pause() {
-  playing = false
+function togglePlayPause() {
+  playing = !playing
+  document.getElementById('playPause').innerHTML = playing ? '⏸︎' : '⏵︎'
 }
 
 function next() {
