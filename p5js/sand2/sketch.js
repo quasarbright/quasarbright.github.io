@@ -138,17 +138,12 @@ function addGrain(idx) {
 function draw() {
   background(0);
   drawWorld(world)
-  if (mouseIsPressed) {
-    addGrain({row: Math.floor(map(mouseY, 0, height, 0, worldHeight)), col: Math.floor(map(mouseX, 0, width, 0, worldWidth))})
-  }
   if (playing) {
     step(world)
   }
-  // if (keyIsPressed) {
-  //   frameRate(1)
-  // } else {
-  //   frameRate(60)
-  // }
+  if (mouseIsPressed) {
+    addGrain({row: Math.floor(map(mouseY, 0, height, 0, worldHeight)), col: Math.floor(map(mouseX, 0, width, 0, worldWidth))})
+  }
 }
 
 function reset() {
