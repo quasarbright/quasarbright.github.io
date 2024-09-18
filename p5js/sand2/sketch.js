@@ -1,3 +1,8 @@
+// dimension of world grid in grains
+const worldWidth = 100
+const worldHeight = 100
+const renderMode = 'RECTANGLES'
+// const renderMode = 'PIXELS'
 
 // a World is a JsonMap<Index, Grain>
 
@@ -28,8 +33,8 @@ function step(world) {
   }
   // using this as a set
   const updatedIndices = new JsonMap()
-  for (let row = height - 1; row >= 0; row--) {
-    for (let col = 0; col < width; col++) {
+  for (let row = worldHeight - 1; row >= 0; row--) {
+    for (let col = 0; col < worldWidth; col++) {
       const idx = {row, col}
       if (updatedIndices.has(idx)) {
         continue
@@ -64,29 +69,44 @@ function step(world) {
 
 // Index -> Boolean
 function isInBounds({row, col}) {
-  return row >= 0 && row < height && col >= 0 && col < width
+  return row >= 0 && row < worldHeight && col >= 0 && col < worldWidth
 }
 
 function drawWorld() {
-  loadPixels()
-  const d = pixelDensity()
-  for (let pr = 0; pr < height * d; pr++) {
-    for (let pc = 0; pc < width * d; pc++) {
-      // assume width = gridWidth
-      const i = 4 * (pr * width * d + pc)
-      const row = Math.floor(pr / d)
-      const col = Math.floor(pc / d)
-      const grain = world.get({row, col})
-      if (grain) {
-        const clr = getGrainColor(grain)
-        pixels[i + 0] = clr.levels[0]
-        pixels[i + 1] = clr.levels[1]
-        pixels[i + 2] = clr.levels[2]
-        pixels[i + 3] = clr.levels[3]
+  if (renderMode === 'PIXELS') {
+    loadPixels()
+    const d = pixelDensity()
+    for (let pr = 0; pr < height * d; pr++) {
+      for (let pc = 0; pc < width * d; pc++) {
+        const i = 4 * (pr * width * d + pc)
+        const row = Math.floor(pr / d)
+        const col = Math.floor(pc / d)
+        const grain = world.get({row, col})
+        if (grain) {
+          const clr = getGrainColor(grain)
+          pixels[i + 0] = clr.levels[0]
+          pixels[i + 1] = clr.levels[1]
+          pixels[i + 2] = clr.levels[2]
+          pixels[i + 3] = clr.levels[3]
+        }
+      }
+    }
+    updatePixels()
+  } else if (renderMode === 'RECTANGLES') {
+    const rectWidth = width / worldWidth
+    const rectHeight = height / worldHeight
+    for (let row = 0; row < worldHeight; row++) {
+      for (let col = 0; col < worldWidth; col++) {
+        const idx = {row, col}
+        const grain = world.get(idx)
+        if (grain) {
+          const clr = getGrainColor(grain)
+          fill(clr)
+          rect(col * rectWidth, row * rectHeight, rectWidth, rectHeight)
+        }
       }
     }
   }
-  updatePixels()
 }
 
 // Grain -> Color
@@ -101,7 +121,12 @@ function getGrainColor(grain) {
 let world
 
 function setup() {
-  createCanvas(100, 100);
+  if (renderMode === 'RECTANGLES') {
+    createCanvas(800,800)
+  } else if (renderMode === 'PIXELS') {
+    createCanvas(worldWidth, worldHeight)
+  }
+  noStroke()
   world = generateWorld()
 }
 
@@ -116,7 +141,7 @@ function draw() {
   background(0);
   drawWorld(world)
   if (mouseIsPressed) {
-    addGrain({row: Math.floor(mouseY), col: Math.floor(mouseX)})
+    addGrain({row: Math.floor(map(mouseY, 0, height, 0, worldHeight)), col: Math.floor(map(mouseX, 0, width, 0, worldWidth))})
   }
   for (let i = 0; i < 1; i++) {
     step(world)
