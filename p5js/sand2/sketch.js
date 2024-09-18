@@ -4,16 +4,14 @@ const worldHeight = 100
 const renderMode = 'RECTANGLES'
 // const renderMode = 'PIXELS'
 
+let world
+
 // a World is a JsonMap<Index, Grain>
 
 // an Index is a {row: number, col: number}
 // where {row: 0, col: 0} is the top-left of the screen
 
-// A Grain is a {type: GrainType}
-
-// A GrainType is one of
-const SAND = 'SAND'
-const WATER = 'WATER'
+// see grain.js for grains
 
 // -> World
 function generateWorld() {
@@ -21,48 +19,31 @@ function generateWorld() {
   return world
 }
 
+function isEmpty(idx) {
+  return !world.get(idx)
+}
+function canMoveTo(idx) {
+  return isEmpty(idx) && isInBounds(idx)
+}
+
 // World -> Void
 // Advance the world (mutates)
 function step(world) {
   // make each grain fall if possible
-  function isEmpty(idx) {
-    return !world.get(idx)
-  }
-  function canMoveTo(idx) {
-    return isEmpty(idx) && isInBounds(idx)
-  }
   // using this as a set
-  const updatedIndices = new JsonMap()
+  const updatedGrains = new Set()
   for (let row = worldHeight - 1; row >= 0; row--) {
     for (let col = 0; col < worldWidth; col++) {
       const idx = {row, col}
-      if (updatedIndices.has(idx)) {
-        continue
-      }
       if (isEmpty(idx)) {
         continue
       }
       const grain = world.get(idx)
-      let newIdx = {row, col}
-      const down = {row: row + 1, col}
-      const downLeft = {row: row + 1, col: col - 1}
-      const downRight = {row: row + 1, col: col + 1}
-      const left = {row, col: col - 1}
-      const right = {row, col: col + 1}
-      if (canMoveTo(down)) {
-        newIdx = down
-      } else if (canMoveTo(downLeft)) {
-        newIdx = downLeft
-      } else if (canMoveTo(downRight)) {
-        newIdx = downRight
-      } else if (grain.type === WATER && canMoveTo(left)) {
-        newIdx = left
-      } else if (grain.type === WATER && canMoveTo(right)) {
-        newIdx = right
+      if (updatedGrains.has(grain)) {
+        continue
       }
-      world.delete(idx)
-      world.set(newIdx, grain)
-      updatedIndices.set(newIdx, true)
+      grain.update(idx)
+      updatedGrains.add(grain)
     }
   }
 }
@@ -83,7 +64,7 @@ function drawWorld() {
         const col = Math.floor(pc / d)
         const grain = world.get({row, col})
         if (grain) {
-          const clr = getGrainColor(grain)
+          const clr = grain.getColor()
           pixels[i + 0] = clr.levels[0]
           pixels[i + 1] = clr.levels[1]
           pixels[i + 2] = clr.levels[2]
@@ -100,7 +81,7 @@ function drawWorld() {
         const idx = {row, col}
         const grain = world.get(idx)
         if (grain) {
-          const clr = getGrainColor(grain)
+          const clr = grain.getColor()
           fill(clr)
           rect(col * rectWidth, row * rectHeight, rectWidth, rectHeight)
         }
@@ -108,17 +89,6 @@ function drawWorld() {
     }
   }
 }
-
-// Grain -> Color
-function getGrainColor(grain) {
-  switch (grain.type) {
-    case SAND: return color(227, 180, 113)
-    case WATER: return color(30, 40, 232)
-    default: throw new Error(`unknown grain type: ${grain}`)
-  }
-}
-
-let world
 
 function setup() {
   if (renderMode === 'RECTANGLES') {
@@ -133,7 +103,7 @@ function setup() {
 // add a grain to the world (mutates)
 // -> Void
 function addGrain(idx) {
-  const grain = Math.random() < 0.5 ? {type: WATER} : {type: SAND}
+  const grain = Math.random() < 0.5 ? new Sand() : new Water()
   world.set(idx, grain)
 }
 
