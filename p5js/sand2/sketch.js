@@ -3,9 +3,11 @@ const worldWidth = 100
 const worldHeight = 100
 const renderMode = 'RECTANGLES'
 const sandStrokeRadius = 3
+let playing = true
 // const renderMode = 'PIXELS'
 
 let world
+
 
 // a World is a JsonMap<Index, Grain>
 
@@ -139,7 +141,7 @@ function draw() {
   if (mouseIsPressed) {
     addGrain({row: Math.floor(map(mouseY, 0, height, 0, worldHeight)), col: Math.floor(map(mouseX, 0, width, 0, worldWidth))})
   }
-  for (let i = 0; i < 1; i++) {
+  if (playing) {
     step(world)
   }
   // if (keyIsPressed) {
@@ -147,4 +149,20 @@ function draw() {
   // } else {
   //   frameRate(60)
   // }
+}
+
+function reset() {
+  world = new JsonMap()
+}
+
+function play() {
+  playing = true
+}
+
+function pause() {
+  playing = false
+}
+
+function next() {
+  step(world)
 }
