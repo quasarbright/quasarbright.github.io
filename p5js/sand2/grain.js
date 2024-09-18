@@ -69,7 +69,7 @@ class Water {
 }
 
 // Eats certain grains (deletes them), moves like water
-class Acid {
+class Acid extends Water {
   // the probability of a piece of acid eating the substance
   ACID_VULNERABILITIES = new Map([
     [Sand, 0.05],
@@ -82,30 +82,6 @@ class Acid {
   }
 
   update({row, col}) {
-    let newIdx = {row, col}
-    const down = {row: row + 1, col}
-    const downLeft = {row: row + 1, col: col - 1}
-    const downRight = {row: row + 1, col: col + 1}
-    const left = {row, col: col - 1}
-    const right = {row, col: col + 1}
-    const up = {row: row-1, col}
-    const upLeft = {row: row-1, col: col-1}
-    const upRight = {row: row-1, col: col+1}
-    if (canMoveTo(down)) {
-      newIdx = down
-    } else if (canMoveTo(downLeft) && canMoveTo(downRight)) {
-      newIdx = Math.random() < 0.5 ? downLeft : downRight
-    } else if (canMoveTo(downLeft)) {
-      newIdx = downLeft
-    } else if (canMoveTo(downRight)) {
-      newIdx = downRight
-    } else if (canMoveTo(left) && canMoveTo(right)) {
-      newIdx = Math.random() < 0.5 ? left : right
-    } else if (canMoveTo(left)) {
-      newIdx = left
-    } else if (canMoveTo(right)) {
-      newIdx = right
-    }
     for (const neighborIdx of neighboringIndices({row, col})) {
       const neighborGrain = world.get(neighborIdx)
       if (neighborGrain) {
@@ -115,16 +91,17 @@ class Acid {
         }
       }
     }
-    world.delete({row, col})
-    world.set(newIdx, this)
+    super.update({row, col})
   }
 }
 
 // Spreads, replacing flammable grains with fire
 class Fire {
-  MAX_LIFESPAN = 60 * 8
+  MAX_LIFESPAN = 60 * 4
   FLAMMABILITIES = new Map([
     [Wood, 0.01],
+    [Gasoline, 0.1],
+    [Gunpowder, 0.1],
   ])
 
   constructor() {
@@ -166,6 +143,20 @@ class Fire {
   }
 }
 
+// moves like water, but super flammable
+class Gasoline extends Water { 
+  getColor() {
+    return color(207, 157, 21)
+  }
+}
+
+// moves like sand, but super flammable
+class Gunpowder extends Sand {
+  getColor() {
+    return color(36)
+  }
+}
+
 class Stone {
   getColor() {
     return color(128)
@@ -175,11 +166,8 @@ class Stone {
   update() {}
 }
 
-class Wood {
+class Wood extends Stone {
   getColor() {
     return color(46, 35, 15)
   }
-
-  // Does not move
-  update() {}
 }

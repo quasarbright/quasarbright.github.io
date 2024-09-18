@@ -149,6 +149,12 @@ function addGrain(idx) {
         case 'FIRE':
           grain = new Fire()
           break
+        case 'GASOLINE':
+          grain = new Gasoline()
+          break
+        case 'GUNPOWDER':
+          grain = new Gunpowder()
+          break
         case 'ERASER':
           break
       }
