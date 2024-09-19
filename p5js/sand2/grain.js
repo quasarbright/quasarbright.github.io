@@ -31,16 +31,12 @@ class Sand {
 
   canMoveTo(idx) {
     // can sink in water
-    const canReplace = !world.get(idx) || world.get(idx) instanceof Water || world.get(idx) instanceof Acid
+    const canReplace = !world.get(idx) || world.get(idx) instanceof Liquid
     return canMoveTo(idx) || (isInBounds(idx) && canReplace)
   }
 }
 
-class Water {
-  getColor() {
-    return color(30, 40, 232)
-  }
-
+class Liquid {
   update({row, col}) {
     let newIdx = {row, col}
     const down = {row: row + 1, col}
@@ -65,6 +61,12 @@ class Water {
     }
     world.delete({row, col})
     world.set(newIdx, this)
+  }
+}
+
+class Water extends Liquid {
+  getColor() {
+    return color(30, 40, 232)
   }
 }
 
@@ -122,8 +124,13 @@ class Fire {
       if (neighborGrain) {
         // try to burn
         const flammability = this.FLAMMABILITIES.get(neighborGrain.constructor)
-        if (Math.random() < flammability) {
+        if (flammability === undefined && !(neighborGrain instanceof Fire)) {
+          this.remainingLifespan--
+        } else if (Math.random() < flammability) {
           world.set(neighborIdx, new Fire())
+        }
+        if (neighborGrain && neighborGrain.constructor === Water) {
+          this.remainingLifespan = 0
         }
       } else {
         // fire goes out if nothing is near it
