@@ -139,13 +139,13 @@ Similar to braille dithering, but uses moon phase emojis.
 
 Dithers an image to black and white pixels and then runs that in conway's game of life
 
-## [Sand](https://quasarbright.github.io/p5js/sand)
+## [Sand](https://quasarbright.github.io/p5js/sand2)
 
-Click make rainbow sand fall from your cursor. The canvas is small, so you'll want to zoom in.
+Add sand, water, stone, acid, fire, and more to the screen and watch them interact.
 
-The sand is a simple cellular automaton. Each step, a grain falls if there is nothing under it. If there is a grain under it, it falls diagonally if possible.
+This is a cellular automaton where each "grain" interacts with its neighbors depending on what material it is.
 
-![sand](https://quasarbright.github.io/p5js/sand/screenshot.png)
+![sand](https://quasarbright.github.io/p5js/sand2/screenshot.png)
 
 ## [Boids](https://quasarbright.github.io/p5js/boids)
 
