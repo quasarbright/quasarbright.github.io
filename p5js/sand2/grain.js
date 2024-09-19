@@ -84,13 +84,7 @@ class Water extends Liquid {
 }
 
 // Eats certain grains (deletes them), moves like water
-class Acid extends Water {
-  // the probability of a piece of acid eating the substance
-  ACID_VULNERABILITIES = new Map([
-    [Sand, 0.05],
-    [Stone, 0.01],
-    [Wood, 0.1],
-  ])
+class Acid extends Liquid {
 
   getColor() {
     return color(57, 150, 20)
@@ -100,7 +94,7 @@ class Acid extends Water {
     for (const neighborIdx of neighboringIndices({row, col})) {
       const neighborGrain = world.get(neighborIdx)
       if (neighborGrain) {
-        const acidVulnerability = this.ACID_VULNERABILITIES.get(neighborGrain.constructor)
+        const acidVulnerability = ACID_VULNERABILITIES.get(neighborGrain.constructor)
         if (Math.random() < acidVulnerability) {
           world.delete(neighborIdx)
         }
@@ -112,19 +106,14 @@ class Acid extends Water {
 
 // Spreads, replacing flammable grains with fire
 class Fire {
-  MAX_LIFESPAN = 60 * 4
-  FLAMMABILITIES = new Map([
-    [Wood, 0.01],
-    [Gasoline, 0.1],
-    [Gunpowder, 0.1],
-  ])
+  static MAX_LIFESPAN = 60 * 4
 
   constructor() {
-    this.remainingLifespan = this.MAX_LIFESPAN
+    this.remainingLifespan = Fire.MAX_LIFESPAN
   }
 
   getColor() {
-    return lerpColor(color(222, 57, 11), color(240, 171, 10), Math.sqrt(map(this.remainingLifespan, this.MAX_LIFESPAN, 0, 0, 1)))
+    return lerpColor(color(222, 57, 11), color(240, 171, 10), Math.sqrt(map(this.remainingLifespan, Fire.MAX_LIFESPAN, 0, 0, 1)))
   }
 
   update({row, col}) {
@@ -136,8 +125,8 @@ class Fire {
       const neighborGrain = world.get(neighborIdx)
       if (neighborGrain) {
         // try to burn
-        const flammability = this.FLAMMABILITIES.get(neighborGrain.constructor)
-        if (flammability === undefined && !(neighborGrain instanceof Fire)) {
+        const flammability = FLAMMABILITIES.get(neighborGrain.constructor)
+        if (flammability === undefined && !(neighborGrain instanceof Fire) && !(neighborGrain instanceof Lava)) {
           this.remainingLifespan--
         } else if (Math.random() < flammability) {
           world.set(neighborIdx, new Fire())
@@ -163,8 +152,54 @@ class Fire {
   }
 }
 
+// moves like water and either lights things on fire or melts them
+// turns to stone in contact with water
+class Lava extends Liquid {
+  static MAX_LIFESPAN = Fire.MAX_LIFESPAN * 4
+
+  constructor(remainingLifespan) {
+    super()
+    this.remainingLifespan = remainingLifespan ?? Lava.MAX_LIFESPAN
+  }
+
+  getColor() {
+    return lerpColor(color(222, 57, 11), color(237, 107, 14), Math.sqrt(map(this.remainingLifespan, Lava.MAX_LIFESPAN, 0, 0, 1)))
+  }
+
+  update({row, col}) {
+    if (this.remainingLifespan <= 0) {
+      world.set({row, col}, new Stone())
+      return
+    }
+    super.update({row, col})
+    for (const neighborIdx of neighboringIndices({row, col})) {
+      const neighborGrain = world.get(neighborIdx)
+      if (neighborGrain) {
+        const meltability = MELTABILITIES.get(neighborGrain.constructor)
+        const flammability = FLAMMABILITIES.get(neighborGrain.constructor)
+        // try to melt
+        if (meltability !== undefined && Math.random() < meltability) {
+          world.set(neighborIdx, new Lava(this.remainingLifespan))
+        // try to burn
+        } else if (flammability !== undefined && Math.random() < flammability) {
+          world.set(neighborIdx, new Fire())
+        } else if (!(neighborGrain instanceof Fire) && !(neighborGrain instanceof Lava)) {
+          this.remainingLifespan--
+        }
+        if (neighborGrain && neighborGrain.constructor === Water) {
+          this.remainingLifespan = 0
+        }
+      } else {
+        // lava freezes if nothing is near it
+        // the more empty neighbors, the faster it goes out
+        this.remainingLifespan--
+      }
+    }
+  }
+}
+
 // moves like water, but super flammable
-class Gasoline extends Water { 
+class Gasoline extends Liquid { 
   getColor() {
     return color(207, 157, 21)
   }
@@ -191,3 +226,22 @@ class Wood extends Stone {
     return color(46, 35, 15)
   }
 }
+
+// the probability of a piece of acid eating the substance
+ACID_VULNERABILITIES = new Map([
+  [Sand, 0.05],
+  [Stone, 0.01],
+  [Wood, 0.1],
+])
+
+// the probability of being ignited next to fire
+FLAMMABILITIES = new Map([
+  [Wood, 0.01],
+  [Gasoline, 0.1],
+  [Gunpowder, 0.1],
+])
+
+// the probability of being melted next to lava
+MELTABILITIES = new Map([
+  [Stone, 0.002],
+])

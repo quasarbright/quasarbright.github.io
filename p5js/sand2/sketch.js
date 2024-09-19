@@ -155,6 +155,9 @@ function addGrain(idx) {
         case 'GUNPOWDER':
           grain = new Gunpowder()
           break
+        case 'LAVA':
+          grain = new Lava()
+          break
         case 'ERASER':
           break
       }
