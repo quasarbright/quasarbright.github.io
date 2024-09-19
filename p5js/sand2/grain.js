@@ -37,7 +37,12 @@ class Sand {
 }
 
 class Liquid {
-  DISSOLVE_PROBABILITY = 0.01
+  constructor() {
+    // probability of NOT spreading
+    this.viscocity = 0
+    // probability of moving around in another liquid
+    this.dissolveProbability = 0.01
+  }
   update({row, col}) {
     let newIdx = {row, col}
     const down = {row: row + 1, col}
@@ -47,6 +52,8 @@ class Liquid {
     const right = {row, col: col + 1}
     if (canMoveTo(down)) {
       newIdx = down
+    } else if (Math.random() < this.viscocity) {
+      return
     } else if (canMoveTo(downLeft) && canMoveTo(downRight)) {
       newIdx = Math.random() < 0.5 ? downLeft : downRight
     } else if (canMoveTo(downLeft)) {
@@ -61,11 +68,9 @@ class Liquid {
       newIdx = right
     } else {
       // try to dissolve
-      const neighborIndices = neighboringIndices({row, col})
-      const neighbors = neighborIndices.map(idx => world.get(idx))
       for (const neighborIdx of neighboringIndices({row, col})) {
         const neighbor = world.get(neighborIdx)
-        if (neighbor && neighbor instanceof Liquid && Math.random() < this.DISSOLVE_PROBABILITY) {
+        if (neighbor && neighbor instanceof Liquid && Math.random() < this.dissolveProbability) {
           world.set(neighborIdx, this)
           world.set({row, col}, neighbor)
           return
@@ -155,10 +160,12 @@ class Fire {
 // moves like water and either lights things on fire or melts them
 // turns to stone in contact with water
 class Lava extends Liquid {
-  static MAX_LIFESPAN = Fire.MAX_LIFESPAN * 4
+  static MAX_LIFESPAN = Fire.MAX_LIFESPAN * 5
 
   constructor(remainingLifespan) {
     super()
+    this.dissolveProbability /= 5
+    this.viscocity = .8
     this.remainingLifespan = remainingLifespan ?? Lava.MAX_LIFESPAN
   }
 
@@ -243,5 +250,5 @@ FLAMMABILITIES = new Map([
 
 // the probability of being melted next to lava
 MELTABILITIES = new Map([
-  [Stone, 0.002],
+  [Stone, 0.003],
 ])
