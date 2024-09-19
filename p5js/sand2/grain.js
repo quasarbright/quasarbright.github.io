@@ -37,6 +37,7 @@ class Sand {
 }
 
 class Liquid {
+  DISSOLVE_PROBABILITY = 0.01
   update({row, col}) {
     let newIdx = {row, col}
     const down = {row: row + 1, col}
@@ -58,6 +59,18 @@ class Liquid {
       newIdx = left
     } else if (canMoveTo(right)) {
       newIdx = right
+    } else {
+      // try to dissolve
+      const neighborIndices = neighboringIndices({row, col})
+      const neighbors = neighborIndices.map(idx => world.get(idx))
+      for (const neighborIdx of neighboringIndices({row, col})) {
+        const neighbor = world.get(neighborIdx)
+        if (neighbor && neighbor instanceof Liquid && Math.random() < this.DISSOLVE_PROBABILITY) {
+          world.set(neighborIdx, this)
+          world.set({row, col}, neighbor)
+          return
+        }
+      }
     }
     world.delete({row, col})
     world.set(newIdx, this)
