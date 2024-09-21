@@ -178,6 +178,10 @@ There are two competing populations of rockets, each using gnetics and evolution
 
 [![screenshot of smart rockets](https://quasarbright.github.io/p5js/screenshots/smart-rockets.png)](https://editor.p5js.org/mdelmonaco/present/BkJquZ1Ae)
 
+## [Monty Hall Game](https://quasarbright.github.io/monty-hall-game)
+
+Interactive game for the monty hall problem. Includes an explanation of the math.
+
 ## [Dragon Curve](https://quasarbright.github.io/p5js/dragon-curve/)
 
 [![screenshot of Dragon Curve](https://quasarbright.github.io/p5js/dragon-curve/screenshot.png)](https://quasarbright.github.io/p5js/dragon-curve/)
@@ -204,6 +208,12 @@ move the mouse and click to make the lines fly out in a spiral
 ## [random squares with no overlap](https://quasarbright.github.io/p5js/random%20squares%20no%20overlap)
 ## [Minimum Spanning Tree](https://quasarbright.github.io/p5js/spanning%20tree)
 This generates a [minimum spanning tree](https://www.wikiwand.com/en/Minimum_spanning_tree) of a random collection of points. You can add points to see how the MST changes
+
+## [Moving Minimum Spanning Tree](https://quasarbright.github.io/p5js/moving-spanning-tree)
+This generates a [minimum spanning tree](https://www.wikiwand.com/en/Minimum_spanning_tree) of a random collection of points that bounce around. You can add points by clicking on the screen
+
+
+
 ## [Display Graph](https://quasarbright.github.io/p5js/display%20graph)
 This allows you to display any graph and then edit the locations of vertices by clicking and dragging. Currently, it randomly generates a graph, but theoretically, the code can be used to display any graph.
 ## [Travelling salesman problem](https://quasarbright.github.io/p5js/travelling%20salesman)
