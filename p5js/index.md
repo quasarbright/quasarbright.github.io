@@ -23,7 +23,7 @@ Shrinking an image by removing the "least interesting" seams of pixels.
 
 ![broomstick](/images/energy-broomstick.png)
 
-## [Double Slit Interference]
+## [Double Slit Interference](https://quasarbright.github.io/spring-wave/dist/index.html)
 
 A physics-simulation of waves powered by balls connected with springs, demonstrating diffraction and double-slit interference.
 
