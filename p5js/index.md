@@ -165,6 +165,12 @@ A numerical approximation of the [wave equation](https://en.wikipedia.org/wiki/W
 
 [![screenshot of wave equation](https://quasarbright.github.io/p5js/wave-equation/screenshot.png)](https://quasarbright.github.io/p5js/wave-equation)
 
+## [Rock Paper Scissors Cellular Automaton](https://quasarbright.github.io/p5js/rock-paper-scissors-automaton)
+
+A cellular automaton based on rock paper scissors where if a neighboring cell beats this cell, this cell becomes the winner.
+
+[![screenshot of rock paper scissors](https://quasarbright.github.io/p5js/screenshots/rps.png)](https://quasarbright.github.io/p5js/rock-paper-scissors-automaton)
+
 ## [Conway's Game of Life](https://quasarbright.github.io/p5js/conway)
 This is [John Conway's game of life](https://www.wikiwand.com/en/Conway%27s_Game_of_Life), a cellular automaton where cells live or die depending on the state of their neighbors. Click on the cells to toggle their life state and hit start to see what happens.
 
