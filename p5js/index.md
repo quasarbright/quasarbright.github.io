@@ -163,7 +163,7 @@ A simulation of bird flocking behavior. The boids try to stay near the center of
 
 A bunch of random walkers animated with a trail. Each little walker randomly decides to move up, down, left, or right.
 
-[![screenshot of random walk](https://quasarbright.github.io/p5js/screenshots/random-walk)](https://quasarbright.github.io/p5js/random-walk)
+[![screenshot of random walk](https://quasarbright.github.io/p5js/screenshots/random-walk.png)](https://quasarbright.github.io/p5js/random-walk)
 
 ## [Wave Equation](https://quasarbright.github.io/p5js/wave-equation)
 
