@@ -36,7 +36,7 @@ class Walker {
 
 let walkers
 function setup() {
-  createCanvas(windowWidth, windowHeight)
+  createCanvas(window.innerWidth, window.innerHeight)
   fullscreen(true)
   colorMode(HSB)
   strokeWeight(5)
