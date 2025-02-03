@@ -165,6 +165,14 @@ A bunch of random walkers animated with a trail. Each little walker randomly dec
 
 [![screenshot of random walk](https://quasarbright.github.io/p5js/screenshots/random-walk.png)](https://quasarbright.github.io/p5js/random-walk)
 
+## [Raindrops](https://quasarbright.github.io/p5js/raindrops)
+
+Inspired by watching raindrops drip down a car window and collide with each other. Raindrops move down, but their horizontal movement is random. When two drops collide, they combine and the survivor is randomly chosen, with bigger drops being more likely to survive. But small drops still have a chance of winning!
+
+Which drop do you think will win?
+
+[![screenshot of raindrops](https://quasarbright.github.io/p5js/screenshots/raindrops.png)](https://quasarbright.github.io/p5js/raindrops)
+
 ## [Wave Equation](https://quasarbright.github.io/p5js/wave-equation)
 
 A numerical approximation of the [wave equation](https://en.wikipedia.org/wiki/Wave_equation), visualized as a heat map. It's like a simulation of the surface of a pond, starting off flat with a few splashes. The error in the approximation leads to interesting behavior where you have regions which are checkerd with maximum and minimum displacement bordering regions with zero displacement. And these regions are stable. So stable that they form a new type of wave that dominates the simulation. It pretty much always ends up in a "checkered wave" state. This looks way cooler than what it would look like if it worked properly, so I left it like this instead of fixing it.
