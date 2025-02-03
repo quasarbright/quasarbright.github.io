@@ -179,6 +179,14 @@ A numerical approximation of the [wave equation](https://en.wikipedia.org/wiki/W
 
 [![screenshot of wave equation](https://quasarbright.github.io/p5js/wave-equation/screenshot.png)](https://quasarbright.github.io/p5js/wave-equation)
 
+## [Majority Cellular Automaton](https://quasarbright.github.io/p5js/majority-automaton)
+
+A multi-state cellular automaton where the next value is determined by majority vote of the neighbors
+
+Which color do you think will win?
+
+[![screenshot of majority](https://quasarbright.github.io/p5js/screenshots/majority.png)](https://quasarbright.github.io/p5js/majority-automaton)
+
 ## [Rock Paper Scissors Cellular Automaton](https://quasarbright.github.io/p5js/rock-paper-scissors-automaton)
 
 A cellular automaton based on rock paper scissors where if a neighboring cell beats this cell, this cell becomes the winner.
