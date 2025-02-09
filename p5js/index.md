@@ -231,6 +231,11 @@ Japanese words are mostly composed of simple consonant-vowel syllables like "ka"
 I also tried to include rules that make the generated words sound more Japanese, such as only including syllables which are present in hiragana, restricting which vowels can follow which vowels, and limiting vowel string to a length of 2.
 ## [Magnetic Pendulum](https://quasarbright.github.io/p5js/magnetic%20pendulum)
 This simulates three magnets on a table with a pendulum hanging a magnetic object above the center. Depending on where you release the magnet, you could end up at any of the three magnets. Click and drag to release pendulums and see where they end up. Where the pendulum ends up is extremely sensitive to the initial dropping position. Here is a picture of where a pendulum ends up based on the starting position: ![](https://quasarbright.github.io/images/magnet%20pendulum.PNG)
+
+## [Elastic Sphere Collisions](https://quasarbright.github.io/p5js/elastic-sphere-collision)
+
+A bunch of balls (really circles) colliding with each other elastically, conserving kinetic energy and momentum like billiard balls.
+
 ## [Polygon Fractals](https://quasarbright.github.io/p5js/polygon%20fractal)
 Colorful polygon fractals. Click to iterate the fractal, press a key to switch between the two fractal modes:  
 center mode: draw a dot at the center of a shape and draw the triangles going from the shape's edges to the center  
