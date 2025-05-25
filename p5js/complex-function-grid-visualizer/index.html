@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Complex Function Grid Transformation</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: #000;
+      color: white;
+      font-family: monospace, monospace;
+      user-select: none;
+    }
+    #container {
+      display: flex;
+      margin-top: 10px;
+      gap: 20px;
+    }
+    canvas {
+      border: 1px solid #555;
+      background: #000;
+      display: block;
+    }
+    .canvas-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    input[type="text"], input[type="number"] {
+      padding: 6px 8px;
+      margin-bottom: 6px;
+      font-family: monospace, monospace;
+      font-size: 1rem;
+      background: #222;
+      border: 1px solid #666;
+      color: white;
+    }
+    input[type="text"] {
+      width: 300px;
+    }
+    button {
+      margin-top: 6px;
+      padding: 6px 12px;
+      background: #222;
+      border: 1px solid #666;
+      color: white;
+      cursor: pointer;
+      font-family: monospace, monospace;
+    }
+    button:hover {
+      background: #333;
+    }
+    #error-msg {
+      margin-top: 10px;
+      height: 20px;
+      color: #f66;
+      font-weight: bold;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <label for="funcInput">Enter function of <code>z</code> (complex):</label>
+  <input type="text" id="funcInput" value="z^2" autocomplete="off" spellcheck="false" />
+
+  <div class="controls">
+    <label for="lineDensity">Grid Line Spacing:</label>
+    <input type="number" id="lineDensity" value="1" step="0.1" min="0.1">
+    <label for="sampleCount">Line Sample Count:</label>
+    <input type="number" id="sampleCount" value="500" step="50" min="50">
+  </div>
+
+  <div id="error-msg"></div>
+
+  <div id="container">
+    <div class="canvas-wrapper">
+      <canvas id="original" width="400" height="400"></canvas>
+      <button id="resetOriginal">Reset Original View</button>
+    </div>
+    <div class="canvas-wrapper">
+      <canvas id="transformed" width="400" height="400"></canvas>
+      <button id="resetTransformed">Reset Transformed View</button>
+    </div>
+  </div>
+
+  <div style="max-width: 800px; margin-top: 20px; padding: 20px; background: #111; border: 1px solid #333; border-radius: 8px; line-height: 1.6;">
+    <h3 style="margin-top: 0; color: #fff; text-align: center;">Complex Function Grid Transformation</h3>
+    
+    <p><strong>What you're seeing:</strong> The left canvas shows a coordinate grid in the complex plane (z = x + yi). The right canvas shows how this grid gets transformed when you apply your complex function f(z). Each vertical line becomes f({constant x-value} + yi) and each horizontal line becomes f(x + i{constant y-value}).</p>
+    
+    <p><strong>Mouse controls:</strong></p>
+    <ul style="margin: 10px 0;">
+      <li><strong>Hover:</strong> Move your mouse over either canvas to highlight corresponding points and grid lines</li>
+      <li><strong>Zoom:</strong> Use mouse wheel to zoom in/out at the cursor position</li>
+      <li><strong>Pan:</strong> Click and drag to move around the view</li>
+    </ul>
+    
+    <p><strong>Function examples:</strong> Try <code>z^2</code>, <code>1/z</code>, <code>z^3 + z</code>, <code>sin(z)</code>, <code>exp(z)</code>, <code>(z-1)/(z+1)</code></p>
+    
+    <p><strong>Math syntax:</strong> For complete function syntax, see the <a href="https://mathjs.org/docs/expressions/syntax.html" target="_blank" style="color: #66aaff;">Math.js documentation</a>. Use <code>z</code> as your complex variable.</p>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+  <script>
+    const canvasOriginal = document.getElementById('original');
+    const canvasTransformed = document.getElementById('transformed');
+    const ctxOriginal = canvasOriginal.getContext('2d');
+    const ctxTransformed = canvasTransformed.getContext('2d');
+    const funcInput = document.getElementById('funcInput');
+    const lineDensityInput = document.getElementById('lineDensity');
+    const sampleCountInput = document.getElementById('sampleCount');
+    const errorMsg = document.getElementById('error-msg');
+
+    const width = canvasOriginal.width;
+    const height = canvasOriginal.height;
+
+    const initialState = { scale: 20, offsetX: 0, offsetY: 0 };
+    let state = {
+      original: { ...initialState },
+      transformed: { ...initialState }
+    };
+
+    function toCanvas(x, y, s) {
+      return [width / 2 + (x + s.offsetX) * s.scale, height / 2 - (y + s.offsetY) * s.scale];
+    }
+    function toComplex(px, py, s) {
+      return [(px - width / 2) / s.scale - s.offsetX, (height / 2 - py) / s.scale - s.offsetY];
+    }
+
+    let parsedExpr = null;
+    let evalFunc = ([x, y]) => [x*x - y*y, 2*x*y];
+
+    function compileFunction(exprStr) {
+      try {
+        const expr = math.parse(exprStr);
+        expr.evaluate({z: math.complex(0, 0)});
+        parsedExpr = expr;
+        evalFunc = ([x, y]) => {
+          const z = math.complex(x, y);
+          const res = parsedExpr.evaluate({ z });
+          return [res.re, res.im];
+        };
+        errorMsg.textContent = '';
+        updateGrids();
+      } catch (e) {
+        errorMsg.textContent = 'Error in function: ' + e.message;
+      }
+    }
+
+    function drawGrid(ctx, s, transformFunc, highlightPoint = null) {
+      ctx.clearRect(0, 0, width, height);
+      const spacing = parseFloat(lineDensityInput.value);
+      const segments = parseInt(sampleCountInput.value);
+
+      const left = toComplex(0, 0, s)[0];
+      const right = toComplex(width, 0, s)[0];
+      const top = toComplex(0, 0, s)[1];
+      const bottom = toComplex(0, height, s)[1];
+      const xStart = Math.floor(left / spacing) * spacing;
+      const xEnd = Math.ceil(right / spacing) * spacing;
+      const yStart = Math.floor(bottom / spacing) * spacing;
+      const yEnd = Math.ceil(top / spacing) * spacing;
+
+      for (let x = xStart; x <= xEnd; x += spacing) {
+        ctx.strokeStyle = Math.abs(x) < 1e-6 ? '#fff' : getVerticalColor(x);
+        ctx.lineWidth = Math.abs(x) < 1e-6 ? 3 : 2.2;
+        drawLine(ctx, s, x, yStart, x, yEnd, transformFunc, segments);
+      }
+      for (let y = yStart; y <= yEnd; y += spacing) {
+        ctx.strokeStyle = Math.abs(y) < 1e-6 ? '#fff' : getHorizontalColor(y);
+        ctx.lineWidth = Math.abs(y) < 1e-6 ? 3 : 2.2;
+        drawLine(ctx, s, xStart, y, xEnd, y, transformFunc, segments);
+      }
+
+      if (highlightPoint) {
+        ctx.strokeStyle = 'yellow';
+        ctx.lineWidth = 2.5;
+        const [hx, hy] = highlightPoint;
+        drawLine(ctx, s, hx, yStart, hx, yEnd, transformFunc, segments);
+        drawLine(ctx, s, xStart, hy, xEnd, hy, transformFunc, segments);
+
+        const [cx, cy] = transformFunc([hx, hy]);
+        const [px, py] = toCanvas(cx, cy, s);
+        ctx.beginPath();
+        ctx.arc(px, py, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = 'yellow';
+        ctx.fill();
+      }
+    }
+
+    function drawLine(ctx, s, x1, y1, x2, y2, transformFunc, segments) {
+      let started = false;
+      ctx.beginPath();
+      for (let i = 0; i <= segments; i++) {
+        const t = i / segments;
+        const x = x1 + (x2 - x1) * t;
+        const y = y1 + (y2 - y1) * t;
+        let [tx, ty] = transformFunc([x, y]);
+        if (!isFinite(tx) || !isFinite(ty)) {
+          started = false;
+          continue;
+        }
+        const [cx, cy] = toCanvas(tx, ty, s);
+        if (!started) {
+          ctx.moveTo(cx, cy);
+          started = true;
+        } else {
+          ctx.lineTo(cx, cy);
+        }
+      }
+      ctx.stroke();
+    }
+
+    function getVerticalColor(x) {
+      const hues = [200, 140, 180];
+      const idx = Math.abs(Math.round(x)) % hues.length;
+      return `hsl(${hues[idx]}, 80%, 60%)`;
+    }
+    function getHorizontalColor(y) {
+      const hues = [0, 30, 50];
+      const idx = Math.abs(Math.round(y)) % hues.length;
+      return `hsl(${hues[idx]}, 85%, 65%)`;
+    }
+
+    function updateGrids(highlightPoint = null) {
+      drawGrid(ctxOriginal, state.original, z => z, highlightPoint);
+      drawGrid(ctxTransformed, state.transformed, evalFunc, highlightPoint);
+    }
+
+    // Coordinate tooltip functions
+    let tooltipDiv = null;
+    
+    function showCoordinateTooltip(mouseX, mouseY, zx, zy) {
+      if (!tooltipDiv) {
+        tooltipDiv = document.createElement('div');
+        tooltipDiv.style.position = 'absolute';
+        tooltipDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+        tooltipDiv.style.color = 'white';
+        tooltipDiv.style.padding = '4px 8px';
+        tooltipDiv.style.borderRadius = '4px';
+        tooltipDiv.style.fontSize = '12px';
+        tooltipDiv.style.fontFamily = 'monospace';
+        tooltipDiv.style.pointerEvents = 'none';
+        tooltipDiv.style.zIndex = '1000';
+        document.body.appendChild(tooltipDiv);
+      }
+      
+      const realPart = zx >= 0 ? zx.toFixed(2) : zx.toFixed(2);
+      const imagPart = Math.abs(zy).toFixed(2);
+      const sign = zy >= 0 ? '+' : '-';
+      const coordText = `${realPart} ${sign} ${imagPart}i`;
+      
+      tooltipDiv.textContent = coordText;
+      tooltipDiv.style.display = 'block';
+      
+      const rect = canvasOriginal.getBoundingClientRect();
+      tooltipDiv.style.left = (rect.left + mouseX + 10) + 'px';
+      tooltipDiv.style.top = (rect.top + mouseY - 25) + 'px';
+    }
+    
+    function hideCoordinateTooltip() {
+      if (tooltipDiv) {
+        tooltipDiv.style.display = 'none';
+      }
+    }
+
+    canvasOriginal.addEventListener('mousemove', (e) => {
+      const rect = canvasOriginal.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const [zx, zy] = toComplex(x, y, state.original);
+      updateGrids([zx, zy]);
+      showCoordinateTooltip(x, y, zx, zy);
+    });
+    canvasOriginal.addEventListener('mouseleave', () => {
+      updateGrids(null);
+      hideCoordinateTooltip();
+    });
+
+    canvasTransformed.addEventListener('mousemove', (e) => {
+      const rect = canvasTransformed.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const [zx, zy] = toComplex(x, y, state.transformed);
+      updateGrids([zx, zy]);
+    });
+    canvasTransformed.addEventListener('mouseleave', () => updateGrids(null));
+
+    function setupZoom(canvas, key) {
+      canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        const zoom = e.deltaY < 0 ? 1.1 : 1 / 1.1;
+        const s = state[key];
+        const [zx, zy] = toComplex(mx, my, s);
+        s.scale *= zoom;
+        s.offsetX = zx - (mx - width / 2) / s.scale;
+        s.offsetY = zy - (height / 2 - my) / s.scale;
+        updateGrids();
+      });
+    }
+
+    function setupPan(canvas, key) {
+      let isDragging = false;
+      let start = null;
+      let startOffset = null;
+      canvas.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        const rect = canvas.getBoundingClientRect();
+        start = [e.clientX - rect.left, e.clientY - rect.top];
+        startOffset = { ...state[key] };
+      });
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const rect = canvas.getBoundingClientRect();
+        const [sx, sy] = start;
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const dx = (x - sx) / state[key].scale;
+        const dy = (y - sy) / state[key].scale;
+        state[key].offsetX = startOffset.offsetX + dx;
+        state[key].offsetY = startOffset.offsetY - dy;
+        updateGrids();
+      });
+      window.addEventListener('mouseup', () => { isDragging = false; });
+      window.addEventListener('mouseleave', () => { isDragging = false; });
+    }
+
+    setupZoom(canvasOriginal, 'original');
+    setupZoom(canvasTransformed, 'transformed');
+    setupPan(canvasOriginal, 'original');
+    setupPan(canvasTransformed, 'transformed');
+
+    document.getElementById('resetOriginal').addEventListener('click', () => {
+      state.original = { ...initialState };
+      updateGrids();
+    });
+    document.getElementById('resetTransformed').addEventListener('click', () => {
+      state.transformed = { ...initialState };
+      updateGrids();
+    });
+
+    funcInput.addEventListener('change', () => {
+      compileFunction(funcInput.value.trim());
+    });
+    funcInput.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter') {
+        compileFunction(funcInput.value.trim());
+      }
+    });
+
+    lineDensityInput.addEventListener('input', () => updateGrids());
+    sampleCountInput.addEventListener('input', () => updateGrids());
+
+    compileFunction(funcInput.value);
+
+  </script>
+</body>
+</html>

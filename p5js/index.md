@@ -34,6 +34,14 @@ A physics-simulation of waves powered by balls connected with springs, demonstra
 
 In this visualization, you can click and drag the 3 white perspective points and one of the vertices of the cube. You can also change the dimensions of the cube with the sliders to the left. It's interesting to see how messing with things changes how the cube looks!
 
+## [Complex Function Grid Transformation](https://quasarbright.github.io/p5js/complex-function-grid-visualizer)
+
+![complex grid transformation](/images/complex-grid-transformation.png)
+
+This is an interactive visualization of functions on complex numbers. It shows how points along grid lines get transformed by the complex function.
+
+This was completely vibe-coded using ChatGPT, which was a surprisingly pleasant experience. I didn't even look at the code.
+
 [![screenshot of 3 point perspective](https://quasarbright.github.io/p5js/3PointPerspective/screenshot.png)](https://quasarbright.github.io/p5js/3PointPerspective)
 
 ## [Braille Dithering](https://quasarbright.github.io/p5js/braille)
