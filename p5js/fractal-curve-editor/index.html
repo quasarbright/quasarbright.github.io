@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fractal Curve Editor</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Wait for KaTeX to be loaded
+      setTimeout(function() {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: "\\[", right: "\\]", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ]
+        });
+      }, 100);
+    });
+  </script>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: sans-serif;
+    }
+    canvas {
+      border: 1px solid white;
+      cursor: crosshair;
+      background-color: black;
+      display: block;
+      margin-bottom: 10px;
+    }
+    button {
+      margin-top: 10px;
+      margin-right: 10px;
+      background-color: #222;
+      color: white;
+      border: 1px solid white;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #444;
+    }
+    #status {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Fractal Curve Editor</h1>
+  <canvas id="canvas" width="600" height="400"></canvas><br />
+  <button id="reset">Reset</button>
+  <button id="resetCamera">Reset Camera</button>
+  <button id="iterate">Iterate</button>
+  <div id="status"></div>
+  
+  <div style="margin-top: 30px; border-top: 1px solid #444; padding-top: 20px;">
+    <h2>How to Use the Fractal Curve Editor</h2>
+    <p>
+      This is an interactive fractal curve editor that allows you to create and explore custom fractal curves.
+      You can design your own seed pattern and see how it evolves through multiple iterations.
+    </p>
+    
+    <h3>Controls:</h3>
+    <ul>
+      <li><strong>Create Seed Pattern:</strong> Click on the canvas to add points to your seed pattern (before iterating)</li>
+      <li><strong>Move Points:</strong> Drag the red points to modify your seed pattern. This can be done during seed creation and also after iterating.</li>
+      <li><strong>Iterate:</strong> Click the "Iterate" button to replace each segment with a copy of the seed</li>
+      <li><strong>Pan:</strong> Click and drag on the canvas to move the view</li>
+      <li><strong>Zoom:</strong> Scroll to zoom in and out around the mouse cursor</li>
+      <li><strong>Reset:</strong> Click the "Reset" button to start over with a new seed pattern</li>
+      <li><strong>Reset Camera:</strong> Click the "Reset Camera" button to center the view</li>
+    </ul>
+    
+    <div style="margin-top: 20px;">
+      <h2>The Mathematics Behind Fractal Curves</h2>
+      
+      <h3>Fractal Generation</h3>
+      <p>
+        These fractal curves are created through an iterative process of replacing each line segment with a scaled, 
+        rotated, and translated copy of a "seed pattern." This process is repeated for each new line segment 
+        created, leading to increasingly complex patterns with self-similarity at different scales.
+      </p>
+      <p>
+        The process works as follows:
+      </p>
+      <ol>
+        <li>Start with a seed pattern (the points you create by clicking)</li>
+        <li>For each line segment in the current curve, replace it with a transformed copy of the seed pattern</li>
+        <li>Repeat step 2 for each new iteration</li>
+      </ol>
+      
+      <h3>Fractal Dimension</h3>
+      <p>
+        The fractal dimension is a measure of how "rough" or complex a fractal is.
+        Unlike regular shapes that have integer dimensions (lines are 1D, squares are 2D), fractals can have 
+        non-integer dimensions. Of course, what you see on your screen is just a bunch of line segments if you
+        zoom in enough (which is 1D), but the fractal dimension displayed is the fractal dimension of the curve you would get if you
+        performed infinite iterations. This "true fractal" would be infinitely complex no matter how much you zoom in.
+      </p>
+      <p>
+        For self-similar fractals like those created in this editor, the dimension \(D\) is calculated by solving 
+        the equation:
+      </p>
+      <p style="text-align: center; margin: 20px 0;">
+        \[ \sum_{i} (r_i^D) = 1 \]
+      </p>
+      <p>
+        where \(r_i\) is the length of the \(i\)-th line segment of your seed pattern.
+      </p>
+      <p>
+        The resulting dimension \(D\) tells us how "space-filling" the fractal is:
+      </p>
+      <ul>
+        <li>\(D = 1\): The curve is essentially a line</li>
+        <li>\(1 < D < 2\): The fractal is "rough" and will never look like a line no matter how much you zoom in, but it doesn't fill a "solid" 2D area</li>
+        <li>\(D \ge 2\): The fractal fills a "solid" 2D area</li>
+      </ul>
+      <p>
+        For example, the Koch snowflake curve has \(D \approx 1.26\), while the Hilbert curve has \(D = 2\).
+      </p>
+      <p>
+        For curves which grow larger and larger after more iterations, the fractal dimension is undefined. This is because
+        the curve doesn't "converge" in this case. There is only a fractal dimension when iterating brings you closer and closer to a true fractal.
+      </p>
+      <p>for more information on the math behind fractal dimension, check out this great video by 3blue1brown, which is what inspired this app:</p>
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/gB9n2gHsHN4?si=jIHznkcWJS36S5VW" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    </div>
+  </div>
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const statusDiv = document.getElementById("status");
+
+    let seed = [[0, 0], [1, 0]];
+
+    let iterationCount = 1;
+    let iterated = false;
+
+    let offsetX = 0, offsetY = 0;
+    let scale = 1;
+    
+    // Animation variables
+    let isAnimating = false;
+    let animationStartTime = 0;
+    let animationDuration = 500; // Fixed at 500ms
+    let fromIterationCount = 1;
+    let toIterationCount = 2;
+
+    let isDraggingCanvas = false;
+    let dragStart = { x: 0, y: 0 };
+    let isDraggingSeedVertex = false;
+    let draggedVertexIndex = -1;
+    let mouseMovedSinceDown = false;
+    let mouseDownPos = { x: 0, y: 0 };
+    const dragThreshold = 5; // Pixel threshold for considering a movement as a drag
+
+    let hoveredVertexIndex = -1;
+
+    const dotRadiusPx = 6;
+    const seedPointRadius = 4;
+
+    const baseStartCanvas = [50, 200];
+    const baseEndCanvas = [550, 200];
+
+    function seedPointToCanvas([nx, ny]) {
+      const dx = baseEndCanvas[0] - baseStartCanvas[0];
+      const dy = baseEndCanvas[1] - baseStartCanvas[1];
+      const lengthBase = Math.sqrt(dx*dx + dy*dy);
+      const perpX = -dy / lengthBase;
+      const perpY = dx / lengthBase;
+
+      const x = baseStartCanvas[0] + nx * dx + ny * lengthBase * perpX;
+      const y = baseStartCanvas[1] + nx * dy + ny * lengthBase * perpY;
+      return [x, y];
+    }
+
+    function canvasToSeedPoint([cx, cy]) {
+      const dx = baseEndCanvas[0] - baseStartCanvas[0];
+      const dy = baseEndCanvas[1] - baseStartCanvas[1];
+      const lengthBase = Math.sqrt(dx*dx + dy*dy);
+
+      const vx = cx - baseStartCanvas[0];
+      const vy = cy - baseStartCanvas[1];
+
+      const dot = (vx*dx + vy*dy) / (lengthBase*lengthBase);
+      const perpDot = (vx*(-dy) + vy*dx) / (lengthBase*lengthBase);
+
+      return [dot, perpDot];
+    }
+
+    function computeFractalPoints(iterCount) {
+      let currentPoints = [baseStartCanvas, baseEndCanvas];
+
+      for (let iter = 0; iter < iterCount; iter++) {
+        let newPoints = [];
+        for (let i = 0; i < currentPoints.length - 1; i++) {
+          const segStart = currentPoints[i];
+          const segEnd = currentPoints[i + 1];
+
+          const transformedPoints = seed.map(([nx, ny]) => {
+            const vx = segEnd[0] - segStart[0];
+            const vy = segEnd[1] - segStart[1];
+            const len = Math.sqrt(vx*vx + vy*vy);
+            const px = -vy / len;
+            const py = vx / len;
+
+            const x = segStart[0] + nx * vx + ny * len * px;
+            const y = segStart[1] + nx * vy + ny * len * py;
+            return [x, y];
+          });
+
+          if (i > 0) transformedPoints.shift();
+          newPoints.push(...transformedPoints);
+        }
+        currentPoints = newPoints;
+      }
+      return currentPoints;
+    }
+
+    function computeFractalDimension() {
+      let maxLen = 0;
+      const lengths = [];
+
+      for (let i = 0; i < seed.length - 1; i++) {
+        const [x1, y1] = seed[i];
+        const [x2, y2] = seed[i + 1];
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        if (len > maxLen) maxLen = len;
+        lengths.push(len);
+      }
+      if (maxLen >= 1) return NaN;
+
+      const tolerance = 1e-10;
+      const maxIterations = 100;
+      let D = 1.0;
+
+      function f(D) {
+        return lengths.reduce((sum, l) => sum + Math.pow(l, D), 0) - 1;
+      }
+
+      function fPrime(D) {
+        return lengths.reduce((sum, l) => sum + Math.pow(l, D) * Math.log(l), 0);
+      }
+
+      for (let i = 0; i < maxIterations; i++) {
+        const y = f(D);
+        const yPrime = fPrime(D);
+        if (Math.abs(yPrime) < 1e-12) break;
+        const nextD = D - y / yPrime;
+        if (Math.abs(nextD - D) < tolerance) return nextD;
+        D = nextD;
+      }
+      return NaN;
+    }
+
+    function draw(animationProgress = -1) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.setTransform(scale, 0, 0, scale, offsetX, offsetY);
+      ctx.lineWidth = 1 / scale;
+      ctx.strokeStyle = "white";
+
+      let fractalPoints;
+      
+      if (isAnimating && animationProgress >= 0 && animationProgress <= 1) {
+        // During animation, interpolate between the two iteration levels
+        const fromPoints = iterated ? 
+          computeFractalPoints(fromIterationCount) : 
+          seed.map(seedPointToCanvas);
+          
+        const toPoints = computeFractalPoints(toIterationCount);
+        
+        // Interpolate between the two sets of points
+        fractalPoints = interpolatePoints(fromPoints, toPoints, animationProgress);
+      } else if (iterated) {
+        fractalPoints = computeFractalPoints(iterationCount);
+      } else {
+        fractalPoints = seed.map(seedPointToCanvas);
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(fractalPoints[0][0], fractalPoints[0][1]);
+      for (let pt of fractalPoints.slice(1)) {
+        ctx.lineTo(pt[0], pt[1]);
+      }
+      ctx.stroke();
+
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      for (let i = 0; i < seed.length; i++) {
+        const [cx, cy] = seedPointToCanvas(seed[i]);
+        const sx = cx * scale + offsetX;
+        const sy = cy * scale + offsetY;
+
+        ctx.beginPath();
+        if (i === 0 || i === seed.length -1) {
+          ctx.fillStyle = "white";
+        } else {
+          ctx.fillStyle = (i === hoveredVertexIndex) ? "lime" : "red";
+        }
+        ctx.arc(sx, sy, seedPointRadius, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+
+      let status = iterated ? `iterations: ${iterationCount - 1}` : "creating seed";
+      const dim = computeFractalDimension();
+      if (!isNaN(dim)) {
+        status += `<br>fractal dimension: ${dim.toFixed(5)}`;
+      } else {
+        status += `<br>fractal dimension: undefined`;
+      }
+      statusDiv.innerHTML = status;
+    }
+
+    function getSeedVertexUnderMouse(mx, my) {
+      for (let i = 0; i < seed.length; i++) {
+        if (i === 0 || i === seed.length - 1) continue;
+        const [cx, cy] = seedPointToCanvas(seed[i]);
+        const sx = cx * scale + offsetX;
+        const sy = cy * scale + offsetY;
+        const dx = mx - sx;
+        const dy = my - sy;
+        if (dx * dx + dy * dy <= dotRadiusPx * dotRadiusPx) {
+          return i;
+        }
+      }
+      return -1;
+    }
+
+    function updateSeedVertexPosition(index, fx, fy) {
+      if (index === 0 || index === seed.length -1) return;
+      seed[index] = canvasToSeedPoint([fx, fy]);
+    }
+
+    canvas.addEventListener("mousemove", e => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+
+      // Only consider it a drag if movement exceeds threshold
+      const dx = mx - mouseDownPos.x;
+      const dy = my - mouseDownPos.y;
+      const distSquared = dx * dx + dy * dy;
+      
+      if (distSquared > dragThreshold * dragThreshold) {
+        mouseMovedSinceDown = true;
+      }
+
+      if (isDraggingSeedVertex) {
+        const fx = (mx - offsetX) / scale;
+        const fy = (my - offsetY) / scale;
+        updateSeedVertexPosition(draggedVertexIndex, fx, fy);
+        draw();
+        return;
+      }
+
+      const hovered = getSeedVertexUnderMouse(mx, my);
+      if (hovered !== hoveredVertexIndex) {
+        hoveredVertexIndex = hovered;
+        canvas.style.cursor = hovered !== -1 ? "pointer" : "grab";
+        draw();
+      }
+
+      if (isDraggingCanvas) {
+        offsetX = e.clientX - dragStart.x;
+        offsetY = e.clientY - dragStart.y;
+        draw();
+      }
+    });
+
+    canvas.addEventListener("mousedown", e => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+
+      mouseMovedSinceDown = false;
+      mouseDownPos.x = mx;
+      mouseDownPos.y = my;
+
+      const vertexIndex = getSeedVertexUnderMouse(mx, my);
+      if (vertexIndex !== -1) {
+        isDraggingSeedVertex = true;
+        draggedVertexIndex = vertexIndex;
+        canvas.style.cursor = "grabbing";
+        return;
+      }
+
+      isDraggingCanvas = true;
+      dragStart.x = e.clientX - offsetX;
+      dragStart.y = e.clientY - offsetY;
+      canvas.style.cursor = "grabbing";
+    });
+
+    canvas.addEventListener("mouseup", e => {
+      if (isDraggingSeedVertex) {
+        isDraggingSeedVertex = false;
+        draggedVertexIndex = -1;
+        canvas.style.cursor = hoveredVertexIndex !== -1 ? "pointer" : "grab";
+        return;
+      }
+
+      if (isDraggingCanvas) {
+        isDraggingCanvas = false;
+        canvas.style.cursor = hoveredVertexIndex !== -1 ? "pointer" : "grab";
+        return;
+      }
+    });
+
+    canvas.addEventListener("mouseleave", e => {
+      if (isDraggingSeedVertex) {
+        isDraggingSeedVertex = false;
+        draggedVertexIndex = -1;
+      }
+      if (isDraggingCanvas) {
+        isDraggingCanvas = false;
+      }
+      hoveredVertexIndex = -1;
+      canvas.style.cursor = "crosshair";
+      draw();
+    });
+
+    canvas.addEventListener("wheel", e => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      const wx = (mouseX - offsetX) / scale;
+      const wy = (mouseY - offsetY) / scale;
+
+      const zoom = e.deltaY < 0 ? 1.1 : 0.9;
+      scale *= zoom;
+
+      offsetX = mouseX - wx * scale;
+      offsetY = mouseY - wy * scale;
+
+      draw();
+    });
+
+    canvas.addEventListener("click", e => {
+      if (iterated || isDraggingSeedVertex || isDraggingCanvas || mouseMovedSinceDown) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+
+      const fx = (mx - offsetX) / scale;
+      const fy = (my - offsetY) / scale;
+      const newPoint = canvasToSeedPoint([fx, fy]);
+
+      seed.splice(seed.length - 1, 0, newPoint);
+      draw();
+    });
+
+    // Interpolate between two sets of points
+    function interpolatePoints(fromPoints, toPoints, progress) {
+      // Map the original segments to the new segments
+      const result = [];
+      
+      // Find the mapping between original segments and new segments
+      const segmentMap = mapSegmentsForAnimation(fromPoints, toPoints);
+      
+      // For each segment in the original curve
+      for (let i = 0; i < segmentMap.length; i++) {
+        const { originalStart, originalEnd, newPoints } = segmentMap[i];
+        
+        // Add the start point of this segment
+        if (i === 0 || result[result.length - 1][0] !== originalStart[0] || result[result.length - 1][1] !== originalStart[1]) {
+          result.push(originalStart);
+        }
+        
+        // If there are intermediate points in this segment
+        if (newPoints.length > 0) {
+          // Calculate the midpoint of the original segment
+          const midX = originalStart[0] + (originalEnd[0] - originalStart[0]) * 0.5;
+          const midY = originalStart[1] + (originalEnd[1] - originalStart[1]) * 0.5;
+          
+          // For each new point, interpolate from the midpoint to its final position
+          for (const newPoint of newPoints) {
+            // Start from a position along the original segment
+            const startX = midX;
+            const startY = midY;
+            
+            // Interpolate to the final position
+            result.push([
+              startX + (newPoint[0] - startX) * progress,
+              startY + (newPoint[1] - startY) * progress
+            ]);
+          }
+        }
+        
+        // Add the end point of this segment
+        result.push(originalEnd);
+      }
+      
+      return result;
+    }
+    
+    // Map original segments to new segments for animation
+    function mapSegmentsForAnimation(fromPoints, toPoints) {
+      const result = [];
+      
+      // If we're just starting with a seed pattern, handle it differently
+      if (fromPoints.length <= 2) {
+        // Just return a single segment with all the new points
+        return [{
+          originalStart: fromPoints[0],
+          originalEnd: fromPoints[fromPoints.length - 1],
+          newPoints: toPoints.slice(1, -1)
+        }];
+      }
+      
+      // Find the corresponding segments
+      let toIndex = 0;
+      
+      for (let i = 0; i < fromPoints.length - 1; i++) {
+        const originalStart = fromPoints[i];
+        const originalEnd = fromPoints[i + 1];
+        const newPoints = [];
+        
+        // Find the matching end point in the new curve
+        let matchFound = false;
+        while (toIndex < toPoints.length - 1) {
+          // Add intermediate points
+          newPoints.push(toPoints[toIndex]);
+          toIndex++;
+          
+          // Check if we've found the matching end point
+          if (Math.abs(toPoints[toIndex][0] - originalEnd[0]) < 0.001 && 
+              Math.abs(toPoints[toIndex][1] - originalEnd[1]) < 0.001) {
+            matchFound = true;
+            break;
+          }
+        }
+        
+        // If we found a match, add this segment mapping
+        if (matchFound) {
+          result.push({
+            originalStart,
+            originalEnd,
+            newPoints: newPoints.slice(1)  // Skip the start point as it's already included
+          });
+        }
+      }
+      
+      // If we couldn't map properly, fall back to a simpler approach
+      if (result.length === 0) {
+        return [{
+          originalStart: fromPoints[0],
+          originalEnd: fromPoints[fromPoints.length - 1],
+          newPoints: toPoints.slice(1, -1)
+        }];
+      }
+      
+      return result;
+    }
+    
+    // Animation frame function
+    function animateIteration(timestamp) {
+      if (!animationStartTime) animationStartTime = timestamp;
+      
+      const elapsed = timestamp - animationStartTime;
+      const progress = Math.min(elapsed / animationDuration, 1);
+      
+      draw(progress);
+      
+      if (progress < 1) {
+        requestAnimationFrame(animateIteration);
+      } else {
+        // Animation complete
+        isAnimating = false;
+        animationStartTime = 0;
+        iterationCount = toIterationCount;
+        draw();
+      }
+    }
+
+    document.getElementById("iterate").addEventListener("click", () => {
+      if (isAnimating) return; // Don't start a new animation if one is in progress
+      
+      if (!iterated) {
+        iterated = true;
+        fromIterationCount = 1;
+        toIterationCount = 2;
+        canvas.style.cursor = "grab";
+      } else {
+        fromIterationCount = iterationCount;
+        toIterationCount = iterationCount + 1;
+      }
+      
+      // Start animation
+      isAnimating = true;
+      animationStartTime = 0;
+      requestAnimationFrame(animateIteration);
+    });
+
+    document.getElementById("reset").addEventListener("click", () => {
+      seed = [[0, 0], [1, 0]];
+      iterationCount = 1;
+      iterated = false;
+      offsetX = 0;
+      offsetY = 0;
+      scale = 1;
+      hoveredVertexIndex = -1;
+      isDraggingSeedVertex = false;
+      draggedVertexIndex = -1;
+      isDraggingCanvas = false;
+      isAnimating = false;
+      animationStartTime = 0;
+      fromIterationCount = 1;
+      toIterationCount = 2;
+      canvas.style.cursor = "crosshair";
+      draw();
+    });
+
+    document.getElementById("resetCamera").addEventListener("click", () => {
+      offsetX = 0;
+      offsetY = 0;
+      scale = 1;
+      draw();
+    });
+
+    draw();
+  </script>
+</body>
+</html>

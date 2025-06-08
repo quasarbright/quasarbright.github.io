@@ -23,6 +23,12 @@ Shrinking an image by removing the "least interesting" seams of pixels.
 
 ![broomstick](/images/energy-broomstick.png)
 
+## [Fractal Curve Editor](./fractal-curve-editor/)
+
+![fractal curve editor](./screenshots/fractal-curve-editor.png)
+
+Create a fractal curve from a seed pattern of line segments by replacing each segment with a scaled copy of the whole seed.
+
 ## [Double Slit Interference](https://quasarbright.github.io/spring-wave/dist/index.html)
 
 A physics-simulation of waves powered by balls connected with springs, demonstrating diffraction and double-slit interference.
