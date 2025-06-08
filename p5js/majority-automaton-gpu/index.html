@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GPU Majority Cellular Automaton</title>
+    <meta charset="utf-8" />
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+        }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border: 1px solid #333;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        label {
+            font-size: 14px;
+            color: #333;
+        }
+        input[type="number"] {
+            width: 50px;
+            padding: 4px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <button id="resetButton">Reset</button>
+        <div class="input-group">
+            <label for="numColorsInput">Colors:</label>
+            <input type="number" id="numColorsInput" min="2" step="1" value="3">
+        </div>
+    </div>
+    <canvas id="glCanvas"></canvas>
+    <script src="main.js"></script>
+</body>
+</html>

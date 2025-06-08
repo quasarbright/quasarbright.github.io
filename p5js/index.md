@@ -189,13 +189,17 @@ A numerical approximation of the [wave equation](https://en.wikipedia.org/wiki/W
 
 [![screenshot of wave equation](https://quasarbright.github.io/p5js/wave-equation/screenshot.png)](https://quasarbright.github.io/p5js/wave-equation)
 
-## [Majority Cellular Automaton](https://quasarbright.github.io/p5js/majority-automaton)
+## [Majority Cellular Automaton](https://quasarbright.github.io/p5js/majority-automaton-gpu)
 
 A multi-state cellular automaton where the next value is determined by majority vote of the neighbors
 
 Which color do you think will win?
 
-[![screenshot of majority](https://quasarbright.github.io/p5js/screenshots/majority.png)](https://quasarbright.github.io/p5js/majority-automaton)
+[![screenshot of majority](https://quasarbright.github.io/p5js/screenshots/majority.png)](https://quasarbright.github.io/p5js/majority-automaton-gpu)
+
+This project was originally implemented by me (without AI), and it ran on the CPU, but I vibe-coded a GPU port using cline.
+
+The original CPU version is [here](https://quasarbright.github.io/p5js/majority-automaton).
 
 ## [Rock Paper Scissors Cellular Automaton](https://quasarbright.github.io/p5js/rock-paper-scissors-automaton)
 
