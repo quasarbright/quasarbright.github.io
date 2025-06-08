@@ -25,7 +25,7 @@ Shrinking an image by removing the "least interesting" seams of pixels.
 
 ## [Fractal Curve Editor](./fractal-curve-editor/)
 
-![fractal curve editor](./screenshots/fractal-curve-editor.png)
+[![fractal curve editor](./screenshots/fractal-curve-editor.png)](./fractal-curve-editor)
 
 Create a fractal curve from a seed pattern of line segments by replacing each segment with a scaled copy of the whole seed.
 
