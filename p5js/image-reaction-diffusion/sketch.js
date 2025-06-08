@@ -20,12 +20,63 @@ let ditheredImage = null;
 
 // Reaction-diffusion parameters
 const params = {
-    feed: 0.055,
-    kill: 0.062,
-    dA: 1.0,
-    dB: 0.5,
-    dt: 1.0
+    feed: 0.037,
+    kill: 0.06,
+    dA: 0.2,
+    dB: 0.1,
+    dt: 1
 };
+
+// Initialize with circle
+function initializeWithCircle() {
+    // Clear both textures
+    for (let i = 0; i < 2; i++) {
+        gl.bindTexture(gl.TEXTURE_2D, textures[i]);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.canvas.width, gl.canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    }
+    
+    // Create a canvas to draw the circle
+    const canvas = document.createElement('canvas');
+    canvas.width = gl.canvas.width;
+    canvas.height = gl.canvas.height;
+    const ctx = canvas.getContext('2d');
+    
+    // Fill with black
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw white circle in center
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = Math.min(canvas.width, canvas.height) * 0.15; // 15% of smaller dimension
+    
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Get the image data
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = new Uint8Array(imageData.data.buffer);
+    
+    // Convert to reaction-diffusion initial conditions
+    // For black pixels (0), set A=0, B=1
+    // For white pixels (255), set A=1, B=0
+    for (let i = 0; i < data.length; i += 4) {
+        const isBlack = data[i] < 128;
+        data[i] = isBlack ? 0 : 255;     // A channel (red) - white pixels become A=1
+        data[i + 1] = isBlack ? 255 : 0; // B channel (green) - black pixels become B=1
+        data[i + 2] = 0;     // Blue channel
+        data[i + 3] = 255;   // Alpha channel
+    }
+    
+    // Initialize both textures with the same data
+    gl.bindTexture(gl.TEXTURE_2D, textures[currentBuffer]);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.canvas.width, gl.canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+    
+    gl.bindTexture(gl.TEXTURE_2D, textures[(currentBuffer + 1) % 2]);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.canvas.width, gl.canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+}
 
 // Initialize WebGL
 async function initGL() {
@@ -113,6 +164,9 @@ async function initGL() {
     }
     
     setupControls();
+    
+    // Initialize with circle instead of waiting for image upload
+    initializeWithCircle();
 }
 
 // Helper function to create shader
@@ -152,6 +206,10 @@ function setupControls() {
     const resetBtn = document.getElementById('resetBtn');
     const speedSlider = document.getElementById('speedSlider');
     const speedValue = document.getElementById('speedValue');
+    const killSlider = document.getElementById('killSlider');
+    const killValue = document.getElementById('killValue');
+    const feedSlider = document.getElementById('feedSlider');
+    const feedValue = document.getElementById('feedValue');
     const imageUpload = document.getElementById('imageUpload');
     
     startBtn.addEventListener('click', () => {
@@ -166,12 +224,28 @@ function setupControls() {
     resetBtn.addEventListener('click', () => {
         if (ditheredImage) {
             initializeFromImage(ditheredImage);
+        } else {
+            initializeWithCircle();
         }
+        // Optionally pause to see initial state
+        isRunning = false;
     });
     
     speedSlider.addEventListener('input', () => {
         speed = speedSlider.value;
         speedValue.textContent = speed;
+    });
+
+    // Add kill rate control
+    killSlider.addEventListener('input', () => {
+        params.kill = parseFloat(killSlider.value);
+        killValue.textContent = params.kill.toFixed(4);
+    });
+
+    // Add feed rate control
+    feedSlider.addEventListener('input', () => {
+        params.feed = parseFloat(feedSlider.value);
+        feedValue.textContent = params.feed.toFixed(4);
     });
     
     imageUpload.addEventListener('change', (e) => {

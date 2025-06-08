@@ -19,6 +19,16 @@
                 <input type="range" id="speedSlider" min="1" max="60" value="30">
                 <span id="speedValue">30</span> iterations per second
             </div>
+            <div class="slider-container">
+                <label for="killSlider">Kill rate (k):</label>
+                <input type="range" id="killSlider" min="0.045" max="0.07" step="0.001" value="0.06">
+                <span id="killValue">0.06</span>
+            </div>
+            <div class="slider-container">
+                <label for="feedSlider">Feed rate (f):</label>
+                <input type="range" id="feedSlider" min="0.01" max="0.06" step="0.001" value="0.037">
+                <span id="feedValue">0.037</span>
+            </div>
         </div>
         <canvas id="glCanvas"></canvas>
     </div>
