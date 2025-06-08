@@ -193,7 +193,7 @@ function setupControls() {
     });
 }
 
-// Dither image using Floyd-Steinberg algorithm
+// Convert image to black and white using thresholding
 function ditherImage(img) {
     const canvas = document.createElement('canvas');
     canvas.width = gl.canvas.width;
@@ -213,42 +213,19 @@ function ditherImage(img) {
     
     ctx.drawImage(img, x, y, w, h);
     
-    // Convert to grayscale first
+    // Convert to black and white using simple thresholding
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
     
     for (let i = 0; i < data.length; i += 4) {
+        // Convert to grayscale
         const gray = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
-        data[i] = gray;
-        data[i + 1] = gray;
-        data[i + 2] = gray;
-    }
-    
-    // Apply dithering
-    for (let y = 0; y < canvas.height; y++) {
-        for (let x = 0; x < canvas.width; x++) {
-            const idx = (y * canvas.width + x) * 4;
-            const oldPixel = data[idx];
-            const newPixel = oldPixel < 128 ? 0 : 255;
-            data[idx] = newPixel;
-            data[idx + 1] = newPixel;
-            data[idx + 2] = newPixel;
-            
-            const error = oldPixel - newPixel;
-            
-            if (x + 1 < canvas.width) {
-                data[idx + 4] += error * 7/16;
-            }
-            if (x - 1 >= 0 && y + 1 < canvas.height) {
-                data[idx + canvas.width * 4 - 4] += error * 3/16;
-            }
-            if (y + 1 < canvas.height) {
-                data[idx + canvas.width * 4] += error * 5/16;
-            }
-            if (x + 1 < canvas.width && y + 1 < canvas.height) {
-                data[idx + canvas.width * 4 + 4] += error * 1/16;
-            }
-        }
+        // Simple threshold at 128
+        const value = gray < 128 ? 0 : 255;
+        data[i] = value;     // R
+        data[i + 1] = value; // G
+        data[i + 2] = value; // B
+        data[i + 3] = 255;   // A
     }
     
     ctx.putImageData(imageData, 0, 0);
