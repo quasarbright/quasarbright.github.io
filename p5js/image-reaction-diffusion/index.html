@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Reaction-Diffusion</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Image Reaction-Diffusion</h1>
+        <div class="controls">
+            <input type="file" id="imageUpload" accept="image/*">
+            <button id="startBtn">Start/Resume</button>
+            <button id="pauseBtn">Pause</button>
+            <button id="resetBtn">Reset</button>
+            <div class="slider-container">
+                <label for="speedSlider">Speed:</label>
+                <input type="range" id="speedSlider" min="1" max="60" value="30">
+                <span id="speedValue">30</span> iterations per second
+            </div>
+        </div>
+        <canvas id="glCanvas"></canvas>
+    </div>
+    <script src="sketch.js"></script>
+</body>
+</html> 
