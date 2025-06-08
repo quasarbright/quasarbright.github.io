@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPU Conway's Game of Life</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Force pixel-perfect rendering without anti-aliasing */
+        canvas {
+            image-rendering: optimizeSpeed;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: optimize-contrast;
+            image-rendering: pixelated;
+            -ms-interpolation-mode: nearest-neighbor;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GPU Conway's Game of Life</h1>
+        
+        <div class="upload-section">
+            <label for="image-upload" class="upload-label">Upload an image</label>
+            <input type="file" id="image-upload" accept="image/*">
+        </div>
+        
+        <div class="controls">
+            <button id="start-btn" disabled>Start/Resume</button>
+            <button id="pause-btn" disabled>Pause</button>
+            <button id="reset-btn" disabled>Reset</button>
+            <div class="speed-control">
+                <label for="speed-slider">Speed:</label>
+                <input type="range" id="speed-slider" min="1" max="60" value="30">
+                <span id="speed-value">30 generations per second</span>
+            </div>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="game-canvas"></canvas>
+        </div>
+        
+        <div class="info">
+            <p>Upload an image to see it converted to black and white via dithering, then watch as Conway's Game of Life evolves from it.</p>
+            <p>The simulation runs on your GPU using WebGL shaders for maximum performance.</p>
+            <p>This webpage was vibe coded using cline.</p>
+        </div>
+    </div>
+
+    <script src="gameOfLife.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

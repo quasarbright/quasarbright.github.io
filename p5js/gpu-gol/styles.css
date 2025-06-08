@@ -1,0 +1,170 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f4f4f4;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.upload-section {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.upload-label {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.upload-label:hover {
+    background-color: #2980b9;
+}
+
+#image-upload {
+    display: none;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+button {
+    padding: 8px 16px;
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin: 0 5px;
+}
+
+button:hover {
+    background-color: #27ae60;
+}
+
+button:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+}
+
+#pause-btn {
+    background-color: #e74c3c;
+}
+
+#pause-btn:hover {
+    background-color: #c0392b;
+}
+
+#reset-btn {
+    background-color: #f39c12;
+}
+
+#reset-btn:hover {
+    background-color: #d35400;
+}
+
+.speed-control {
+    display: flex;
+    align-items: center;
+    margin-left: 15px;
+}
+
+.speed-control label {
+    margin-right: 10px;
+}
+
+#speed-slider {
+    width: 100px;
+}
+
+#speed-value {
+    margin-left: 10px;
+    min-width: 60px;
+}
+
+.canvas-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+#game-canvas {
+    border: 1px solid #ddd;
+    max-width: 100%;
+    background-color: #000;
+    /* Disable anti-aliasing for crisp pixel rendering */
+    image-rendering: -moz-crisp-edges;          /* Firefox */
+    image-rendering: -webkit-crisp-edges;       /* Webkit */
+    image-rendering: pixelated;                 /* Chrome */
+    image-rendering: crisp-edges;               /* Standard */
+    -ms-interpolation-mode: nearest-neighbor;   /* IE */
+    image-rendering: optimizeSpeed;             /* Older versions of FF */
+    image-rendering: optimize-contrast;         /* Older versions of FF */
+    image-rendering: -webkit-optimize-contrast; /* Older versions of Webkit */
+    image-rendering: -o-crisp-edges;            /* Opera */
+}
+
+.canvas-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    /* Ensure the container doesn't apply any smoothing */
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+.info {
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 0.9em;
+    line-height: 1.4;
+}
+
+.info p {
+    margin-bottom: 10px;
+}
+
+@media (max-width: 600px) {
+    .controls {
+        flex-direction: column;
+    }
+    
+    .speed-control {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+}

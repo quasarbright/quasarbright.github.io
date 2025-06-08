@@ -151,6 +151,10 @@ Similar to braille dithering, but uses moon phase emojis.
 
 Dithers an image to black and white pixels and then runs that in conway's game of life
 
+## [Image -> Conway's Game of Life on the GPU](https://quasarbright.github.io/p5js/gpu-gol)
+
+A GPU-powered version for higher performance. This was vibe-coded using cline.
+
 ## [Sand](https://quasarbright.github.io/p5js/sand2)
 
 Add sand, water, stone, acid, fire, and more to the screen and watch them interact.
