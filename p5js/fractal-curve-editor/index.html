@@ -53,6 +53,14 @@
 <body>
   <h1>Fractal Curve Editor</h1>
   <canvas id="canvas" width="600" height="400"></canvas><br />
+  <div style="margin-bottom: 10px;">
+    <select id="presetSelect" style="background-color: #222; color: white; border: 1px solid white; padding: 5px 10px; margin-right: 10px;">
+      <option value="">Select a preset curve...</option>
+      <option value="koch">Koch Curve</option>
+      <option value="sierpinski">Sierpinski Triangle</option>
+    </select>
+    <button id="loadPreset">Load Preset</button>
+  </div>
   <button id="reset">Reset</button>
   <button id="resetCamera">Reset Camera</button>
   <button id="iterate">Iterate</button>
@@ -67,7 +75,7 @@
     
     <h3>Controls:</h3>
     <ul>
-      <li><strong>Create Seed Pattern:</strong> Click on the canvas to add points to your seed pattern (before iterating)</li>
+      <li><strong>Create Seed Pattern:</strong> Click on the canvas to add points to your seed pattern (before iterating), or load a preset curve</li>
       <li><strong>Move Points:</strong> Drag the red points to modify your seed pattern. This can be done during seed creation and also after iterating.</li>
       <li><strong>Iterate:</strong> Click the "Iterate" button to replace each segment with a copy of the seed</li>
       <li><strong>Pan:</strong> Click and drag on the canvas to move the view</li>
@@ -135,6 +143,25 @@
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     const statusDiv = document.getElementById("status");
+
+    // Preset curves data structure
+    const presetCurves = {
+      koch: [
+        [0, 0],
+        [1/3, 0],
+        [0.5, -Math.sqrt(1/12)],
+        [2/3, 0],
+        [1, 0]
+      ],
+      sierpinski: [
+        [0, 0],
+        [0.5, 0],
+        [0.25, -Math.sqrt(3)/4],
+        [0.75, -Math.sqrt(3)/4],
+        [0.5, 0],
+        [1, 0]
+      ],
+    };
 
     let seed = [[0, 0], [1, 0]];
 
@@ -624,6 +651,33 @@
       offsetX = 0;
       offsetY = 0;
       scale = 1;
+      draw();
+    });
+
+    // Add event listener for loading presets
+    document.getElementById("loadPreset").addEventListener("click", () => {
+      const selectedPreset = document.getElementById("presetSelect").value;
+      if (!selectedPreset || !presetCurves[selectedPreset]) return;
+      
+      // Reset the state
+      iterationCount = 1;
+      iterated = false;
+      offsetX = 0;
+      offsetY = 0;
+      scale = 1;
+      hoveredVertexIndex = -1;
+      isDraggingSeedVertex = false;
+      draggedVertexIndex = -1;
+      isDraggingCanvas = false;
+      isAnimating = false;
+      animationStartTime = 0;
+      fromIterationCount = 1;
+      toIterationCount = 2;
+      canvas.style.cursor = "crosshair";
+      
+      // Set the new seed pattern
+      seed = presetCurves[selectedPreset].slice();
+      
       draw();
     });
 
