@@ -31,7 +31,7 @@
       cursor: crosshair;
       background-color: black;
       display: block;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
     }
     button {
       margin-top: 10px;
@@ -52,12 +52,14 @@
 </head>
 <body>
   <h1>Fractal Curve Editor</h1>
-  <canvas id="canvas" width="600" height="400"></canvas><br />
+  <canvas id="canvas" width="500" height="500"></canvas><br />
   <div style="margin-bottom: 10px;">
     <select id="presetSelect" style="background-color: #222; color: white; border: 1px solid white; padding: 5px 10px; margin-right: 10px;">
       <option value="">Select a preset curve...</option>
       <option value="koch">Koch Curve</option>
       <option value="sierpinski">Sierpinski Triangle</option>
+      <option value="crosses">Crosses</option>
+      <option value="triangle_tiling">Triangle Tiling</option>
     </select>
     <button id="loadPreset">Load Preset</button>
   </div>
@@ -161,6 +163,18 @@
         [0.5, 0],
         [1, 0]
       ],
+      crosses: [
+        [0, 0],
+        [0.5, 0],
+        [0.5,-0.25],
+        [0.5, 0],
+        [1, 0]
+      ],
+      triangle_tiling: [
+        [0, 0],
+        [0.5, -Math.sqrt(3)/2],
+        [1, 0],
+      ],
     };
 
     let seed = [[0, 0], [1, 0]];
@@ -191,8 +205,10 @@
     const dotRadiusPx = 6;
     const seedPointRadius = 4;
 
-    const baseStartCanvas = [50, 200];
-    const baseEndCanvas = [550, 200];
+    const linePaddingRatio = 0.15;
+
+    const baseStartCanvas = [linePaddingRatio * canvas.width, canvas.height * .5];
+    const baseEndCanvas = [canvas.width - linePaddingRatio * canvas.width, canvas.height * .5];
 
     function seedPointToCanvas([nx, ny]) {
       const dx = baseEndCanvas[0] - baseStartCanvas[0];
