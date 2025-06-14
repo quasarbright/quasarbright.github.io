@@ -63,6 +63,7 @@
       <option value="levy">Levy C Curve</option>
       <option value="minkowski">Minkowski Sausage Curve</option>
       <option value="terdragon">Terdragon Curve</option>
+      <option value="roots">Roots</option>
     </select>
     <button id="loadPreset">Load Preset</button>
   </div>
@@ -201,7 +202,13 @@
         [0.5, -1 / (Math.sqrt(3) * 2)],
         [0.5, 1 / (Math.sqrt(3) * 2)],
         [1,0],
-      ]
+      ],
+      roots: [
+        [0,0],
+        [0,-0.5],
+        [0.5,0],
+        [1,0],
+      ],
     };
 
     let seed = [[0, 0], [1, 0]];
