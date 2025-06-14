@@ -48,6 +48,31 @@
     #status {
       margin-top: 10px;
     }
+    .control-group {
+      margin-bottom: 10px;
+    }
+    .grid-controls {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .grid-controls > * {
+      margin-right: 10px;
+    }
+    input[type="number"] {
+      background-color: #222;
+      color: white;
+      border: 1px solid white;
+      padding: 5px;
+      width: 80px;
+    }
+    select {
+      background-color: #222;
+      color: white;
+      border: 1px solid white;
+      padding: 5px 10px;
+      margin-right: 10px;
+    }
   </style>
 </head>
 <body>
@@ -67,6 +92,18 @@
     </select>
     <button id="loadPreset">Load Preset</button>
   </div>
+  
+  <div class="grid-controls">
+    <label for="gridType">Grid: </label>
+    <select id="gridType">
+      <option value="none">None</option>
+      <option value="square">Square</option>
+      <option value="hex">Hexagonal</option>
+    </select>
+    <label for="gridSpacing">Spacing: </label>
+    <input type="number" id="gridSpacing" min="0.05" max="2" value="0.5" step="0.05">
+  </div>
+  
   <button id="reset">Reset</button>
   <button id="resetCamera">Reset Camera</button>
   <button id="iterate">Iterate</button>
@@ -149,6 +186,12 @@
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     const statusDiv = document.getElementById("status");
+    const gridTypeSelect = document.getElementById("gridType");
+    const gridSpacingInput = document.getElementById("gridSpacing");
+
+    // Grid settings
+    let gridType = "none";
+    let gridSpacing = 0.5;
 
     // Preset curves data structure
     const presetCurves = {
@@ -342,6 +385,10 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       ctx.setTransform(scale, 0, 0, scale, offsetX, offsetY);
+      
+      // Draw grid if enabled
+      drawGrid();
+      
       ctx.lineWidth = 1 / scale;
       ctx.strokeStyle = "white";
 
@@ -394,6 +441,159 @@
         status += `<br>fractal dimension: undefined`;
       }
       statusDiv.innerHTML = status;
+    }
+
+    // Function to draw grid based on current view
+    function drawGrid() {
+      if (gridType === "none") return;
+      
+      // Calculate visible area in mathematical space
+      // Convert from canvas coordinates to mathematical space
+      const canvasToMath = (x, y) => {
+        // First convert from canvas pixel to canvas space (accounting for scale and offset)
+        const canvasX = (x - offsetX) / scale;
+        const canvasY = (y - offsetY) / scale;
+        // Then convert from canvas space to mathematical space
+        return canvasToSeedPoint([canvasX, canvasY]);
+      };
+      
+      const visibleLeftTop = canvasToMath(0, 0);
+      const visibleRightBottom = canvasToMath(canvas.width, canvas.height);
+      
+      // Expand boundaries to ensure we cover the visible area
+      const visibleLeft = Math.min(visibleLeftTop[0], visibleRightBottom[0]) - 1;
+      const visibleRight = Math.max(visibleLeftTop[0], visibleRightBottom[0]) + 1;
+      const visibleTop = Math.min(visibleLeftTop[1], visibleRightBottom[1]) - 1;
+      const visibleBottom = Math.max(visibleLeftTop[1], visibleRightBottom[1]) + 1;
+      
+      // Grid spacing in mathematical units
+      const mathSpacing = gridSpacing;
+      
+      // Set grid style
+      ctx.lineWidth = 0.5 / scale;
+      ctx.strokeStyle = "rgba(150, 150, 150, 0.5)";
+      
+      if (gridType === "square") {
+        // Calculate grid boundaries aligned with mathematical (0,0)
+        const startX = Math.floor(visibleLeft / mathSpacing) * mathSpacing;
+        const startY = Math.floor(visibleTop / mathSpacing) * mathSpacing;
+        const endX = Math.ceil(visibleRight / mathSpacing) * mathSpacing;
+        const endY = Math.ceil(visibleBottom / mathSpacing) * mathSpacing;
+        
+        // Draw vertical grid lines
+        for (let x = startX; x <= endX; x += mathSpacing) {
+          // Convert mathematical coordinates to canvas coordinates
+          const startPoint = seedPointToCanvas([x, visibleTop]);
+          const endPoint = seedPointToCanvas([x, visibleBottom]);
+          
+          ctx.beginPath();
+          ctx.moveTo(startPoint[0], startPoint[1]);
+          ctx.lineTo(endPoint[0], endPoint[1]);
+          ctx.stroke();
+        }
+        
+        // Draw horizontal grid lines
+        for (let y = startY; y <= endY; y += mathSpacing) {
+          // Convert mathematical coordinates to canvas coordinates
+          const startPoint = seedPointToCanvas([visibleLeft, y]);
+          const endPoint = seedPointToCanvas([visibleRight, y]);
+          
+          ctx.beginPath();
+          ctx.moveTo(startPoint[0], startPoint[1]);
+          ctx.lineTo(endPoint[0], endPoint[1]);
+          ctx.stroke();
+        }
+      } else if (gridType === "hex") {
+        // For equilateral triangles with side length 1, we need:
+        // - The spacing between parallel lines to be sin(60°) = √3/2
+        // - The x-intercepts of the diagonal lines to be at intervals of 1
+        
+        const unitLength = mathSpacing; // This is our unit length (side of equilateral triangle)
+        const lineSpacing = (Math.sqrt(3) / 2) * unitLength; // Height of equilateral triangle
+        
+        // Calculate visible area with padding
+        const padding = 2 * unitLength;
+        const extendedLeft = visibleLeft - padding;
+        const extendedRight = visibleRight + padding;
+        const extendedTop = visibleTop - padding;
+        const extendedBottom = visibleBottom + padding;
+        
+        // Ensure grid is centered at (0,0)
+        
+        // For horizontal lines (at y = 0, ±lineSpacing, ±2*lineSpacing, etc.)
+        const horizStartY = Math.floor(extendedTop / lineSpacing) * lineSpacing;
+        const horizEndY = Math.ceil(extendedBottom / lineSpacing) * lineSpacing;
+        
+        // Draw horizontal lines
+        for (let y = horizStartY; y <= horizEndY; y += lineSpacing) {
+          const startPoint = seedPointToCanvas([extendedLeft, y]);
+          const endPoint = seedPointToCanvas([extendedRight, y]);
+          
+          ctx.beginPath();
+          ctx.moveTo(startPoint[0], startPoint[1]);
+          ctx.lineTo(endPoint[0], endPoint[1]);
+          ctx.stroke();
+        }
+        
+        // For 60° lines (y = √3 * x + b)
+        // The x-intercepts should be at intervals of unitLength
+        const x60Offset = Math.floor(extendedLeft / unitLength) * unitLength;
+        
+        for (let xIntercept = x60Offset; xIntercept <= extendedRight; xIntercept += unitLength) {
+          // Calculate start and end points for a line with this x-intercept
+          const startX = extendedLeft;
+          const startY = -Math.sqrt(3) * xIntercept + Math.sqrt(3) * startX;
+          const endX = extendedRight;
+          const endY = -Math.sqrt(3) * xIntercept + Math.sqrt(3) * endX;
+          
+          const startPoint = seedPointToCanvas([startX, startY]);
+          const endPoint = seedPointToCanvas([endX, endY]);
+          
+          ctx.beginPath();
+          ctx.moveTo(startPoint[0], startPoint[1]);
+          ctx.lineTo(endPoint[0], endPoint[1]);
+          ctx.stroke();
+        }
+        
+        // For 120° lines (y = -√3 * x + b)
+        // The x-intercepts should be at intervals of unitLength
+        const x120Offset = Math.floor(extendedLeft / unitLength) * unitLength;
+        
+        for (let xIntercept = x120Offset; xIntercept <= extendedRight; xIntercept += unitLength) {
+          // Calculate start and end points for a line with this x-intercept
+          const startX = extendedLeft;
+          const startY = Math.sqrt(3) * xIntercept - Math.sqrt(3) * startX;
+          const endX = extendedRight;
+          const endY = Math.sqrt(3) * xIntercept - Math.sqrt(3) * endX;
+          
+          const startPoint = seedPointToCanvas([startX, startY]);
+          const endPoint = seedPointToCanvas([endX, endY]);
+          
+          ctx.beginPath();
+          ctx.moveTo(startPoint[0], startPoint[1]);
+          ctx.lineTo(endPoint[0], endPoint[1]);
+          ctx.stroke();
+        }
+        
+        // Draw a visual indicator for a unit equilateral triangle if close to origin
+        if (Math.abs(offsetX) < canvas.width && Math.abs(offsetY) < canvas.height && scale > 50) {
+          // Points for equilateral triangle with side length 1
+          const triPoints = [
+            [0, 0],
+            [1, 0],
+            [0.5, Math.sqrt(3)/2]
+          ].map(p => seedPointToCanvas(p));
+          
+          ctx.beginPath();
+          ctx.moveTo(triPoints[0][0], triPoints[0][1]);
+          ctx.lineTo(triPoints[1][0], triPoints[1][1]);
+          ctx.lineTo(triPoints[2][0], triPoints[2][1]);
+          ctx.closePath();
+          ctx.strokeStyle = "rgba(255, 255, 0, 0.5)";
+          ctx.stroke();
+          ctx.strokeStyle = "rgba(150, 150, 150, 0.5)";
+        }
+      }
     }
 
     function getSeedVertexUnderMouse(mx, my) {
@@ -728,6 +928,22 @@
       // Set the new seed pattern
       seed = presetCurves[selectedPreset].slice();
       
+      draw();
+    });
+
+    // Add event listeners for grid controls
+    gridTypeSelect.addEventListener("change", function() {
+      gridType = this.value;
+      draw();
+    });
+    
+    gridSpacingInput.addEventListener("change", function() {
+      gridSpacing = parseFloat(this.value);
+      draw();
+    });
+    
+    gridSpacingInput.addEventListener("input", function() {
+      gridSpacing = parseFloat(this.value);
       draw();
     });
 
