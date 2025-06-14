@@ -60,6 +60,7 @@
       <option value="sierpinski">Sierpinski Triangle</option>
       <option value="crosses">Crosses</option>
       <option value="triangle_tiling">Triangle Tiling</option>
+      <option value="levy">Levy C Curve</option>
     </select>
     <button id="loadPreset">Load Preset</button>
   </div>
@@ -173,6 +174,13 @@
       triangle_tiling: [
         [0, 0],
         [0.5, -Math.sqrt(3)/2],
+        [1, 0],
+      ],
+      levy: [
+        [0, 0],
+        [0,-0.5],
+        [0.5,-0.5],
+        [1,-0.5],
         [1, 0],
       ],
     };
