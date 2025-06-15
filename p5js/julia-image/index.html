@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Julia Set Image Transformer</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
         body {
             margin: 0;
@@ -83,11 +82,7 @@
                 <p>Current c: <span id="cValue">0 + 0i</span></p>
                 <div class="slider-container">
                     <label for="iterationSlider">Iterations: <span id="iterationValue">50</span></label>
-                    <input type="range" id="iterationSlider" min="10" max="100" value="50">
-                </div>
-                <div class="slider-container">
-                    <label for="qualitySlider">Quality: <span id="qualityValue">1</span></label>
-                    <input type="range" id="qualitySlider" min="1" max="5" value="1" step="1">
+                    <input type="range" id="iterationSlider" min="10" max="200" value="50">
                 </div>
                 <div class="slider-container">
                     <label for="tileSlider">Tile Size: <span id="tileValue">2.0</span></label>
@@ -100,7 +95,7 @@
             </div>
         </div>
         
-        <div id="canvasContainer"></div>
+        <canvas id="glCanvas" width="600" height="600"></canvas>
         
         <div class="instructions">
             <h3>Instructions:</h3>
@@ -120,12 +115,104 @@
             <ul>
                 <li><strong>S</strong> - Save the current image</li>
                 <li><strong>+/-</strong> - Increase/decrease iterations</li>
-                <li><strong>1-5</strong> - Set quality level (1=highest, 5=lowest)</li>
                 <li><strong>,/.</strong> - Decrease/increase tile size</li>
             </ul>
         </div>
     </div>
 
-    <script src="sketch.js"></script>
+    <script type="x-shader/x-vertex" id="vertexShader">
+        attribute vec2 a_position;
+        varying vec2 v_texCoord;
+
+        void main() {
+            gl_Position = vec4(a_position, 0.0, 1.0);
+            v_texCoord = a_position * 0.5 + 0.5;
+        }
+    </script>
+
+    <script type="x-shader/x-fragment" id="fragmentShader">
+        precision highp float;
+        
+        uniform sampler2D u_image;
+        uniform vec2 u_resolution;
+        uniform vec2 u_juliaC;
+        uniform float u_tileSize;
+        uniform int u_maxIterations;
+        
+        varying vec2 v_texCoord;
+
+        void main() {
+            // Map pixel coordinates to complex plane (-2 to 2)
+            vec2 z = (v_texCoord * 2.0 - 1.0) * 2.0;
+            
+            bool escaped = false;
+            
+            // Julia set iteration
+            for (int i = 0; i < 1000; i++) {
+                if (i >= u_maxIterations) break;
+                
+                // z^2 + c
+                float zx2 = z.x * z.x - z.y * z.y;
+                float zy2 = 2.0 * z.x * z.y;
+                z.x = zx2 + u_juliaC.x;
+                z.y = zy2 + u_juliaC.y;
+                
+                // Check if point escapes
+                if (z.x * z.x + z.y * z.y > 4.0) {
+                    escaped = true;
+                    break;
+                }
+            }
+            
+            if (escaped) {
+                // If point escapes (diverges), use original image color at that position
+                // This helps preserve more of the original image
+                // Flip the y-coordinate to correct the upside-down issue
+                vec2 origCoord = vec2(v_texCoord.x, 1.0 - v_texCoord.y);
+                
+                // Darken the original color to distinguish it from non-escaped points
+                gl_FragColor = texture2D(u_image, origCoord) * 0.3;
+            } else {
+                // For non-escaped points, use a tiling approach
+                // Scale the complex coordinates
+                vec2 scaled = z * 100.0;
+                
+                // Then use a tiling approach by taking modulo of the scaled coordinates
+                // This creates a grid of image tiles in the complex plane
+                float halfTile = u_tileSize * 0.5;
+                vec2 tiled = mod(mod(scaled, u_tileSize) + u_tileSize, u_tileSize);
+                
+                // Determine which quadrant of the tile we're in
+                vec2 imgCoord;
+                
+                // Top-left quadrant - normal mapping
+                if (tiled.x < halfTile && tiled.y < halfTile) {
+                    imgCoord = vec2(tiled.x / halfTile * 0.5, tiled.y / halfTile * 0.5);
+                }
+                // Top-right quadrant - flipped horizontally
+                else if (tiled.x >= halfTile && tiled.y < halfTile) {
+                    imgCoord = vec2((1.0 - (tiled.x - halfTile) / halfTile) * 0.5, tiled.y / halfTile * 0.5);
+                }
+                // Bottom-left quadrant - flipped vertically
+                else if (tiled.x < halfTile && tiled.y >= halfTile) {
+                    imgCoord = vec2(tiled.x / halfTile * 0.5, (1.0 - (tiled.y - halfTile) / halfTile) * 0.5);
+                }
+                // Bottom-right quadrant - rotated 180 degrees
+                else {
+                    imgCoord = vec2((1.0 - (tiled.x - halfTile) / halfTile) * 0.5, (1.0 - (tiled.y - halfTile) / halfTile) * 0.5);
+                }
+                
+                // Offset to use full texture space
+                imgCoord += vec2(0.25, 0.25);
+                
+                // Flip the y-coordinate to correct the upside-down issue
+                imgCoord.y = 1.0 - imgCoord.y;
+                
+                gl_FragColor = texture2D(u_image, imgCoord);
+            }
+        }
+    </script>
+
+    <script src="script.js"></script>
 </body>
 </html> 
