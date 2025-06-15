@@ -28,3 +28,15 @@ create an interesting visual effect. You can adjust all of the parameters of the
 You can move around by clicking and dragging and zoom in and out by scrolling.
 
 This one is really heavy on the GPU. If it runs too slowly, try decreasing the maximum iterations or making your browser-window smaller.
+
+## [Majority Cellular Automaton](https://quasarbright.github.io/p5js/majority-automaton-gpu)
+
+A multi-state cellular automaton where the next value is determined by majority vote of the neighbors
+
+Which color do you think will win?
+
+[![screenshot of majority](https://quasarbright.github.io/p5js/screenshots/majority.png)](https://quasarbright.github.io/p5js/majority-automaton-gpu)
+
+This project was originally implemented by me (without AI), and it ran on the CPU, but I vibe-coded a GPU port using cline.
+
+The original CPU version is [here](https://quasarbright.github.io/p5js/majority-automaton).

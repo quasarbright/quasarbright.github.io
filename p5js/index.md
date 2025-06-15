@@ -29,6 +29,8 @@ Shrinking an image by removing the "least interesting" seams of pixels.
 
 Create a fractal curve from a seed pattern of line segments by replacing each segment with a scaled copy of the whole seed.
 
+This was vibe-coded.
+
 ## [Double Slit Interference](https://quasarbright.github.io/spring-wave/dist/index.html)
 
 A physics-simulation of waves powered by balls connected with springs, demonstrating diffraction and double-slit interference.
