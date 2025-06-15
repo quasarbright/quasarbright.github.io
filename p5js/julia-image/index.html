@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Julia Set Image Transformer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+        .controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        #imageUpload {
+            margin-bottom: 10px;
+        }
+        .instructions {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .slider-container {
+            margin: 10px 0;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .button-group {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 8px 15px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            flex: 1;
+        }
+        #saveButton {
+            background-color: #4CAF50;
+        }
+        #resetButton {
+            background-color: #2196F3;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Julia Set Image Transformer</h1>
+        
+        <div class="controls">
+            <input type="file" id="imageUpload" accept="image/*">
+            <div>
+                <p>Click or drag on the canvas to set the Julia set parameter c in f(z) = z² + c</p>
+                <p>Current c: <span id="cValue">0 + 0i</span></p>
+                <div class="slider-container">
+                    <label for="iterationSlider">Iterations: <span id="iterationValue">50</span></label>
+                    <input type="range" id="iterationSlider" min="10" max="100" value="50">
+                </div>
+                <div class="slider-container">
+                    <label for="qualitySlider">Quality: <span id="qualityValue">1</span></label>
+                    <input type="range" id="qualitySlider" min="1" max="5" value="1" step="1">
+                </div>
+                <div class="slider-container">
+                    <label for="tileSlider">Tile Size: <span id="tileValue">2.0</span></label>
+                    <input type="range" id="tileSlider" min="0.1" max="5.0" value="2.0" step="0.1">
+                </div>
+                <div class="button-group">
+                    <button id="resetButton" disabled>Reset Parameters</button>
+                    <button id="saveButton" disabled>Save Image</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="canvasContainer"></div>
+        
+        <div class="instructions">
+            <h3>Instructions:</h3>
+            <ol>
+                <li>Upload an image using the button above</li>
+                <li>Click or drag on the canvas to set the Julia set parameter c</li>
+                <li>The algorithm maps each pixel through the function f(z) = z² + c</li>
+                <li>Pixels are colored based on where they end up in the original image</li>
+                <li>Adjust the tile size to vary how the image is used in the transformation</li>
+            </ol>
+            
+            <h4>Tiling Approach:</h4>
+            <p>The image is tiled across the complex plane in a grid pattern. The tile size controls how many copies of the image appear in the complex plane. Smaller tile sizes create more copies, which can help use more of the image's colors.</p>
+            <p>Each tile is divided into four quadrants, each using a different mapping of the image (normal, flipped horizontally, flipped vertically, and rotated 180°). This ensures more variety in the colors used.</p>
+            
+            <h4>Keyboard Shortcuts:</h4>
+            <ul>
+                <li><strong>S</strong> - Save the current image</li>
+                <li><strong>+/-</strong> - Increase/decrease iterations</li>
+                <li><strong>1-5</strong> - Set quality level (1=highest, 5=lowest)</li>
+                <li><strong>,/.</strong> - Decrease/increase tile size</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="sketch.js"></script>
+</body>
+</html> 
