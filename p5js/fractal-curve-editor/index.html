@@ -21,173 +21,449 @@
     });
   </script>
   <style>
-    body {
-      background-color: black;
-      color: white;
-      font-family: sans-serif;
+    :root {
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --primary-color: #bb86fc;
+      --secondary-color: #03dac6;
+      --text-color: #ffffff;
+      --border-color: #333333;
+      --hover-color: #2c2c2c;
     }
+    
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+      overflow: hidden; /* Hide scrollbars by default for the editor view */
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+      max-height: 100vh;
+      overflow: hidden;
+    }
+    
+    /* Adjust the flex ratio for wide screens */
+    @media (min-width: 1600px) {
+      .canvas-container {
+        flex: 8;
+      }
+      
+      .controls-container {
+        flex: 2;
+      }
+    }
+    
+    /* This style is now defined below */
+    
+    .controls-container {
+      flex: 3;
+      background-color: var(--card-bg);
+      padding: 20px;
+      overflow-y: auto;
+      border-left: 1px solid var(--border-color);
+      box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    h1 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 24px;
+      font-weight: 500;
+    }
+    
+    h2 {
+      font-size: 18px;
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-weight: 500;
+      color: var(--secondary-color);
+    }
+    
     canvas {
-      border: 1px solid white;
+      border: 1px solid var(--border-color);
       cursor: crosshair;
       background-color: black;
       display: block;
+      border-radius: 4px;
+      margin: 0 auto; /* Center horizontally */
+    }
+    
+    .canvas-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 7;
+      padding: 20px;
+      overflow: hidden;
+    }
+    
+    .control-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 15px;
       margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     }
-    button {
-      margin-top: 10px;
-      margin-right: 10px;
-      background-color: #222;
-      color: white;
-      border: 1px solid white;
-      padding: 5px 10px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #444;
-    }
-    #status {
-      margin-top: 10px;
-    }
+    
     .control-group {
-      margin-bottom: 10px;
+      margin-bottom: 15px;
     }
+    
+    .control-group:last-child {
+      margin-bottom: 0;
+    }
+    
     .grid-controls {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
-      margin-bottom: 10px;
+      gap: 10px;
     }
-    .grid-controls > * {
-      margin-right: 10px;
+    
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
+    
+    button {
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px;
+    }
+    
+    button:hover {
+      background-color: var(--hover-color);
+      border-color: var(--primary-color);
+    }
+    
+    .primary-button {
+      background-color: var(--primary-color);
+      color: #000;
+      border: none;
+      font-weight: 500;
+    }
+    
+    .primary-button:hover {
+      background-color: #9969da;
+      border: none;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
     input[type="number"] {
-      background-color: #222;
-      color: white;
-      border: 1px solid white;
-      padding: 5px;
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 8px;
       width: 80px;
+      font-size: 14px;
     }
+    
+    input[type="checkbox"] {
+      accent-color: var(--primary-color);
+    }
+    
     select {
-      background-color: #222;
-      color: white;
-      border: 1px solid white;
-      padding: 5px 10px;
-      margin-right: 10px;
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 8px;
+      font-size: 14px;
+    }
+    
+    #status {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+      padding: 10px;
+      margin-top: 15px;
+      max-width: 100%;
+      overflow: hidden;
+    }
+    
+    .info-text {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      overflow-y: auto;
+    }
+    
+    .modal-content {
+      background-color: var(--card-bg);
+      margin: 30px auto;
+      max-width: 800px;
+      width: 90%;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+      animation: modalFadeIn 0.3s;
+    }
+    
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .modal-header h2 {
+      margin: 0;
+    }
+    
+    .close-button {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--text-color);
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    
+    .close-button:hover {
+      color: var(--primary-color);
+    }
+    
+    .modal-body {
+      padding: 20px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+      
+      .canvas-container {
+        flex: none;
+        height: 60vh;
+      }
+      
+      .controls-container {
+        flex: none;
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Fractal Curve Editor</h1>
-  <canvas id="canvas" width="500" height="500"></canvas><br />
-  <div style="margin-bottom: 10px;">
-    <select id="presetSelect" style="background-color: #222; color: white; border: 1px solid white; padding: 5px 10px; margin-right: 10px;">
-      <option value="">Select a preset curve...</option>
-      <option value="koch">Koch Curve</option>
-      <option value="sierpinski">Sierpinski Triangle</option>
-      <option value="crosses">Crosses</option>
-      <option value="triangle_tiling">Triangle Tiling</option>
-      <option value="levy">Levy C Curve</option>
-      <option value="minkowski">Minkowski Sausage Curve</option>
-      <option value="terdragon">Terdragon Curve</option>
-      <option value="roots">Roots</option>
-    </select>
-    <button id="loadPreset">Load Preset</button>
-  </div>
-  
-  <div class="grid-controls">
-    <label for="gridType">Grid: </label>
-    <select id="gridType">
-      <option value="none">None</option>
-      <option value="square">Square</option>
-      <option value="hex">Hexagonal</option>
-    </select>
-    <label for="gridSpacing">Spacing: </label>
-    <input type="number" id="gridSpacing" min="0.05" max="2" value="0.5" step="0.05">
-    <div style="display: flex; align-items: center; margin-left: 10px;">
-      <input type="checkbox" id="snapToGrid" disabled>
-      <label for="snapToGrid">Snap to grid</label>
+  <div class="container">
+    <div class="canvas-container">
+      <h1>Fractal Curve Editor</h1>
+      <canvas id="canvas"></canvas>
+      <div id="status"></div>
+    </div>
+    
+    <div class="controls-container">
+      <div class="control-card">
+        <h2>Presets</h2>
+        <div class="control-group">
+          <select id="presetSelect">
+            <option value="">Select a preset curve...</option>
+            <option value="koch">Koch Curve</option>
+            <option value="sierpinski">Sierpinski Triangle</option>
+            <option value="crosses">Crosses</option>
+            <option value="triangle_tiling">Triangle Tiling</option>
+            <option value="levy">Levy C Curve</option>
+            <option value="minkowski">Minkowski Sausage Curve</option>
+            <option value="terdragon">Terdragon Curve</option>
+            <option value="roots">Roots</option>
+          </select>
+          <button id="loadPreset">Load Preset</button>
+        </div>
+      </div>
+      
+      <div class="control-card">
+        <h2>Grid Settings</h2>
+        <div class="control-group grid-controls">
+          <div class="input-group">
+            <label for="gridType">Grid Type:</label>
+            <select id="gridType">
+              <option value="none">None</option>
+              <option value="square">Square</option>
+              <option value="hex">Hexagonal</option>
+            </select>
+          </div>
+          
+          <div class="input-group">
+            <label for="gridSpacing">Spacing:</label>
+            <input type="number" id="gridSpacing" min="0.05" max="2" value="0.5" step="0.05">
+          </div>
+          
+          <div class="input-group">
+            <input type="checkbox" id="snapToGrid" disabled>
+            <label for="snapToGrid">Snap to grid</label>
+          </div>
+        </div>
+      </div>
+      
+      <div class="control-card">
+        <h2>Actions</h2>
+        <div class="button-group">
+          <button id="reset">Reset</button>
+          <button id="resetCamera">Reset Camera</button>
+          <button id="iterate" class="primary-button">Iterate</button>
+        </div>
+      </div>
+      
+      <div class="control-card">
+        <h2>Controls</h2>
+        <div class="info-text">
+          <p><strong>Create Seed Pattern:</strong> Click on the canvas to add points</p>
+          <p><strong>Move Points:</strong> Drag the red points to modify your pattern</p>
+          <p><strong>Pan:</strong> Click and drag on the canvas to move the view</p>
+          <p><strong>Zoom:</strong> Scroll to zoom in and out</p>
+        </div>
+      </div>
+      
+      <div class="control-card">
+        <h2>About</h2>
+        <div class="info-text">
+          <p>This interactive editor lets you create custom fractal curves by defining a seed pattern and iterating it.</p>
+          <p>Each iteration replaces every line segment with a transformed copy of your seed pattern.</p>
+          <button id="showMath" style="width: 100%; margin-top: 10px;">Learn About the Math</button>
+        </div>
+      </div>
     </div>
   </div>
   
-  <button id="reset">Reset</button>
-  <button id="resetCamera">Reset Camera</button>
-  <button id="iterate">Iterate</button>
-  <div id="status"></div>
-  
-  <div style="margin-top: 30px; border-top: 1px solid #444; padding-top: 20px;">
-    <h2>How to Use the Fractal Curve Editor</h2>
-    <p>
-      This is an interactive fractal curve editor that allows you to create and explore custom fractal curves.
-      You can design your own seed pattern and see how it evolves through multiple iterations.
-    </p>
-    
-    <h3>Controls:</h3>
-    <ul>
-      <li><strong>Create Seed Pattern:</strong> Click on the canvas to add points to your seed pattern (before iterating), or load a preset curve</li>
-      <li><strong>Move Points:</strong> Drag the red points to modify your seed pattern. This can be done during seed creation and also after iterating.</li>
-      <li><strong>Iterate:</strong> Click the "Iterate" button to replace each segment with a copy of the seed</li>
-      <li><strong>Pan:</strong> Click and drag on the canvas to move the view</li>
-      <li><strong>Zoom:</strong> Scroll to zoom in and out around the mouse cursor</li>
-      <li><strong>Reset:</strong> Click the "Reset" button to start over with a new seed pattern</li>
-      <li><strong>Reset Camera:</strong> Click the "Reset Camera" button to center the view</li>
-    </ul>
-    
-    <div style="margin-top: 20px;">
-      <h2>The Mathematics Behind Fractal Curves</h2>
-      
-      <h3>Fractal Generation</h3>
-      <p>
-        These fractal curves are created through an iterative process of replacing each line segment with a scaled, 
-        rotated, and translated copy of a "seed pattern." This process is repeated for each new line segment 
-        created, leading to increasingly complex patterns with self-similarity at different scales.
-      </p>
-      <p>
-        The process works as follows:
-      </p>
-      <ol>
-        <li>Start with a seed pattern (the points you create by clicking)</li>
-        <li>For each line segment in the current curve, replace it with a transformed copy of the seed pattern</li>
-        <li>Repeat step 2 for each new iteration</li>
-      </ol>
-      
-      <h3>Fractal Dimension</h3>
-      <p>
-        The fractal dimension is a measure of how "rough" or complex a fractal is.
-        Unlike regular shapes that have integer dimensions (lines are 1D, squares are 2D), fractals can have 
-        non-integer dimensions. Of course, what you see on your screen is just a bunch of line segments if you
-        zoom in enough (which is 1D), but the fractal dimension displayed is the fractal dimension of the curve you would get if you
-        performed infinite iterations. This "true fractal" would be infinitely complex no matter how much you zoom in.
-      </p>
-      <p>
-        For self-similar fractals like those created in this editor, the dimension \(D\) is calculated by solving 
-        the equation:
-      </p>
-      <p style="text-align: center; margin: 20px 0;">
-        \[ \sum_{i} (r_i^D) = 1 \]
-      </p>
-      <p>
-        where \(r_i\) is the length of the \(i\)-th line segment of your seed pattern.
-      </p>
-      <p>
-        The resulting dimension \(D\) tells us how "space-filling" the fractal is:
-      </p>
-      <ul>
-        <li>\(D = 1\): The curve is essentially a line</li>
-        <li>\(1 < D < 2\): The fractal is "rough" and will never look like a line no matter how much you zoom in, but it doesn't fill a "solid" 2D area</li>
-        <li>\(D \ge 2\): The fractal fills a "solid" 2D area</li>
-      </ul>
-      <p>
-        For example, the Koch snowflake curve has \(D \approx 1.26\), while the Hilbert curve has \(D = 2\).
-      </p>
-      <p>
-        For curves which grow larger and larger after more iterations, the fractal dimension is undefined. This is because
-        the curve doesn't "converge" in this case. There is only a fractal dimension when iterating brings you closer and closer to a true fractal.
-      </p>
-      <p>for more information on the math behind fractal dimension, check out this great video by 3blue1brown, which is what inspired this app:</p>
-      <iframe width="560" height="315" src="https://www.youtube.com/embed/gB9n2gHsHN4?si=jIHznkcWJS36S5VW" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+  <div class="modal" id="aboutModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>The Mathematics Behind Fractal Curves</h2>
+        <span class="close-button">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="control-card">
+          <h3>Fractal Generation</h3>
+          <p>
+            These fractal curves are created through an iterative process of replacing each line segment with a scaled, 
+            rotated, and translated copy of a "seed pattern." This process is repeated for each new line segment 
+            created, leading to increasingly complex patterns with self-similarity at different scales.
+          </p>
+          <p>
+            The process works as follows:
+          </p>
+          <ol>
+            <li>Start with a seed pattern (the points you create by clicking)</li>
+            <li>For each line segment in the current curve, replace it with a transformed copy of the seed pattern</li>
+            <li>Repeat step 2 for each new iteration</li>
+          </ol>
+        </div>
+        
+        <div class="control-card">
+          <h3>Fractal Dimension</h3>
+          <p>
+            The fractal dimension is a measure of how "rough" or complex a fractal is.
+            Unlike regular shapes that have integer dimensions (lines are 1D, squares are 2D), fractals can have 
+            non-integer dimensions. The fractal dimension displayed is the fractal dimension of the curve you would get if you
+            performed infinite iterations.
+          </p>
+          <p>
+            For self-similar fractals like those created in this editor, the dimension \(D\) is calculated by solving 
+            the equation:
+          </p>
+          <p style="text-align: center; margin: 20px 0;">
+            \[ \sum_{i} (r_i^D) = 1 \]
+          </p>
+          <p>
+            where \(r_i\) is the length of the \(i\)-th line segment of your seed pattern.
+          </p>
+          <p>
+            The resulting dimension \(D\) tells us how "space-filling" the fractal is:
+          </p>
+          <ul>
+            <li>\(D = 1\): The curve is essentially a line</li>
+            <li>\(1 < D < 2\): The fractal is "rough" but doesn't fill a "solid" 2D area</li>
+            <li>\(D \ge 2\): The fractal fills a "solid" 2D area</li>
+          </ul>
+          <p>
+            For curves which grow larger and larger after more iterations, the fractal dimension is undefined because
+            the curve doesn't "converge" in this case.
+          </p>
+        </div>
+        
+        <div class="control-card">
+          <p>For more information on the math behind fractal dimension, check out this great video by 3blue1brown, which inspired this app:</p>
+          <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; border-radius: 8px;">
+            <iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" src="https://www.youtube.com/embed/gB9n2gHsHN4?si=jIHznkcWJS36S5VW" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <script>
     const canvas = document.getElementById("canvas");
+    
+    // Make the canvas square by using the smaller dimension
+    // Calculate available space, leaving room for other elements
+    const containerWidth = canvas.parentElement.clientWidth - 40; // Adjust for padding
+    const containerHeight = window.innerHeight * 0.7; // Reduced to ensure info is visible
+    
+    // For wide screens (where width > height * 1.5), use a larger percentage of the container
+    // but still ensure we don't cut off information below
+    const isWideScreen = window.innerWidth > window.innerHeight * 1.5;
+    const heightPercentage = isWideScreen ? 0.75 : 0.7;
+    const adjustedContainerHeight = window.innerHeight * heightPercentage;
+    
+    const size = Math.min(containerWidth, adjustedContainerHeight);
+    
+    canvas.width = size;
+    canvas.height = size;
+    
+    window.addEventListener('resize', function() {
+      // Keep canvas square on resize
+      const containerWidth = canvas.parentElement.clientWidth - 40;
+      const containerHeight = window.innerHeight * 0.7; // Reduced to ensure info is visible
+      
+      // For wide screens (where width > height * 1.5), use a larger percentage of the container
+      // but still ensure we don't cut off information below
+      const isWideScreen = window.innerWidth > window.innerHeight * 1.5;
+      const heightPercentage = isWideScreen ? 0.75 : 0.7;
+      const adjustedContainerHeight = window.innerHeight * heightPercentage;
+      
+      const size = Math.min(containerWidth, adjustedContainerHeight);
+      
+      canvas.width = size;
+      canvas.height = size;
+      draw();
+    });
+    
     const ctx = canvas.getContext("2d");
     const statusDiv = document.getElementById("status");
     const gridTypeSelect = document.getElementById("gridType");
@@ -453,12 +729,18 @@
         ctx.fill();
       }
 
-      let status = iterated ? `iterations: ${iterationCount - 1}` : "creating seed";
+      let status = '';
+      if (iterated) {
+        status += `<div><strong>Iterations:</strong> ${iterationCount - 1}</div>`;
+      } else {
+        status += `<div><strong>Mode:</strong> Creating seed pattern</div>`;
+      }
+      
       const dim = computeFractalDimension();
       if (!isNaN(dim)) {
-        status += `<br>fractal dimension: ${dim.toFixed(5)}`;
+        status += `<div><strong>Fractal dimension:</strong> ${dim.toFixed(5)}</div>`;
       } else {
-        status += `<br>fractal dimension: undefined`;
+        status += `<div><strong>Fractal dimension:</strong> undefined</div>`;
       }
       statusDiv.innerHTML = status;
     }
@@ -1045,6 +1327,40 @@
       }
     }
 
+    // Modal functionality
+    const modal = document.getElementById("aboutModal");
+    const showMathBtn = document.getElementById("showMath");
+    const closeBtn = document.querySelector(".close-button");
+    
+    // Open modal when clicking "Learn About the Math"
+    showMathBtn.addEventListener("click", function() {
+      modal.style.display = "block";
+      document.body.style.overflow = "hidden"; // Prevent scrolling behind modal
+    });
+    
+    // Close modal when clicking X
+    closeBtn.addEventListener("click", function() {
+      modal.style.display = "none";
+      document.body.style.overflow = "hidden"; // Keep main view without scrollbars
+    });
+    
+    // Close modal when clicking outside of it
+    window.addEventListener("click", function(event) {
+      if (event.target === modal) {
+        modal.style.display = "none";
+        document.body.style.overflow = "hidden";
+      }
+    });
+    
+    // Close modal with Escape key
+    window.addEventListener("keydown", function(event) {
+      if (event.key === "Escape" && modal.style.display === "block") {
+        modal.style.display = "none";
+        document.body.style.overflow = "hidden";
+      }
+    });
+    
+    // Initialize
     draw();
   </script>
 </body>
