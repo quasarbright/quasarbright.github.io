@@ -6,7 +6,8 @@ let texture;
 let isImageLoaded = false;
 
 // Julia set parameters
-let juliaC = { x: 0, y: 0 };
+const initialJuliaC = { x: -0.549, y: -0.452 };
+let juliaC = {...initialJuliaC};
 let maxIterations = 50;
 let tileSize = 2.0;
 let isMouseDragging = false;
@@ -33,6 +34,9 @@ let u_maxIterations;
 window.onload = function() {
     initWebGL();
     setupEventListeners();
+    
+    // Update initial c value display
+    cValueDisplay.textContent = `${juliaC.x.toFixed(3)} + ${juliaC.y.toFixed(3)}i`;
     
     // Show initial message on canvas
     const ctx = canvas.getContext('2d');
@@ -123,7 +127,7 @@ function setupEventListeners() {
         if (!isImageLoaded) return;
         
         // Reset parameters
-        juliaC = { x: 0, y: 0 };
+        juliaC = {...initialJuliaC}
         maxIterations = 50;
         tileSize = 2.0;
         
