@@ -78,6 +78,14 @@
             background-color: rgba(76, 175, 80, 0.9);
         }
         
+        #aboutButton {
+            background-color: rgba(156, 39, 176, 0.7);
+        }
+        
+        #aboutButton:hover {
+            background-color: rgba(156, 39, 176, 0.9);
+        }
+        
         #cValue {
             color: white;
             margin-bottom: 10px;
@@ -138,6 +146,71 @@
             background-color: rgba(33, 150, 243, 0.7);
             transform: scale(1.05);
         }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 20;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: rgba(30, 30, 30, 0.95);
+            color: white;
+            width: 80%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border-radius: 10px;
+            padding: 20px 30px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+        }
+        
+        .close-button:hover {
+            color: white;
+        }
+        
+        .modal-content h2 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+        
+        .modal-content h3 {
+            color: #2196F3;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .modal-content p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .formula {
+            font-family: monospace;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -163,6 +236,43 @@
             <li>Hold Space + drag to pan</li>
             <li>Mouse wheel to zoom in/out</li>
         </ul>
+        <button id="aboutButton" style="margin-top: 10px;">About</button>
+    </div>
+    
+    <!-- Modal -->
+    <div id="aboutModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeModal">&times;</span>
+            <h2>Julia Set Image Transformer</h2>
+            <p>This interactive visualization transforms your images using the mathematics of Julia sets, creating beautiful fractal patterns from your photos.</p>
+            
+            <h3>What are Julia Sets?</h3>
+            <p>Julia sets are fractals that emerge from a simple mathematical iteration in the complex plane. For each point <span class="formula">z</span> in the complex plane, we repeatedly apply the function:</p>
+            <p class="formula">z ← z² + c</p>
+            <p>Where <span class="formula">c</span> is a constant complex number. Depending on the value of <span class="formula">c</span>, different fractal patterns emerge.</p>
+            
+            <h3>How This Works</h3>
+            <p>When you upload an image, each pixel on the screen goes through this process:</p>
+            <ol>
+                <li>The pixel's position is converted to a complex number <span class="formula">z</span></li>
+                <li>We iterate the formula <span class="formula">z ← z² + c</span> multiple times</li>
+                <li>If <span class="formula">z</span> stays within a bounded region (doesn't "escape"), we color that pixel on the screen according to where it ends up on your image</li>
+            </ol>
+            
+            <h3>Interacting with the Visualization</h3>
+            <p>You can:</p>
+            <ul>
+                <li><strong>Change the fractal pattern</strong> by clicking and dragging on the canvas to set different values of <span class="formula">c</span></li>
+                <li><strong>Zoom in/out</strong> using the mouse wheel to explore the fractal at different scales</li>
+                <li><strong>Pan around</strong> by holding the space key while dragging</li>
+                <li><strong>Reset</strong> to return to the initial settings</li>
+            </ul>
+            
+            <h3>About the Mathematics</h3>
+            <p>Julia sets are closely related to the famous Mandelbrot set. While the Mandelbrot set shows which values of <span class="formula">c</span> create bounded Julia sets, each individual Julia set is created by fixing a specific value of <span class="formula">c</span> and testing which points in the complex plane remain bounded under iteration.</p>
+            
+            <p>This visualization combines the mathematical beauty of Julia sets with your own images to create unique artistic renderings.</p>
+        </div>
     </div>
 
     <script type="x-shader/x-vertex" id="vertexShader">

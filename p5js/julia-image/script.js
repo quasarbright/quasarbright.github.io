@@ -28,6 +28,9 @@ const fileInput = document.getElementById('imageUpload');
 const resetButton = document.getElementById('resetButton');
 const cValueDisplay = document.getElementById('cValue');
 const uploadOverlay = document.getElementById('uploadOverlay');
+const aboutButton = document.getElementById('aboutButton');
+const aboutModal = document.getElementById('aboutModal');
+const closeModal = document.getElementById('closeModal');
 
 // Make canvas fullscreen
 function resizeCanvas() {
@@ -178,6 +181,29 @@ function setupEventListeners() {
     // Upload overlay click handler
     uploadOverlay.addEventListener('click', function() {
         fileInput.click();
+    });
+    
+    // About modal handlers
+    aboutButton.addEventListener('click', function() {
+        aboutModal.style.display = 'flex';
+    });
+    
+    closeModal.addEventListener('click', function() {
+        aboutModal.style.display = 'none';
+    });
+    
+    // Close modal when clicking outside of it
+    window.addEventListener('click', function(e) {
+        if (e.target === aboutModal) {
+            aboutModal.style.display = 'none';
+        }
+    });
+    
+    // Close modal with Escape key
+    window.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && aboutModal.style.display === 'flex') {
+            aboutModal.style.display = 'none';
+        }
     });
     
     // Keyboard events for space key
