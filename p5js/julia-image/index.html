@@ -108,8 +108,7 @@
             </ol>
             
             <h4>Tiling Approach:</h4>
-            <p>The image is tiled across the complex plane in a grid pattern. The tile size controls how many copies of the image appear in the complex plane. Smaller tile sizes create more copies, which can help use more of the image's colors.</p>
-            <p>Each tile is divided into four quadrants, each using a different mapping of the image (normal, flipped horizontally, flipped vertically, and rotated 180°). This ensures more variety in the colors used.</p>
+            <p>The image is tiled across the complex plane. The tile size controls how many copies of the image appear in the complex plane. Smaller tile sizes create more copies, which can help use more parts of the image.</p>
             
             <h4>Keyboard Shortcuts:</h4>
             <ul>
@@ -173,42 +172,18 @@
                 // Darken the original color to distinguish it from non-escaped points
                 gl_FragColor = texture2D(u_image, origCoord) * 0.3;
             } else {
-                // For non-escaped points, use a tiling approach
-                // Scale the complex coordinates
-                vec2 scaled = z * 100.0;
+                // For non-escaped points, use a simple tiling approach
+                // Scale the complex coordinates by a factor to create more detail
+                vec2 scaled = z * 10.0;
                 
-                // Then use a tiling approach by taking modulo of the scaled coordinates
-                // This creates a grid of image tiles in the complex plane
-                float halfTile = u_tileSize * 0.5;
-                vec2 tiled = mod(mod(scaled, u_tileSize) + u_tileSize, u_tileSize);
-                
-                // Determine which quadrant of the tile we're in
-                vec2 imgCoord;
-                
-                // Top-left quadrant - normal mapping
-                if (tiled.x < halfTile && tiled.y < halfTile) {
-                    imgCoord = vec2(tiled.x / halfTile * 0.5, tiled.y / halfTile * 0.5);
-                }
-                // Top-right quadrant - flipped horizontally
-                else if (tiled.x >= halfTile && tiled.y < halfTile) {
-                    imgCoord = vec2((1.0 - (tiled.x - halfTile) / halfTile) * 0.5, tiled.y / halfTile * 0.5);
-                }
-                // Bottom-left quadrant - flipped vertically
-                else if (tiled.x < halfTile && tiled.y >= halfTile) {
-                    imgCoord = vec2(tiled.x / halfTile * 0.5, (1.0 - (tiled.y - halfTile) / halfTile) * 0.5);
-                }
-                // Bottom-right quadrant - rotated 180 degrees
-                else {
-                    imgCoord = vec2((1.0 - (tiled.x - halfTile) / halfTile) * 0.5, (1.0 - (tiled.y - halfTile) / halfTile) * 0.5);
-                }
-                
-                // Offset to use full texture space
-                imgCoord += vec2(0.25, 0.25);
+                // Apply modulo to create tiling effect with the full image
+                // Divide by tileSize to control number of tiles
+                vec2 tiled = mod(scaled / u_tileSize + 0.5, 1.0);
                 
                 // Flip the y-coordinate to correct the upside-down issue
-                imgCoord.y = 1.0 - imgCoord.y;
+                tiled.y = 1.0 - tiled.y;
                 
-                gl_FragColor = texture2D(u_image, imgCoord);
+                gl_FragColor = texture2D(u_image, tiled);
             }
         }
     </script>
