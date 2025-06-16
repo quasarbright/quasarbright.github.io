@@ -1,13 +1,12 @@
 ---
-title: p5.js stuff (and some regular js stuff)
+title: JavaScript projects
 ---
 * TOC
 {:toc}
-# [P5.js](https://p5js.org/) stuff (and some regular js stuff)
-### What is P5.js?
-P5.js is a javascript graphics library. A graphics library lets your program display things other than text, like shapes, pictures, animations, and pretty much anything you can think of.
 
-Some of these were based on videos by [The Coding Train](https://www.youtube.com/channel/UCvjgXvBlbQiydffZU7m1_aw). Most of the source code is [here](https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js)
+This page contains JavaScript projects that run right in your browser. Most of them are interactive visualizations or games. These are not listed in any precise order, but I generally put the more interesting and new stuff at the top.
+
+Some of these projects were based on videos by [The Coding Train](https://www.youtube.com/channel/UCvjgXvBlbQiydffZU7m1_aw). This channel is what got me into making interactive visualizations, which is what most of these projects are. Most of the source code is [here](https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js)
 
 ## [Minesweeper](https://quasarbright.github.io/minesweeper)
 
@@ -16,6 +15,12 @@ Guess-free minesweeper with an animated solver. [Source code here](https://githu
 ## [Dinner Debt](https://quasarbright.github.io/dinner-debt)
 
 A little tool to figure out how much you owe someone for dinner. [Source code here](https://github.com/quasarbright/dinner-debt)
+
+## [Image to Julia Set](./julia-image)
+
+Upload an image and see it get transformed into a julia set. This was vibe-coded using cursor and claude 3.7 sonnet.
+
+[![julia image](./screenshots/julia-image.png)](./julia-image)
 
 ## [Seam Carving](./seam-carving)
 
@@ -30,6 +35,42 @@ Shrinking an image by removing the "least interesting" seams of pixels.
 Create a fractal curve from a seed pattern of line segments by replacing each segment with a scaled copy of the whole seed.
 
 This was vibe-coded.
+
+## [Mandelbrot Set](https://quasarbright.github.io/p5js/mandelbrotShaderRenormalized/)
+[![mandelbrot set](https://quasarbright.github.io/p5js/mandelbrotShaderRenormalized/screenshot.png)](https://quasarbright.github.io/p5js/mandelbrotShaderRenormalized/)
+Instead of coloring each pixel discretely based on the iteration count upon escape,
+This shader uses a continuous coloring which takes into account the iteration count
+as well as the modulus of the final value. Since it's colored continuously, it can have some very pretty colors.
+
+Zoom by scrolling and pan the camera by clicking and dragging
+
+## [Julia Set](https://quasarbright.github.io/p5js/juliaShader/)
+[![julia set](https://quasarbright.github.io/p5js/juliaShader/screenshot.png)](https://quasarbright.github.io/p5js/juliaShader/)
+This shader uses the same coloring method as the Mandelbrot set shader, but you can select the c-value used to
+generate the julia set by clicking/dragging the mouse on the screen. You can also zoom in and out with the mouse wheel.
+If you want to pan the camera, you can do so by holding the mouse wheel down and moving the mouse.
+
+## [Magnet Pendulum](https://quasarbright.github.io/p5js/magnetShader/)
+[![magnet shader](https://quasarbright.github.io/p5js/magnetShader/screenshot.png)](https://quasarbright.github.io/p5js/magnetShader/)
+The fractal is generated from simulating a magnetic pendulum swinging over a table with three magnets on it. Each pixel is colored based
+on which magnet it ends up at and darkened based on how long it took to stop at a magnet. The three magnets oscillate radially from the center to
+create an interesting visual effect. You can adjust all of the parameters of the simulation to change how it looks and moves.
+
+You can move around by clicking and dragging and zoom in and out by scrolling.
+
+This one is really heavy on the GPU. If it runs too slowly, try decreasing the maximum iterations or making your browser-window smaller.
+
+## [Majority Cellular Automaton](https://quasarbright.github.io/p5js/majority-automaton-gpu)
+
+A multi-state cellular automaton where the next value is determined by majority vote of the neighbors
+
+Which color do you think will win?
+
+[![screenshot of majority](https://quasarbright.github.io/p5js/screenshots/majority.png)](https://quasarbright.github.io/p5js/majority-automaton-gpu)
+
+This project was originally implemented by me (without AI), and it ran on the CPU, but I vibe-coded a GPU port using cline.
+
+The original CPU version is [here](https://quasarbright.github.io/p5js/majority-automaton).
 
 ## [Double Slit Interference](https://quasarbright.github.io/spring-wave/dist/index.html)
 
@@ -196,18 +237,6 @@ Which drop do you think will win?
 A numerical approximation of the [wave equation](https://en.wikipedia.org/wiki/Wave_equation), visualized as a heat map. It's like a simulation of the surface of a pond, starting off flat with a few splashes. The error in the approximation leads to interesting behavior where you have regions which are checkerd with maximum and minimum displacement bordering regions with zero displacement. And these regions are stable. So stable that they form a new type of wave that dominates the simulation. It pretty much always ends up in a "checkered wave" state. This looks way cooler than what it would look like if it worked properly, so I left it like this instead of fixing it.
 
 [![screenshot of wave equation](https://quasarbright.github.io/p5js/wave-equation/screenshot.png)](https://quasarbright.github.io/p5js/wave-equation)
-
-## [Majority Cellular Automaton](https://quasarbright.github.io/p5js/majority-automaton-gpu)
-
-A multi-state cellular automaton where the next value is determined by majority vote of the neighbors
-
-Which color do you think will win?
-
-[![screenshot of majority](https://quasarbright.github.io/p5js/screenshots/majority.png)](https://quasarbright.github.io/p5js/majority-automaton-gpu)
-
-This project was originally implemented by me (without AI), and it ran on the CPU, but I vibe-coded a GPU port using cline.
-
-The original CPU version is [here](https://quasarbright.github.io/p5js/majority-automaton).
 
 ## [Rock Paper Scissors Cellular Automaton](https://quasarbright.github.io/p5js/rock-paper-scissors-automaton)
 
