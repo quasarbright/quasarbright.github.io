@@ -12,7 +12,7 @@ This is my blog where I talk about cool concepts and projects I've worked on.
 # [JavaScript projects](https://quasarbright.github.io/p5js/index)
 This is a collection of JavaScript projects, which run in the browser. They're mostly interactive visualizations and games.
 
-[![](/p5js/screenshots/julia-image.png)](https://quasarbright.github.io/p5js/wave-equation)
+[![](/p5js/screenshots/julia-image.png)](./p5js/julia-image)
 
 # [Programming Languages](https://quasarbright.github.io/programming-languages)
 These are some programming languages I've made and programming language-related projects I've worked on.
