@@ -12,6 +12,11 @@ let maxIterations = 50;
 let tileSize = 2.0;
 let isMouseDragging = false;
 
+// Canvas view parameters
+let centerX = 0;
+let centerY = 0;
+let zoomLevel = 1.0;
+
 // DOM elements
 const canvas = document.getElementById('glCanvas');
 const fileInput = document.getElementById('imageUpload');
@@ -33,6 +38,8 @@ let u_resolution;
 let u_juliaC;
 let u_tileSize;
 let u_maxIterations;
+let u_center;
+let u_zoom;
 
 // Initialize WebGL when the page loads
 window.onload = function() {
@@ -75,6 +82,8 @@ function initWebGL() {
     u_juliaC = gl.getUniformLocation(program, 'u_juliaC');
     u_tileSize = gl.getUniformLocation(program, 'u_tileSize');
     u_maxIterations = gl.getUniformLocation(program, 'u_maxIterations');
+    u_center = gl.getUniformLocation(program, 'u_center');
+    u_zoom = gl.getUniformLocation(program, 'u_zoom');
     
     // Create a buffer for the position of the rectangle corners
     positionBuffer = gl.createBuffer();
@@ -90,6 +99,37 @@ function initWebGL() {
          1.0,  1.0,
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+}
+
+// Helper function to convert screen coordinates to complex plane coordinates
+function toComplex(x, y) {
+    // Convert screen coordinates to normalized device coordinates (-1 to 1)
+    const ndcX = (2.0 * x / canvas.width) - 1.0;
+    const ndcY = 1.0 - (2.0 * y / canvas.height); // Flip Y since screen Y is top-down
+    
+    // Apply zoom and center offset
+    return {
+        x: (ndcX * 2.0) / zoomLevel + centerX,
+        y: (ndcY * 2.0) / zoomLevel + centerY
+    };
+}
+
+// Helper function to convert complex coordinates to screen coordinates
+function fromComplex(cx, cy) {
+    // Apply zoom and center offset (inverse of toComplex)
+    const ndcX = ((cx - centerX) * zoomLevel) / 2.0;
+    const ndcY = ((cy - centerY) * zoomLevel) / 2.0;
+    
+    // Convert normalized device coordinates to screen coordinates
+    return {
+        x: (ndcX + 1.0) * canvas.width / 2.0,
+        y: (1.0 - ndcY) * canvas.height / 2.0 // Flip Y since screen Y is top-down
+    };
+}
+
+// Linear interpolation helper
+function lerp(a, b, r) {
+    return a + r * (b - a);
 }
 
 // Set up event listeners
@@ -126,6 +166,35 @@ function setupEventListeners() {
         isMouseDragging = false;
     });
     
+    // Zoom with mouse wheel
+    canvas.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        if (!isImageLoaded) return;
+        
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        // Get complex coordinates at mouse position before zoom
+        const complexBefore = toComplex(mouseX, mouseY);
+        
+        // Determine zoom direction and factor
+        const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1; // Zoom out (0.9) or in (1.1)
+        
+        // Update zoom level
+        zoomLevel *= zoomFactor;
+        
+        // Get complex coordinates at same mouse position after zoom
+        const complexAfter = toComplex(mouseX, mouseY);
+        
+        // Adjust center to keep mouse position fixed in complex plane
+        centerX += complexBefore.x - complexAfter.x;
+        centerY += complexBefore.y - complexAfter.y;
+        
+        // Re-render
+        render();
+    });
+    
     // Reset button
     resetButton.addEventListener('click', function() {
         if (!isImageLoaded) return;
@@ -134,6 +203,9 @@ function setupEventListeners() {
         juliaC = {...initialJuliaC}
         maxIterations = 50;
         tileSize = 2.0;
+        centerX = 0;
+        centerY = 0;
+        zoomLevel = 1.0;
         
         // Update UI
         iterationSlider.value = maxIterations;
@@ -245,9 +317,10 @@ function updateJuliaC(event) {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     
-    // Map canvas coordinates to complex plane (-1 to 1)
-    juliaC.x = (x / canvas.width) * 2 - 1;
-    juliaC.y = -((y / canvas.height) * 2 - 1); // Flip y-coordinate for consistent orientation
+    // Use the new coordinate conversion for consistency
+    const complexCoords = toComplex(x, y);
+    juliaC.x = complexCoords.x;
+    juliaC.y = complexCoords.y;
     
     // Update display
     cValueDisplay.textContent = `${juliaC.x.toFixed(3)} + ${juliaC.y.toFixed(3)}i`;
@@ -277,6 +350,8 @@ function render() {
     gl.uniform2f(u_juliaC, juliaC.x, juliaC.y);
     gl.uniform1f(u_tileSize, tileSize);
     gl.uniform1i(u_maxIterations, maxIterations);
+    gl.uniform2f(u_center, centerX, centerY);
+    gl.uniform1f(u_zoom, zoomLevel);
     
     // Set the texture
     gl.activeTexture(gl.TEXTURE0);

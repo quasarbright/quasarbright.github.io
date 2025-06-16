@@ -102,6 +102,7 @@
             <ol>
                 <li>Upload an image using the button above</li>
                 <li>Click or drag on the canvas to set the Julia set parameter c</li>
+                <li>Use the mouse wheel to zoom in and out</li>
                 <li>The algorithm maps each pixel through the function f(z) = z² + c</li>
                 <li>The image appears only in the fractal pattern (non-escaping points)</li>
                 <li>Adjust the tile size to vary how the image is used in the transformation</li>
@@ -115,6 +116,7 @@
                 <li><strong>S</strong> - Save the current image</li>
                 <li><strong>+/-</strong> - Increase/decrease iterations</li>
                 <li><strong>,/.</strong> - Decrease/increase tile size</li>
+                <li><strong>Mouse Wheel</strong> - Zoom in/out at cursor position</li>
             </ul>
         </div>
     </div>
@@ -137,12 +139,31 @@
         uniform vec2 u_juliaC;
         uniform float u_tileSize;
         uniform int u_maxIterations;
+        uniform vec2 u_center;
+        uniform float u_zoom;
         
         varying vec2 v_texCoord;
 
+        // Convert texture coordinates to complex plane coordinates
+        vec2 toComplex(vec2 coord) {
+            // Convert from [0,1] to [-1,1] range
+            vec2 ndc = coord * 2.0 - 1.0;
+            
+            // Apply aspect ratio correction
+            float aspectRatio = u_resolution.x / u_resolution.y;
+            if (aspectRatio > 1.0) {
+                ndc.x *= aspectRatio;
+            } else {
+                ndc.y /= aspectRatio;
+            }
+            
+            // Apply zoom and center offset
+            return ndc * (2.0 / u_zoom) + u_center;
+        }
+
         void main() {
-            // Map pixel coordinates to complex plane (-2 to 2)
-            vec2 z = (v_texCoord * 2.0 - 1.0) * 2.0;
+            // Map pixel coordinates to complex plane with zoom and center
+            vec2 z = toComplex(v_texCoord);
             
             bool escaped = false;
             
