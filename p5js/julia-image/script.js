@@ -17,6 +17,11 @@ let centerX = 0;
 let centerY = 0;
 let zoomLevel = 1.0;
 
+// Interaction state
+let isSpacePressed = false;
+let isPanning = false;
+let lastPanPosition = { x: 0, y: 0 };
+
 // DOM elements
 const canvas = document.getElementById('glCanvas');
 const fileInput = document.getElementById('imageUpload');
@@ -160,25 +165,94 @@ function lerp(a, b, r) {
     return a + r * (b - a);
 }
 
+// Update cursor style based on current state
+function updateCursorStyle() {
+    if (!isImageLoaded) {
+        canvas.style.cursor = 'default';
+        return;
+    }
+    
+    if (isSpacePressed) {
+        canvas.style.cursor = isPanning ? 'grabbing' : 'grab';
+    } else {
+        canvas.style.cursor = 'default';
+    }
+}
+
 // Set up event listeners
 function setupEventListeners() {
     // File upload handler
     fileInput.addEventListener('change', handleFileUpload);
     
+    // Keyboard events for space key
+    window.addEventListener('keydown', function(e) {
+        if (e.code === 'Space' && !isSpacePressed) {
+            isSpacePressed = true;
+            updateCursorStyle();
+            e.preventDefault(); // Prevent page scrolling
+        }
+    });
+    
+    window.addEventListener('keyup', function(e) {
+        if (e.code === 'Space') {
+            isSpacePressed = false;
+            isPanning = false;
+            updateCursorStyle();
+        }
+    });
+    
     // Canvas mouse events
     canvas.addEventListener('mousedown', function(e) {
         if (!isImageLoaded) return;
-        isMouseDragging = true;
-        updateJuliaC(e);
+        
+        if (isSpacePressed) {
+            // Start panning
+            isPanning = true;
+            lastPanPosition = { x: e.clientX, y: e.clientY };
+            updateCursorStyle();
+        } else {
+            // Update Julia set parameter
+            isMouseDragging = true;
+            updateJuliaC(e);
+        }
     });
     
     canvas.addEventListener('mousemove', function(e) {
-        if (!isImageLoaded || !isMouseDragging) return;
-        updateJuliaC(e);
+        if (!isImageLoaded) return;
+        
+        if (isPanning) {
+            // Handle panning
+            const dx = e.clientX - lastPanPosition.x;
+            const dy = e.clientY - lastPanPosition.y;
+            
+            // Get complex coordinates at current and previous positions
+            const currentPos = toComplex(e.clientX - dx, e.clientY - dy);
+            const newPos = toComplex(e.clientX, e.clientY);
+            
+            // Move in the opposite direction of the drag
+            centerX -= (newPos.x - currentPos.x);
+            centerY -= (newPos.y - currentPos.y);
+            
+            lastPanPosition = { x: e.clientX, y: e.clientY };
+            render();
+        } else if (isMouseDragging) {
+            // Update Julia set parameter
+            updateJuliaC(e);
+        }
     });
     
     window.addEventListener('mouseup', function() {
         isMouseDragging = false;
+        if (isPanning) {
+            isPanning = false;
+            updateCursorStyle();
+        }
+    });
+    
+    // Handle cursor style when mouse enters/leaves canvas
+    canvas.addEventListener('mouseenter', updateCursorStyle);
+    canvas.addEventListener('mouseleave', function() {
+        canvas.style.cursor = 'default';
     });
     
     // Zoom with mouse wheel
@@ -258,6 +332,9 @@ function handleFileUpload(event) {
             
             // Render the initial state
             render();
+            
+            // Update cursor style
+            updateCursorStyle();
         };
         image.src = e.target.result;
     };
