@@ -20,17 +20,19 @@ let zoomLevel = 1.0;
 // DOM elements
 const canvas = document.getElementById('glCanvas');
 const fileInput = document.getElementById('imageUpload');
-const iterationSlider = document.getElementById('iterationSlider');
-const tileSlider = document.getElementById('tileSlider');
 const resetButton = document.getElementById('resetButton');
 const saveButton = document.getElementById('saveButton');
 const cValueDisplay = document.getElementById('cValue');
-const iterationValueDisplay = document.getElementById('iterationValue');
-const tileValueDisplay = document.getElementById('tileValue');
 
-// Set canvas to constant size
-canvas.width = 700;
-canvas.height = 700;
+// Make canvas fullscreen
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    if (gl) {
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        if (isImageLoaded) render();
+    }
+}
 
 // Shader locations
 let u_image;
@@ -43,15 +45,19 @@ let u_zoom;
 
 // Initialize WebGL when the page loads
 window.onload = function() {
+    // Set up fullscreen canvas
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
     initWebGL();
     setupEventListeners();
     
     // Update initial c value display
-    cValueDisplay.textContent = `${juliaC.x.toFixed(3)} + ${juliaC.y.toFixed(3)}i`;
+    cValueDisplay.textContent = `c: ${juliaC.x.toFixed(3)} + ${juliaC.y.toFixed(3)}i`;
     
     // Show initial message on canvas
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#333';
+    ctx.fillStyle = '#111';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.font = '20px Arial';
     ctx.fillStyle = 'white';
@@ -107,23 +113,46 @@ function toComplex(x, y) {
     const ndcX = (2.0 * x / canvas.width) - 1.0;
     const ndcY = 1.0 - (2.0 * y / canvas.height); // Flip Y since screen Y is top-down
     
+    // Apply aspect ratio correction
+    const aspectRatio = canvas.width / canvas.height;
+    let correctedX = ndcX;
+    let correctedY = ndcY;
+    
+    if (aspectRatio > 1.0) {
+        correctedX *= aspectRatio;
+    } else {
+        correctedY /= aspectRatio;
+    }
+    
     // Apply zoom and center offset
     return {
-        x: (ndcX * 2.0) / zoomLevel + centerX,
-        y: (ndcY * 2.0) / zoomLevel + centerY
+        x: (correctedX * 2.0) / zoomLevel + centerX,
+        y: (correctedY * 2.0) / zoomLevel + centerY
     };
 }
 
 // Helper function to convert complex coordinates to screen coordinates
 function fromComplex(cx, cy) {
-    // Apply zoom and center offset (inverse of toComplex)
-    const ndcX = ((cx - centerX) * zoomLevel) / 2.0;
-    const ndcY = ((cy - centerY) * zoomLevel) / 2.0;
+    // Apply aspect ratio correction
+    const aspectRatio = canvas.width / canvas.height;
+    let correctedX = cx - centerX;
+    let correctedY = cy - centerY;
+    
+    // Apply zoom
+    correctedX = (correctedX * zoomLevel) / 2.0;
+    correctedY = (correctedY * zoomLevel) / 2.0;
+    
+    // Unapply aspect ratio correction
+    if (aspectRatio > 1.0) {
+        correctedX /= aspectRatio;
+    } else {
+        correctedY *= aspectRatio;
+    }
     
     // Convert normalized device coordinates to screen coordinates
     return {
-        x: (ndcX + 1.0) * canvas.width / 2.0,
-        y: (1.0 - ndcY) * canvas.height / 2.0 // Flip Y since screen Y is top-down
+        x: (correctedX + 1.0) * canvas.width / 2.0,
+        y: (1.0 - correctedY) * canvas.height / 2.0 // Flip Y since screen Y is top-down
     };
 }
 
@@ -136,19 +165,6 @@ function lerp(a, b, r) {
 function setupEventListeners() {
     // File upload handler
     fileInput.addEventListener('change', handleFileUpload);
-    
-    // Slider handlers
-    iterationSlider.addEventListener('input', function() {
-        maxIterations = parseInt(this.value);
-        iterationValueDisplay.textContent = maxIterations;
-        if (isImageLoaded) render();
-    });
-    
-    tileSlider.addEventListener('input', function() {
-        tileSize = parseFloat(this.value);
-        tileValueDisplay.textContent = tileSize.toFixed(1);
-        if (isImageLoaded) render();
-    });
     
     // Canvas mouse events
     canvas.addEventListener('mousedown', function(e) {
@@ -208,11 +224,7 @@ function setupEventListeners() {
         zoomLevel = 1.0;
         
         // Update UI
-        iterationSlider.value = maxIterations;
-        iterationValueDisplay.textContent = maxIterations;
-        tileSlider.value = tileSize;
-        tileValueDisplay.textContent = tileSize.toFixed(1);
-        cValueDisplay.textContent = `${juliaC.x.toFixed(3)} + ${juliaC.y.toFixed(3)}i`;
+        cValueDisplay.textContent = `c: ${juliaC.x.toFixed(3)} + ${juliaC.y.toFixed(3)}i`;
         
         // Re-render
         render();
@@ -238,36 +250,6 @@ function setupEventListeners() {
             case 'S':
                 // Save image
                 saveButton.click();
-                break;
-            case '+':
-            case '=':
-                // Increase iterations
-                maxIterations = Math.min(maxIterations + 10, 200);
-                iterationSlider.value = maxIterations;
-                iterationValueDisplay.textContent = maxIterations;
-                render();
-                break;
-            case '-':
-            case '_':
-                // Decrease iterations
-                maxIterations = Math.max(maxIterations - 10, 10);
-                iterationSlider.value = maxIterations;
-                iterationValueDisplay.textContent = maxIterations;
-                render();
-                break;
-            case ',':
-                // Decrease tile size
-                tileSize = Math.max(tileSize - 0.1, 0.1);
-                tileSlider.value = tileSize;
-                tileValueDisplay.textContent = tileSize.toFixed(1);
-                render();
-                break;
-            case '.':
-                // Increase tile size
-                tileSize = Math.min(tileSize + 0.1, 5.0);
-                tileSlider.value = tileSize;
-                tileValueDisplay.textContent = tileSize.toFixed(1);
-                render();
                 break;
         }
     });
@@ -295,9 +277,6 @@ function handleFileUpload(event) {
             // Upload the image into the texture
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
             
-            // Canvas size is now fixed at 700x700
-            // No need to resize based on image
-            
             // Set image as loaded and enable buttons
             isImageLoaded = true;
             resetButton.disabled = false;
@@ -323,7 +302,7 @@ function updateJuliaC(event) {
     juliaC.y = complexCoords.y;
     
     // Update display
-    cValueDisplay.textContent = `${juliaC.x.toFixed(3)} + ${juliaC.y.toFixed(3)}i`;
+    cValueDisplay.textContent = `c: ${juliaC.x.toFixed(3)} + ${juliaC.y.toFixed(3)}i`;
     
     // Re-render
     render();
