@@ -103,12 +103,12 @@
                 <li>Upload an image using the button above</li>
                 <li>Click or drag on the canvas to set the Julia set parameter c</li>
                 <li>The algorithm maps each pixel through the function f(z) = z² + c</li>
-                <li>Pixels are colored based on where they end up in the original image</li>
+                <li>The image appears only in the fractal pattern (non-escaping points)</li>
                 <li>Adjust the tile size to vary how the image is used in the transformation</li>
             </ol>
             
             <h4>Tiling Approach:</h4>
-            <p>The image is tiled across the complex plane. The tile size controls how many copies of the image appear in the complex plane. Smaller tile sizes create more copies, which can help use more parts of the image.</p>
+            <p>The image is tiled across the complex plane within the fractal pattern. The tile size controls how many copies of the image appear in the complex plane. Smaller tile sizes create more copies, which can help use more parts of the image.</p>
             
             <h4>Keyboard Shortcuts:</h4>
             <ul>
@@ -164,13 +164,8 @@
             }
             
             if (escaped) {
-                // If point escapes (diverges), use original image color at that position
-                // This helps preserve more of the original image
-                // Flip the y-coordinate to correct the upside-down issue
-                vec2 origCoord = vec2(v_texCoord.x, 1.0 - v_texCoord.y);
-                
-                // Darken the original color to distinguish it from non-escaped points
-                gl_FragColor = texture2D(u_image, origCoord) * 0.3;
+                // If point escapes (diverges), use a solid background color
+                gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); // Black background
             } else {
                 // For non-escaped points, use a simple tiling approach
                 // Scale the complex coordinates by a factor to create more detail

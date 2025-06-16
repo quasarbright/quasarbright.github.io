@@ -23,6 +23,10 @@ const cValueDisplay = document.getElementById('cValue');
 const iterationValueDisplay = document.getElementById('iterationValue');
 const tileValueDisplay = document.getElementById('tileValue');
 
+// Set canvas to constant size
+canvas.width = 700;
+canvas.height = 700;
+
 // Shader locations
 let u_image;
 let u_resolution;
@@ -219,31 +223,8 @@ function handleFileUpload(event) {
             // Upload the image into the texture
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
             
-            // Resize canvas to match image aspect ratio
-            const maxSize = 800;
-            let imgWidth = image.width;
-            let imgHeight = image.height;
-            
-            if (imgWidth > maxSize || imgHeight > maxSize) {
-                const ratio = imgWidth / imgHeight;
-                if (ratio > 1) {
-                    imgWidth = maxSize;
-                    imgHeight = maxSize / ratio;
-                } else {
-                    imgHeight = maxSize;
-                    imgWidth = maxSize * ratio;
-                }
-            } else {
-                // Scale up small images while maintaining aspect ratio
-                const scaleFactor = Math.min(maxSize / imgWidth, maxSize / imgHeight);
-                if (scaleFactor > 1) {
-                    imgWidth = imgWidth * scaleFactor;
-                    imgHeight = imgHeight * scaleFactor;
-                }
-            }
-            
-            canvas.width = imgWidth;
-            canvas.height = imgHeight;
+            // Canvas size is now fixed at 700x700
+            // No need to resize based on image
             
             // Set image as loaded and enable buttons
             isImageLoaded = true;
