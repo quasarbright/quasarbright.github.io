@@ -21,7 +21,6 @@ let zoomLevel = 1.0;
 const canvas = document.getElementById('glCanvas');
 const fileInput = document.getElementById('imageUpload');
 const resetButton = document.getElementById('resetButton');
-const saveButton = document.getElementById('saveButton');
 const cValueDisplay = document.getElementById('cValue');
 
 // Make canvas fullscreen
@@ -229,30 +228,6 @@ function setupEventListeners() {
         // Re-render
         render();
     });
-    
-    // Save button
-    saveButton.addEventListener('click', function() {
-        if (!isImageLoaded) return;
-        
-        // Create a temporary link to download the canvas content
-        const link = document.createElement('a');
-        link.download = 'julia_transformed_image.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-    });
-    
-    // Keyboard shortcuts
-    window.addEventListener('keydown', function(e) {
-        if (!isImageLoaded) return;
-        
-        switch(e.key) {
-            case 's':
-            case 'S':
-                // Save image
-                saveButton.click();
-                break;
-        }
-    });
 }
 
 // Handle file upload
@@ -280,7 +255,6 @@ function handleFileUpload(event) {
             // Set image as loaded and enable buttons
             isImageLoaded = true;
             resetButton.disabled = false;
-            saveButton.disabled = false;
             
             // Render the initial state
             render();
