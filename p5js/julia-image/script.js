@@ -220,7 +220,7 @@ function handleFileUpload(event) {
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
             
             // Resize canvas to match image aspect ratio
-            const maxSize = 600;
+            const maxSize = 800;
             let imgWidth = image.width;
             let imgHeight = image.height;
             
@@ -232,6 +232,13 @@ function handleFileUpload(event) {
                 } else {
                     imgHeight = maxSize;
                     imgWidth = maxSize * ratio;
+                }
+            } else {
+                // Scale up small images while maintaining aspect ratio
+                const scaleFactor = Math.min(maxSize / imgWidth, maxSize / imgHeight);
+                if (scaleFactor > 1) {
+                    imgWidth = imgWidth * scaleFactor;
+                    imgHeight = imgHeight * scaleFactor;
                 }
             }
             
