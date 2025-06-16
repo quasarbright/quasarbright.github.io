@@ -51,6 +51,8 @@
             transition: background-color 0.2s;
             display: inline-block;
             text-align: center;
+            width: 100%;
+            box-sizing: border-box;
         }
         
         button:hover, .button:hover {
@@ -224,9 +226,7 @@
         <div id="cValue">c: 0 + 0i</div>
         <input type="file" id="imageUpload" accept="image/*" style="display: none;">
         <label for="imageUpload" class="button" id="uploadButton">Upload Image</label>
-        <div class="button-group">
-            <button id="resetButton" disabled>Reset</button>
-        </div>
+        <button id="resetButton" disabled>Reset</button>
     </div>
     
     <div class="help">
