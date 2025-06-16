@@ -27,6 +27,7 @@ const canvas = document.getElementById('glCanvas');
 const fileInput = document.getElementById('imageUpload');
 const resetButton = document.getElementById('resetButton');
 const cValueDisplay = document.getElementById('cValue');
+const uploadOverlay = document.getElementById('uploadOverlay');
 
 // Make canvas fullscreen
 function resizeCanvas() {
@@ -58,16 +59,6 @@ window.onload = function() {
     
     // Update initial c value display
     cValueDisplay.textContent = `c: ${juliaC.x.toFixed(3)} + ${juliaC.y.toFixed(3)}i`;
-    
-    // Show initial message on canvas
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#111';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.font = '20px Arial';
-    ctx.fillStyle = 'white';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('Upload an image to begin', canvas.width / 2, canvas.height / 2);
 };
 
 // Initialize WebGL
@@ -183,6 +174,11 @@ function updateCursorStyle() {
 function setupEventListeners() {
     // File upload handler
     fileInput.addEventListener('change', handleFileUpload);
+    
+    // Upload overlay click handler
+    uploadOverlay.addEventListener('click', function() {
+        fileInput.click();
+    });
     
     // Keyboard events for space key
     window.addEventListener('keydown', function(e) {
@@ -329,6 +325,9 @@ function handleFileUpload(event) {
             // Set image as loaded and enable buttons
             isImageLoaded = true;
             resetButton.disabled = false;
+            
+            // Hide the upload overlay
+            uploadOverlay.style.display = 'none';
             
             // Render the initial state
             render();
