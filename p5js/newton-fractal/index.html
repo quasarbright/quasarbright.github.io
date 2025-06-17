@@ -28,26 +28,29 @@
             background-color: rgba(0, 0, 0, 0.7);
             padding: 15px;
             border-radius: 5px;
-            z-index: 1;
-            max-width: 300px;
-        }
-        #controls h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-        }
-        #controls label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        #controls select, #controls input {
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 5px;
+            z-index: 2;
+            pointer-events: auto;
         }
         #controls button {
-            padding: 8px;
-            margin-right: 5px;
+            padding: 8px 12px;
+            margin-right: 8px;
             cursor: pointer;
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        #controls button:hover {
+            background-color: #444;
+        }
+        #controls button:active {
+            background-color: #222;
+        }
+        #root-count {
+            color: white;
+            margin-left: 10px;
+            font-size: 14px;
         }
         #info {
             position: absolute;
@@ -56,45 +59,19 @@
             background-color: rgba(0, 0, 0, 0.7);
             padding: 10px;
             border-radius: 5px;
-            z-index: 1;
-        }
-        #toggle-controls {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            padding: 5px 10px;
             z-index: 2;
-            display: none;
-        }
-        .hidden {
-            display: none !important;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
     <canvas id="canvas"></canvas>
     
-    <button id="toggle-controls">Show Controls</button>
-    
     <div id="controls">
-        <h3>Newton Fractal Controls</h3>
-        
-        <label for="max-iterations">Max Iterations:</label>
-        <input type="range" id="max-iterations" min="10" max="200" value="100">
-        <span id="iterations-value">100</span>
-        
-        <label for="escape-radius">Convergence Threshold:</label>
-        <input type="range" id="escape-radius" min="1" max="10" step="0.1" value="5">
-        <span id="escape-value">5.0</span>
-        
-        <label for="show-roots">Show Roots:</label>
-        <input type="checkbox" id="show-roots" checked>
-        
-        <div>
-            <button id="reset-view">Reset View</button>
-            <button id="reset-roots">Reset Roots</button>
-            <button id="hide-controls">Hide Controls</button>
-        </div>
+        <button id="reset-view">Reset View</button>
+        <button id="add-root">Add Root</button>
+        <button id="remove-root">Remove Root</button>
+        <span id="root-count">4 roots</span>
     </div>
     
     <div id="info">
@@ -110,11 +87,32 @@
         uniform int u_max_iterations;
         uniform float u_convergence_threshold;
         
-        // Roots of the polynomial as uniforms
+        // Roots of the polynomial as uniforms - we support up to 10 roots
         uniform vec2 u_root1;
         uniform vec2 u_root2;
         uniform vec2 u_root3;
         uniform vec2 u_root4;
+        uniform vec2 u_root5;
+        uniform vec2 u_root6;
+        uniform vec2 u_root7;
+        uniform vec2 u_root8;
+        uniform vec2 u_root9;
+        uniform vec2 u_root10;
+        uniform int u_root_count; // Number of active roots
+        
+        // Get a root by index - WebGL 1.0 doesn't support dynamic array indexing
+        vec2 getRoot(int index) {
+            if (index == 0) return u_root1;
+            if (index == 1) return u_root2;
+            if (index == 2) return u_root3;
+            if (index == 3) return u_root4;
+            if (index == 4) return u_root5;
+            if (index == 5) return u_root6;
+            if (index == 6) return u_root7;
+            if (index == 7) return u_root8;
+            if (index == 8) return u_root9;
+            return u_root10;
+        }
         
         // Pastel color palette - defined individually since WebGL 1.0 doesn't support array constructors
         vec3 getColor(int index) {
@@ -128,8 +126,7 @@
             if (index == 7) return vec3(0.6, 1.0, 0.1);   // Intense Lime
             if (index == 8) return vec3(1.0, 0.5, 0.1);   // Intense Orange
             if (index == 9) return vec3(0.5, 0.2, 1.0);   // Intense Violet
-            if (index == 10) return vec3(0.1, 0.7, 0.6);  // Intense Teal
-            return vec3(0.9, 0.6, 0.1);                   // Intense Gold (default)
+            return vec3(0.1, 0.7, 0.6);                   // Intense Teal
         }
         
         // Complex number operations
@@ -145,38 +142,50 @@
             );
         }
         
-        // Function f(z) = (z-r1)(z-r2)(z-r3)(z-r4) in factored form
+        // Function f(z) = product of (z-root) for all roots
         vec2 f(vec2 z) {
-            vec2 factor1 = vec2(z.x - u_root1.x, z.y - u_root1.y);
-            vec2 factor2 = vec2(z.x - u_root2.x, z.y - u_root2.y);
-            vec2 factor3 = vec2(z.x - u_root3.x, z.y - u_root3.y);
-            vec2 factor4 = vec2(z.x - u_root4.x, z.y - u_root4.y);
+            vec2 result = vec2(1.0, 0.0); // Start with 1+0i
             
-            vec2 prod1 = complex_mul(factor1, factor2);
-            vec2 prod2 = complex_mul(factor3, factor4);
+            // Multiply by each (z-root) factor
+            // We need to use a fixed loop since WebGL 1.0 doesn't support dynamic loop bounds
+            for (int i = 0; i < 10; i++) {
+                if (i >= u_root_count) break;
+                vec2 root = getRoot(i);
+                vec2 factor = vec2(z.x - root.x, z.y - root.y);
+                result = complex_mul(result, factor);
+            }
             
-            return complex_mul(prod1, prod2);
+            return result;
         }
         
         // Derivative f'(z) computed using the product rule
         vec2 df(vec2 z) {
-            // For (z-a)(z-b)(z-c)(z-d), the derivative is:
-            // (z-b)(z-c)(z-d) + (z-a)(z-c)(z-d) + (z-a)(z-b)(z-d) + (z-a)(z-b)(z-c)
+            // If we have no roots or just one root, the derivative is simple
+            if (u_root_count <= 0) return vec2(0.0, 0.0);
+            if (u_root_count == 1) return vec2(1.0, 0.0);
             
-            vec2 za = vec2(z.x - u_root1.x, z.y - u_root1.y);
-            vec2 zb = vec2(z.x - u_root2.x, z.y - u_root2.y);
-            vec2 zc = vec2(z.x - u_root3.x, z.y - u_root3.y);
-            vec2 zd = vec2(z.x - u_root4.x, z.y - u_root4.y);
+            // For multiple roots, we compute the sum of products
+            vec2 result = vec2(0.0, 0.0);
             
-            vec2 term1 = complex_mul(complex_mul(zb, zc), zd);
-            vec2 term2 = complex_mul(complex_mul(za, zc), zd);
-            vec2 term3 = complex_mul(complex_mul(za, zb), zd);
-            vec2 term4 = complex_mul(complex_mul(za, zb), zc);
+            // For each root, we compute the product of (z-root) for all other roots
+            for (int i = 0; i < 10; i++) {
+                if (i >= u_root_count) break;
+                
+                vec2 term = vec2(1.0, 0.0);
+                
+                for (int j = 0; j < 10; j++) {
+                    if (j >= u_root_count) break;
+                    if (i == j) continue; // Skip the current root
+                    
+                    vec2 root = getRoot(j);
+                    vec2 factor = vec2(z.x - root.x, z.y - root.y);
+                    term = complex_mul(term, factor);
+                }
+                
+                result = vec2(result.x + term.x, result.y + term.y);
+            }
             
-            vec2 sum1 = vec2(term1.x + term2.x, term1.y + term2.y);
-            vec2 sum2 = vec2(term3.x + term4.x, term3.y + term4.y);
-            
-            return vec2(sum1.x + sum2.x, sum1.y + sum2.y);
+            return result;
         }
         
         // Newton's method: z = z - f(z) / f'(z)
@@ -186,17 +195,22 @@
         
         // Find the closest root to a point
         int findClosestRoot(vec2 z) {
-            float dist1 = length(z - u_root1);
-            float dist2 = length(z - u_root2);
-            float dist3 = length(z - u_root3);
-            float dist4 = length(z - u_root4);
+            float minDist = 1000.0;
+            int closestIndex = 0;
             
-            float minDist = min(min(dist1, dist2), min(dist3, dist4));
+            for (int i = 0; i < 10; i++) {
+                if (i >= u_root_count) break;
+                
+                vec2 root = getRoot(i);
+                float dist = length(z - root);
+                
+                if (dist < minDist) {
+                    minDist = dist;
+                    closestIndex = i;
+                }
+            }
             
-            if (minDist == dist1) return 0;
-            if (minDist == dist2) return 1;
-            if (minDist == dist3) return 2;
-            return 3;
+            return closestIndex;
         }
         
         // Get color index that wraps around for indices > 11

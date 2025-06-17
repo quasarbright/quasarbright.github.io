@@ -19,6 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(overlayCanvas);
     const ctx = overlayCanvas.getContext('2d');
     
+    // Function to check if a point is inside the controls panel
+    function isPointInControls(x, y) {
+        const rect = controlsPanel.getBoundingClientRect();
+        return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+    }
+    
     // Pastel color palette - same as in the shader
     const PASTEL_COLORS = [
         'rgb(255, 51, 51)',    // Intense Red
@@ -48,15 +54,28 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Get UI elements
     const controlsPanel = document.getElementById('controls');
-    const toggleControlsBtn = document.getElementById('toggle-controls');
-    const hideControlsBtn = document.getElementById('hide-controls');
     const resetViewBtn = document.getElementById('reset-view');
-    const resetRootsBtn = document.getElementById('reset-roots');
-    const maxIterationsSlider = document.getElementById('max-iterations');
-    const iterationsValueSpan = document.getElementById('iterations-value');
-    const escapeRadiusSlider = document.getElementById('escape-radius');
-    const escapeValueSpan = document.getElementById('escape-value');
-    const showRootsCheckbox = document.getElementById('show-roots');
+    const addRootBtn = document.getElementById('add-root');
+    const removeRootBtn = document.getElementById('remove-root');
+    const rootCountDisplay = document.getElementById('root-count');
+    
+    // Function to update the root count display
+    function updateRootCountDisplay() {
+        rootCountDisplay.textContent = `${roots.length} root${roots.length !== 1 ? 's' : ''}`;
+    }
+    
+    // Prevent overlay canvas from capturing events when interacting with controls
+    controlsPanel.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+    });
+    
+    controlsPanel.addEventListener('touchstart', (e) => {
+        e.stopPropagation();
+    });
+    
+    controlsPanel.addEventListener('wheel', (e) => {
+        e.stopPropagation();
+    });
     
     // Resize canvas to fill the screen
     function resizeCanvas() {
@@ -150,10 +169,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const offsetLocation = gl.getUniformLocation(program, 'u_offset');
     const maxIterationsLocation = gl.getUniformLocation(program, 'u_max_iterations');
     const convergenceThresholdLocation = gl.getUniformLocation(program, 'u_convergence_threshold');
-    const root1Location = gl.getUniformLocation(program, 'u_root1');
-    const root2Location = gl.getUniformLocation(program, 'u_root2');
-    const root3Location = gl.getUniformLocation(program, 'u_root3');
-    const root4Location = gl.getUniformLocation(program, 'u_root4');
+    const rootCountLocation = gl.getUniformLocation(program, 'u_root_count');
+    
+    // Root location uniforms - support up to 10 roots
+    const rootLocations = [
+        gl.getUniformLocation(program, 'u_root1'),
+        gl.getUniformLocation(program, 'u_root2'),
+        gl.getUniformLocation(program, 'u_root3'),
+        gl.getUniformLocation(program, 'u_root4'),
+        gl.getUniformLocation(program, 'u_root5'),
+        gl.getUniformLocation(program, 'u_root6'),
+        gl.getUniformLocation(program, 'u_root7'),
+        gl.getUniformLocation(program, 'u_root8'),
+        gl.getUniformLocation(program, 'u_root9'),
+        gl.getUniformLocation(program, 'u_root10')
+    ];
     
     // Initial values
     let zoom = 1.0;
@@ -266,44 +296,44 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    // Generate a random point on the unit circle
+    function randomPointOnUnitCircle() {
+        const angle = Math.random() * 2 * Math.PI;
+        return {
+            real: Math.cos(angle),
+            imag: Math.sin(angle)
+        };
+    }
+    
     // Handle UI controls
-    maxIterationsSlider.addEventListener('input', () => {
-        maxIterations = parseInt(maxIterationsSlider.value);
-        iterationsValueSpan.textContent = maxIterations;
-        render();
-    });
-    
-    escapeRadiusSlider.addEventListener('input', () => {
-        convergenceThreshold = parseFloat(escapeRadiusSlider.value);
-        escapeValueSpan.textContent = convergenceThreshold.toFixed(1);
-        render();
-    });
-    
-    showRootsCheckbox.addEventListener('change', () => {
-        showRoots = showRootsCheckbox.checked;
-        render();
-    });
-    
-    resetViewBtn.addEventListener('click', () => {
+    resetViewBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         zoom = 1.0;
         offset = { x: 0.0, y: 0.0 };
-        render();
-    });
-    
-    resetRootsBtn.addEventListener('click', () => {
         roots = JSON.parse(JSON.stringify(defaultRoots));
+        updateRootCountDisplay();
         render();
     });
     
-    // Toggle controls visibility
-    hideControlsBtn.addEventListener('click', () => {
-        controlsPanel.classList.add('hidden');
-        toggleControlsBtn.style.display = 'block';
+    addRootBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (roots.length < 10) {
+            const newRoot = randomPointOnUnitCircle();
+            roots.push(newRoot);
+            console.log(`Added root #${roots.length}: (${newRoot.real.toFixed(2)}, ${newRoot.imag.toFixed(2)})`);
+            updateRootCountDisplay();
+            render();
+        }
     });
     
-    toggleControlsBtn.addEventListener('click', () => {
-        controlsPanel.classList.remove('hidden');
-        toggleControlsBtn.style.display = 'none';
+    removeRootBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (roots.length > 1) {
+            const removedRoot = roots.pop();
+            console.log(`Removed root: (${removedRoot.real.toFixed(2)}, ${removedRoot.imag.toFixed(2)}), ${roots.length} roots remaining`);
+            updateRootCountDisplay();
+            render();
+        }
     });
     
     // Handle mouse interactions for panning and root dragging
@@ -311,6 +341,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastMousePos = { x: 0, y: 0 };
     
     overlayCanvas.addEventListener('mousedown', (e) => {
+        // Ignore if the event originated from a control element or if the point is inside the controls
+        if (controlsPanel.contains(e.target) || isPointInControls(e.clientX, e.clientY)) {
+            return;
+        }
+        
         const mousePos = { x: e.clientX, y: e.clientY };
         const rootIndex = findRootNearPoint(mousePos);
         
@@ -332,6 +367,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     overlayCanvas.addEventListener('mousemove', (e) => {
+        // Ignore if the event originated from a control element or if the point is inside the controls
+        if (controlsPanel.contains(e.target) || isPointInControls(e.clientX, e.clientY)) {
+            overlayCanvas.style.cursor = 'default';
+            return;
+        }
+        
         const mousePos = { x: e.clientX, y: e.clientY };
         
         if (isDraggingRoot) {
@@ -413,6 +454,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     overlayCanvas.addEventListener('touchstart', (e) => {
         e.preventDefault();
+        
+        // Ignore if the event originated from a control element or if the point is inside the controls
+        if (controlsPanel.contains(e.target) || isPointInControls(e.touches[0].clientX, e.touches[0].clientY)) {
+            return;
+        }
         
         if (e.touches.length === 1) {
             const touchPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -536,11 +582,19 @@ document.addEventListener('DOMContentLoaded', () => {
         gl.uniform1i(maxIterationsLocation, maxIterations);
         gl.uniform1f(convergenceThresholdLocation, convergenceThreshold);
         
-        // Pass root positions to the shader
-        gl.uniform2f(root1Location, roots[0].real, roots[0].imag);
-        gl.uniform2f(root2Location, roots[1].real, roots[1].imag);
-        gl.uniform2f(root3Location, roots[2].real, roots[2].imag);
-        gl.uniform2f(root4Location, roots[3].real, roots[3].imag);
+        // Pass the actual root count to the shader
+        gl.uniform1i(rootCountLocation, roots.length);
+        console.log(`Rendering with ${roots.length} roots`);
+        
+        // Pass all roots to the shader
+        for (let i = 0; i < roots.length; i++) {
+            gl.uniform2f(rootLocations[i], roots[i].real, roots[i].imag);
+        }
+        
+        // Fill any unused root slots with default values
+        for (let i = roots.length; i < 10; i++) {
+            gl.uniform2f(rootLocations[i], 0.0, 0.0);
+        }
         
         gl.drawArrays(gl.TRIANGLES, 0, 6);
         
@@ -549,5 +603,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Initial render
+    updateRootCountDisplay();
     render();
 }); 
