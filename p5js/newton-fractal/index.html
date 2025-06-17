@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newton Fractal</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 1;
+            max-width: 300px;
+        }
+        #controls h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        #controls label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        #controls select, #controls input {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        #controls button {
+            padding: 8px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+        #info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1;
+        }
+        #toggle-controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 5px 10px;
+            z-index: 2;
+            display: none;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <button id="toggle-controls">Show Controls</button>
+    
+    <div id="controls">
+        <h3>Newton Fractal Controls</h3>
+        
+        <label for="preset-polynomial">Preset Polynomial:</label>
+        <select id="preset-polynomial">
+            <option value="z^3-1">z³ - 1</option>
+            <option value="z^4-1">z⁴ - 1</option>
+            <option value="z^5-1">z⁵ - 1</option>
+            <option value="z^3-z">z³ - z</option>
+            <option value="z^6+z^3-1">z⁶ + z³ - 1</option>
+            <option value="z^3+1">z³ + 1</option>
+        </select>
+        
+        <label for="max-iterations">Max Iterations:</label>
+        <input type="range" id="max-iterations" min="10" max="200" value="100">
+        <span id="iterations-value">100</span>
+        
+        <label for="escape-radius">Convergence Threshold:</label>
+        <input type="range" id="escape-radius" min="1" max="10" step="0.1" value="5">
+        <span id="escape-value">5.0</span>
+        
+        <div>
+            <button id="reset-view">Reset View</button>
+            <button id="hide-controls">Hide Controls</button>
+        </div>
+    </div>
+    
+    <div id="info">
+        <div>Pan: Click and drag | Zoom: Mouse wheel or pinch</div>
+    </div>
+    
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision highp float;
+        
+        uniform vec2 u_resolution;
+        uniform float u_zoom;
+        uniform vec2 u_offset;
+        uniform int u_polynomial;
+        uniform int u_max_iterations;
+        uniform float u_convergence_threshold;
+        
+        // Complex number operations
+        vec2 complex_mul(vec2 a, vec2 b) {
+            return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
+        }
+        
+        vec2 complex_div(vec2 a, vec2 b) {
+            float denom = b.x * b.x + b.y * b.y;
+            return vec2(
+                (a.x * b.x + a.y * b.y) / denom,
+                (a.y * b.x - a.x * b.y) / denom
+            );
+        }
+        
+        vec2 complex_pow(vec2 z, int n) {
+            vec2 result = vec2(1.0, 0.0);
+            for (int i = 0; i < 10; i++) {
+                if (i >= n) break;
+                result = complex_mul(result, z);
+            }
+            return result;
+        }
+        
+        // Polynomial functions and their derivatives
+        vec2 f(vec2 z) {
+            if (u_polynomial == 0) {
+                // z^3 - 1
+                vec2 z_cubed = complex_pow(z, 3);
+                return vec2(z_cubed.x - 1.0, z_cubed.y);
+            } else if (u_polynomial == 1) {
+                // z^4 - 1
+                vec2 z_fourth = complex_pow(z, 4);
+                return vec2(z_fourth.x - 1.0, z_fourth.y);
+            } else if (u_polynomial == 2) {
+                // z^5 - 1
+                vec2 z_fifth = complex_pow(z, 5);
+                return vec2(z_fifth.x - 1.0, z_fifth.y);
+            } else if (u_polynomial == 3) {
+                // z^3 - z
+                vec2 z_cubed = complex_pow(z, 3);
+                return vec2(z_cubed.x - z.x, z_cubed.y - z.y);
+            } else if (u_polynomial == 4) {
+                // z^6 + z^3 - 1
+                vec2 z_cubed = complex_pow(z, 3);
+                vec2 z_sixth = complex_pow(z, 6);
+                return vec2(z_sixth.x + z_cubed.x - 1.0, z_sixth.y + z_cubed.y);
+            } else {
+                // z^3 + 1
+                vec2 z_cubed = complex_pow(z, 3);
+                return vec2(z_cubed.x + 1.0, z_cubed.y);
+            }
+        }
+        
+        vec2 df(vec2 z) {
+            if (u_polynomial == 0) {
+                // 3 * z^2
+                vec2 z_squared = complex_pow(z, 2);
+                return vec2(3.0 * z_squared.x, 3.0 * z_squared.y);
+            } else if (u_polynomial == 1) {
+                // 4 * z^3
+                vec2 z_cubed = complex_pow(z, 3);
+                return vec2(4.0 * z_cubed.x, 4.0 * z_cubed.y);
+            } else if (u_polynomial == 2) {
+                // 5 * z^4
+                vec2 z_fourth = complex_pow(z, 4);
+                return vec2(5.0 * z_fourth.x, 5.0 * z_fourth.y);
+            } else if (u_polynomial == 3) {
+                // 3 * z^2 - 1
+                vec2 z_squared = complex_pow(z, 2);
+                return vec2(3.0 * z_squared.x - 1.0, 3.0 * z_squared.y);
+            } else if (u_polynomial == 4) {
+                // 6 * z^5 + 3 * z^2
+                vec2 z_squared = complex_pow(z, 2);
+                vec2 z_fifth = complex_pow(z, 5);
+                return vec2(6.0 * z_fifth.x + 3.0 * z_squared.x, 6.0 * z_fifth.y + 3.0 * z_squared.y);
+            } else {
+                // 3 * z^2
+                vec2 z_squared = complex_pow(z, 2);
+                return vec2(3.0 * z_squared.x, 3.0 * z_squared.y);
+            }
+        }
+        
+        // Newton's method: z = z - f(z) / f'(z)
+        vec2 newton_step(vec2 z) {
+            return z - complex_div(f(z), df(z));
+        }
+        
+        // HSV to RGB conversion
+        vec3 hsv2rgb(vec3 c) {
+            vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+            vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+            return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+        }
+        
+        void main() {
+            // Normalized coordinates
+            vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+            
+            // Map to complex plane with zoom and offset
+            float aspect = u_resolution.x / u_resolution.y;
+            vec2 z = vec2(
+                (uv.x - 0.5) * 4.0 * aspect / u_zoom + u_offset.x,
+                (uv.y - 0.5) * 4.0 / u_zoom + u_offset.y
+            );
+            
+            // Newton's method iteration
+            const float epsilon = 0.00001;
+            int iterations = 0;
+            vec2 z0 = z;
+            
+            for (int i = 0; i < 200; i++) {
+                if (i >= u_max_iterations) break;
+                
+                vec2 prev_z = z;
+                z = newton_step(z);
+                iterations = i;
+                
+                // Check for convergence
+                if (length(z - prev_z) < epsilon) {
+                    break;
+                }
+            }
+            
+            // Calculate angle for coloring
+            float angle = atan(z.y, z.x);
+            float normalized_angle = (angle + 3.14159) / (2.0 * 3.14159);
+            
+            // Distance from origin for brightness
+            float dist = length(z);
+            float brightness = 0.7 + 0.3 * (1.0 - float(iterations) / float(u_max_iterations));
+            
+            // HSV coloring
+            vec3 hsv = vec3(normalized_angle, 0.8, brightness);
+            vec3 rgb = hsv2rgb(hsv);
+            
+            gl_FragColor = vec4(rgb, 1.0);
+        }
+    </script>
+    <script src="main.js"></script>
+</body>
+</html> 
