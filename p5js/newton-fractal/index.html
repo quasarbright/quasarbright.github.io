@@ -79,16 +79,6 @@
     <div id="controls">
         <h3>Newton Fractal Controls</h3>
         
-        <label for="preset-polynomial">Preset Polynomial:</label>
-        <select id="preset-polynomial">
-            <option value="z^3-1">z³ - 1</option>
-            <option value="z^4-1">z⁴ - 1</option>
-            <option value="z^5-1">z⁵ - 1</option>
-            <option value="z^3-z">z³ - z</option>
-            <option value="z^6+z^3-1">z⁶ + z³ - 1</option>
-            <option value="z^3+1">z³ + 1</option>
-        </select>
-        
         <label for="max-iterations">Max Iterations:</label>
         <input type="range" id="max-iterations" min="10" max="200" value="100">
         <span id="iterations-value">100</span>
@@ -96,6 +86,9 @@
         <label for="escape-radius">Convergence Threshold:</label>
         <input type="range" id="escape-radius" min="1" max="10" step="0.1" value="5">
         <span id="escape-value">5.0</span>
+        
+        <label for="show-roots">Show Roots:</label>
+        <input type="checkbox" id="show-roots" checked>
         
         <div>
             <button id="reset-view">Reset View</button>
@@ -113,7 +106,6 @@
         uniform vec2 u_resolution;
         uniform float u_zoom;
         uniform vec2 u_offset;
-        uniform int u_polynomial;
         uniform int u_max_iterations;
         uniform float u_convergence_threshold;
         
@@ -130,72 +122,44 @@
             );
         }
         
-        vec2 complex_pow(vec2 z, int n) {
-            vec2 result = vec2(1.0, 0.0);
-            for (int i = 0; i < 10; i++) {
-                if (i >= n) break;
-                result = complex_mul(result, z);
-            }
-            return result;
-        }
+        // Roots of the polynomial (z-1)(z+1)(z-i)(z+i)
+        const vec2 root1 = vec2(1.0, 0.0);   // 1
+        const vec2 root2 = vec2(-1.0, 0.0);  // -1
+        const vec2 root3 = vec2(0.0, 1.0);   // i
+        const vec2 root4 = vec2(0.0, -1.0);  // -i
         
-        // Polynomial functions and their derivatives
+        // Function f(z) = (z-1)(z+1)(z-i)(z+i) in factored form
         vec2 f(vec2 z) {
-            if (u_polynomial == 0) {
-                // z^3 - 1
-                vec2 z_cubed = complex_pow(z, 3);
-                return vec2(z_cubed.x - 1.0, z_cubed.y);
-            } else if (u_polynomial == 1) {
-                // z^4 - 1
-                vec2 z_fourth = complex_pow(z, 4);
-                return vec2(z_fourth.x - 1.0, z_fourth.y);
-            } else if (u_polynomial == 2) {
-                // z^5 - 1
-                vec2 z_fifth = complex_pow(z, 5);
-                return vec2(z_fifth.x - 1.0, z_fifth.y);
-            } else if (u_polynomial == 3) {
-                // z^3 - z
-                vec2 z_cubed = complex_pow(z, 3);
-                return vec2(z_cubed.x - z.x, z_cubed.y - z.y);
-            } else if (u_polynomial == 4) {
-                // z^6 + z^3 - 1
-                vec2 z_cubed = complex_pow(z, 3);
-                vec2 z_sixth = complex_pow(z, 6);
-                return vec2(z_sixth.x + z_cubed.x - 1.0, z_sixth.y + z_cubed.y);
-            } else {
-                // z^3 + 1
-                vec2 z_cubed = complex_pow(z, 3);
-                return vec2(z_cubed.x + 1.0, z_cubed.y);
-            }
+            vec2 factor1 = vec2(z.x - root1.x, z.y - root1.y);
+            vec2 factor2 = vec2(z.x - root2.x, z.y - root2.y);
+            vec2 factor3 = vec2(z.x - root3.x, z.y - root3.y);
+            vec2 factor4 = vec2(z.x - root4.x, z.y - root4.y);
+            
+            vec2 prod1 = complex_mul(factor1, factor2);
+            vec2 prod2 = complex_mul(factor3, factor4);
+            
+            return complex_mul(prod1, prod2);
         }
         
+        // Derivative f'(z) computed using the product rule
         vec2 df(vec2 z) {
-            if (u_polynomial == 0) {
-                // 3 * z^2
-                vec2 z_squared = complex_pow(z, 2);
-                return vec2(3.0 * z_squared.x, 3.0 * z_squared.y);
-            } else if (u_polynomial == 1) {
-                // 4 * z^3
-                vec2 z_cubed = complex_pow(z, 3);
-                return vec2(4.0 * z_cubed.x, 4.0 * z_cubed.y);
-            } else if (u_polynomial == 2) {
-                // 5 * z^4
-                vec2 z_fourth = complex_pow(z, 4);
-                return vec2(5.0 * z_fourth.x, 5.0 * z_fourth.y);
-            } else if (u_polynomial == 3) {
-                // 3 * z^2 - 1
-                vec2 z_squared = complex_pow(z, 2);
-                return vec2(3.0 * z_squared.x - 1.0, 3.0 * z_squared.y);
-            } else if (u_polynomial == 4) {
-                // 6 * z^5 + 3 * z^2
-                vec2 z_squared = complex_pow(z, 2);
-                vec2 z_fifth = complex_pow(z, 5);
-                return vec2(6.0 * z_fifth.x + 3.0 * z_squared.x, 6.0 * z_fifth.y + 3.0 * z_squared.y);
-            } else {
-                // 3 * z^2
-                vec2 z_squared = complex_pow(z, 2);
-                return vec2(3.0 * z_squared.x, 3.0 * z_squared.y);
-            }
+            // For (z-a)(z-b)(z-c)(z-d), the derivative is:
+            // (z-b)(z-c)(z-d) + (z-a)(z-c)(z-d) + (z-a)(z-b)(z-d) + (z-a)(z-b)(z-c)
+            
+            vec2 za = vec2(z.x - root1.x, z.y - root1.y);
+            vec2 zb = vec2(z.x - root2.x, z.y - root2.y);
+            vec2 zc = vec2(z.x - root3.x, z.y - root3.y);
+            vec2 zd = vec2(z.x - root4.x, z.y - root4.y);
+            
+            vec2 term1 = complex_mul(complex_mul(zb, zc), zd);
+            vec2 term2 = complex_mul(complex_mul(za, zc), zd);
+            vec2 term3 = complex_mul(complex_mul(za, zb), zd);
+            vec2 term4 = complex_mul(complex_mul(za, zb), zc);
+            
+            vec2 sum1 = vec2(term1.x + term2.x, term1.y + term2.y);
+            vec2 sum2 = vec2(term3.x + term4.x, term3.y + term4.y);
+            
+            return vec2(sum1.x + sum2.x, sum1.y + sum2.y);
         }
         
         // Newton's method: z = z - f(z) / f'(z)
@@ -244,7 +208,6 @@
             float normalized_angle = (angle + 3.14159) / (2.0 * 3.14159);
             
             // Distance from origin for brightness
-            float dist = length(z);
             float brightness = 0.7 + 0.3 * (1.0 - float(iterations) / float(u_max_iterations));
             
             // HSV coloring
