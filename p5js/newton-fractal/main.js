@@ -15,24 +15,27 @@ document.addEventListener('DOMContentLoaded', () => {
     overlayCanvas.style.left = '0';
     overlayCanvas.style.width = '100vw';
     overlayCanvas.style.height = '100vh';
-    overlayCanvas.style.pointerEvents = 'none';
     overlayCanvas.style.zIndex = '1';
     document.body.appendChild(overlayCanvas);
     const ctx = overlayCanvas.getContext('2d');
     
-    // Polynomial roots in the complex plane
-    const roots = [
+    // Initial polynomial roots in the complex plane
+    const defaultRoots = [
         { real: 1, imag: 0 },  // 1
         { real: -1, imag: 0 }, // -1
         { real: 0, imag: 1 },  // i
         { real: 0, imag: -1 }  // -i
     ];
     
+    // Polynomial roots that can be modified
+    let roots = JSON.parse(JSON.stringify(defaultRoots));
+    
     // Get UI elements
     const controlsPanel = document.getElementById('controls');
     const toggleControlsBtn = document.getElementById('toggle-controls');
     const hideControlsBtn = document.getElementById('hide-controls');
     const resetViewBtn = document.getElementById('reset-view');
+    const resetRootsBtn = document.getElementById('reset-roots');
     const maxIterationsSlider = document.getElementById('max-iterations');
     const iterationsValueSpan = document.getElementById('iterations-value');
     const escapeRadiusSlider = document.getElementById('escape-radius');
@@ -124,6 +127,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const offsetLocation = gl.getUniformLocation(program, 'u_offset');
     const maxIterationsLocation = gl.getUniformLocation(program, 'u_max_iterations');
     const convergenceThresholdLocation = gl.getUniformLocation(program, 'u_convergence_threshold');
+    const root1Location = gl.getUniformLocation(program, 'u_root1');
+    const root2Location = gl.getUniformLocation(program, 'u_root2');
+    const root3Location = gl.getUniformLocation(program, 'u_root3');
+    const root4Location = gl.getUniformLocation(program, 'u_root4');
     
     // Initial values
     let zoom = 1.0;
@@ -131,6 +138,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let maxIterations = 100;
     let convergenceThreshold = 5.0;
     let showRoots = true;
+    
+    // Root dragging state
+    let isDraggingRoot = false;
+    let draggedRootIndex = -1;
+    let hoveredRootIndex = -1;
+    const circleRadius = 10; // Constant radius in pixels
+    const strokeWidth = 3;   // Constant stroke width in pixels
+    const hoverStrokeColor = '#00AAFF';
+    const normalStrokeColor = '#FFFFFF';
     
     // Convert complex plane coordinates to canvas pixel coordinates
     function complexToPixel(z) {
@@ -154,6 +170,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const y = (1.0 - ((z.imag - offset.y) * zoom / 4.0 + 0.5)) * canvas.height;
         
         return { x, y };
+    }
+    
+    // Convert canvas pixel coordinates to complex plane coordinates
+    function pixelToComplex(pixel) {
+        const aspect = canvas.width / canvas.height;
+        
+        // Normalized device coordinates (WebGL convention: y=0 at bottom)
+        const uvX = pixel.x / canvas.width;
+        const uvY = 1.0 - (pixel.y / canvas.height); // Flip y because canvas has y=0 at top
+        
+        // Convert to complex plane
+        const real = (uvX - 0.5) * 4.0 * aspect / zoom + offset.x;
+        const imag = (uvY - 0.5) * 4.0 / zoom + offset.y;
+        
+        return { real, imag };
     }
     
     // Get color from angle in complex plane
@@ -187,26 +218,46 @@ document.addEventListener('DOMContentLoaded', () => {
         return `rgb(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)})`;
     }
     
+    // Check if a point is near a root
+    function isNearRoot(point, rootIndex) {
+        if (rootIndex < 0 || rootIndex >= roots.length) return false;
+        
+        const rootPixel = complexToPixel(roots[rootIndex]);
+        const dx = point.x - rootPixel.x;
+        const dy = point.y - rootPixel.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        return distance <= circleRadius + strokeWidth;
+    }
+    
+    // Find the index of the root near a point
+    function findRootNearPoint(point) {
+        for (let i = 0; i < roots.length; i++) {
+            if (isNearRoot(point, i)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
     // Draw root indicators on the overlay canvas
     function drawRootIndicators() {
         ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
         
         if (!showRoots) return;
         
-        const circleRadius = 10; // Constant radius in pixels
-        const strokeWidth = 3;   // Constant stroke width in pixels
-        
-        roots.forEach(root => {
+        roots.forEach((root, index) => {
             const pixelPos = complexToPixel(root);
             
             // Check if root is visible on screen
             if (pixelPos.x >= -circleRadius && pixelPos.x <= canvas.width + circleRadius &&
                 pixelPos.y >= -circleRadius && pixelPos.y <= canvas.height + circleRadius) {
                 
-                // Draw white stroke
+                // Draw stroke (white normally, blue when hovered/dragged)
                 ctx.beginPath();
                 ctx.arc(pixelPos.x, pixelPos.y, circleRadius + strokeWidth, 0, 2 * Math.PI);
-                ctx.fillStyle = 'white';
+                ctx.fillStyle = (index === hoveredRootIndex || index === draggedRootIndex) ? 
+                    hoverStrokeColor : normalStrokeColor;
                 ctx.fill();
                 
                 // Draw colored fill
@@ -242,6 +293,11 @@ document.addEventListener('DOMContentLoaded', () => {
         render();
     });
     
+    resetRootsBtn.addEventListener('click', () => {
+        roots = JSON.parse(JSON.stringify(defaultRoots));
+        render();
+    });
+    
     // Toggle controls visibility
     hideControlsBtn.addEventListener('click', () => {
         controlsPanel.classList.add('hidden');
@@ -253,25 +309,41 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleControlsBtn.style.display = 'none';
     });
     
-    // Handle mouse interactions
-    let isDragging = false;
+    // Handle mouse interactions for panning and root dragging
+    let isPanning = false;
     let lastMousePos = { x: 0, y: 0 };
     
-    canvas.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        lastMousePos = { x: e.clientX, y: e.clientY };
+    overlayCanvas.addEventListener('mousedown', (e) => {
+        const mousePos = { x: e.clientX, y: e.clientY };
+        const rootIndex = findRootNearPoint(mousePos);
+        
+        if (rootIndex >= 0 && showRoots) {
+            // Start dragging a root
+            isDraggingRoot = true;
+            draggedRootIndex = rootIndex;
+            
+            // Update the root position immediately
+            const complexPos = pixelToComplex(mousePos);
+            roots[rootIndex] = complexPos;
+        } else {
+            // Start panning
+            isPanning = true;
+            lastMousePos = mousePos;
+        }
+        
+        render();
     });
     
-    canvas.addEventListener('mouseup', () => {
-        isDragging = false;
-    });
-    
-    canvas.addEventListener('mouseleave', () => {
-        isDragging = false;
-    });
-    
-    canvas.addEventListener('mousemove', (e) => {
-        if (isDragging) {
+    overlayCanvas.addEventListener('mousemove', (e) => {
+        const mousePos = { x: e.clientX, y: e.clientY };
+        
+        if (isDraggingRoot) {
+            // Update the dragged root position
+            const complexPos = pixelToComplex(mousePos);
+            roots[draggedRootIndex] = complexPos;
+            render();
+        } else if (isPanning) {
+            // Pan the view
             const dx = e.clientX - lastMousePos.x;
             const dy = e.clientY - lastMousePos.y;
             
@@ -282,12 +354,37 @@ document.addEventListener('DOMContentLoaded', () => {
             offset.x -= (dx / canvas.width) * (4.0 * aspect) / zoom;
             offset.y += (dy / canvas.height) * 4.0 / zoom;
             
-            lastMousePos = { x: e.clientX, y: e.clientY };
+            lastMousePos = mousePos;
             render();
+        } else if (showRoots) {
+            // Check for hover state
+            const rootIndex = findRootNearPoint(mousePos);
+            if (rootIndex !== hoveredRootIndex) {
+                hoveredRootIndex = rootIndex;
+                // Change cursor to pointer when over a root
+                overlayCanvas.style.cursor = rootIndex >= 0 ? 'pointer' : 'default';
+                render();
+            }
         }
     });
     
-    canvas.addEventListener('wheel', (e) => {
+    overlayCanvas.addEventListener('mouseup', () => {
+        isPanning = false;
+        isDraggingRoot = false;
+        draggedRootIndex = -1;
+    });
+    
+    overlayCanvas.addEventListener('mouseleave', () => {
+        isPanning = false;
+        isDraggingRoot = false;
+        draggedRootIndex = -1;
+        hoveredRootIndex = -1;
+        overlayCanvas.style.cursor = 'default';
+        render();
+    });
+    
+    // Wheel event for zooming
+    overlayCanvas.addEventListener('wheel', (e) => {
         e.preventDefault();
         
         // Get mouse position in normalized device coordinates
@@ -315,36 +412,78 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Touch support
     let lastTouchDistance = 0;
+    let touchStartPos = null;
     
-    canvas.addEventListener('touchstart', (e) => {
+    overlayCanvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        
         if (e.touches.length === 1) {
-            isDragging = true;
-            lastMousePos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            const touchPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            const rootIndex = findRootNearPoint(touchPos);
+            
+            if (rootIndex >= 0 && showRoots) {
+                // Start dragging a root
+                isDraggingRoot = true;
+                draggedRootIndex = rootIndex;
+                
+                // Update the root position immediately
+                const complexPos = pixelToComplex(touchPos);
+                roots[rootIndex] = complexPos;
+            } else {
+                // Start panning
+                isPanning = true;
+                lastMousePos = touchPos;
+            }
+            
+            touchStartPos = touchPos;
         } else if (e.touches.length === 2) {
             // Calculate distance between two touch points
             const dx = e.touches[0].clientX - e.touches[1].clientX;
             const dy = e.touches[0].clientY - e.touches[1].clientY;
             lastTouchDistance = Math.sqrt(dx * dx + dy * dy);
+            
+            // Cancel any dragging or panning
+            isPanning = false;
+            isDraggingRoot = false;
+            draggedRootIndex = -1;
         }
-        e.preventDefault();
+        
+        render();
     });
     
-    canvas.addEventListener('touchmove', (e) => {
+    overlayCanvas.addEventListener('touchmove', (e) => {
         e.preventDefault();
         
-        if (e.touches.length === 1 && isDragging) {
-            const dx = e.touches[0].clientX - lastMousePos.x;
-            const dy = e.touches[0].clientY - lastMousePos.y;
+        if (e.touches.length === 1) {
+            const touchPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
             
-            // Calculate aspect ratio
-            const aspect = canvas.width / canvas.height;
+            // Only process if we've moved more than a tiny amount (helps with accidental moves)
+            if (touchStartPos && 
+                Math.abs(touchPos.x - touchStartPos.x) < 3 && 
+                Math.abs(touchPos.y - touchStartPos.y) < 3) {
+                return;
+            }
             
-            // Convert screen space to complex plane space with proper aspect ratio handling
-            offset.x -= (dx / canvas.width) * (4.0 * aspect) / zoom;
-            offset.y += (dy / canvas.height) * 4.0 / zoom;
-            
-            lastMousePos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-            render();
+            if (isDraggingRoot) {
+                // Update the dragged root position
+                const complexPos = pixelToComplex(touchPos);
+                roots[draggedRootIndex] = complexPos;
+                render();
+            } else if (isPanning) {
+                // Pan the view
+                const dx = touchPos.x - lastMousePos.x;
+                const dy = touchPos.y - lastMousePos.y;
+                
+                // Calculate aspect ratio
+                const aspect = canvas.width / canvas.height;
+                
+                // Convert screen space to complex plane space with proper aspect ratio handling
+                offset.x -= (dx / canvas.width) * (4.0 * aspect) / zoom;
+                offset.y += (dy / canvas.height) * 4.0 / zoom;
+                
+                lastMousePos = touchPos;
+                render();
+            }
         } else if (e.touches.length === 2) {
             // Calculate new distance
             const dx = e.touches[0].clientX - e.touches[1].clientX;
@@ -381,9 +520,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    canvas.addEventListener('touchend', () => {
-        isDragging = false;
+    overlayCanvas.addEventListener('touchend', () => {
+        isPanning = false;
+        isDraggingRoot = false;
+        draggedRootIndex = -1;
         lastTouchDistance = 0;
+        touchStartPos = null;
     });
     
     // Render function
@@ -393,6 +535,12 @@ document.addEventListener('DOMContentLoaded', () => {
         gl.uniform2f(offsetLocation, offset.x, offset.y);
         gl.uniform1i(maxIterationsLocation, maxIterations);
         gl.uniform1f(convergenceThresholdLocation, convergenceThreshold);
+        
+        // Pass root positions to the shader
+        gl.uniform2f(root1Location, roots[0].real, roots[0].imag);
+        gl.uniform2f(root2Location, roots[1].real, roots[1].imag);
+        gl.uniform2f(root3Location, roots[2].real, roots[2].imag);
+        gl.uniform2f(root4Location, roots[3].real, roots[3].imag);
         
         gl.drawArrays(gl.TRIANGLES, 0, 6);
         
