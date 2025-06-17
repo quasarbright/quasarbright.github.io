@@ -19,6 +19,22 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(overlayCanvas);
     const ctx = overlayCanvas.getContext('2d');
     
+    // Pastel color palette - same as in the shader
+    const PASTEL_COLORS = [
+        'rgb(255, 51, 51)',    // Intense Red
+        'rgb(51, 255, 51)',    // Intense Green
+        'rgb(51, 102, 255)',   // Intense Blue
+        'rgb(255, 230, 26)',   // Intense Yellow
+        'rgb(230, 51, 255)',   // Intense Purple
+        'rgb(26, 204, 255)',   // Intense Cyan
+        'rgb(255, 51, 179)',   // Intense Magenta
+        'rgb(153, 255, 26)',   // Intense Lime
+        'rgb(255, 128, 26)',   // Intense Orange
+        'rgb(128, 51, 255)',   // Intense Violet
+        'rgb(26, 179, 153)',   // Intense Teal
+        'rgb(230, 153, 26)'    // Intense Gold
+    ];
+    
     // Initial polynomial roots in the complex plane
     const defaultRoots = [
         { real: 1, imag: 0 },  // 1
@@ -89,6 +105,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Create program
     const program = gl.createProgram();
+    
+    // Check if shaders were successfully compiled before attaching
+    if (!vertexShader || !fragmentShader) {
+        console.error('Failed to compile shaders. Cannot create program.');
+        return;
+    }
+    
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragmentShader);
     gl.linkProgram(program);
@@ -187,35 +210,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return { real, imag };
     }
     
-    // Get color from angle in complex plane
-    function getColorFromAngle(z) {
-        // In the shader, the coloring is:
-        // float angle = atan(z.y, z.x);
-        // In GLSL, atan(y, x) is the same as Math.atan2(y, x) in JavaScript
-        const angle = Math.atan2(z.imag, z.real);
-        const normalizedAngle = (angle + Math.PI) / (2 * Math.PI);
-        return hsvToRgb(normalizedAngle, 0.8, 1.0);
-    }
-    
-    // HSV to RGB conversion
-    function hsvToRgb(h, s, v) {
-        let r, g, b;
-        const i = Math.floor(h * 6);
-        const f = h * 6 - i;
-        const p = v * (1 - s);
-        const q = v * (1 - f * s);
-        const t = v * (1 - (1 - f) * s);
-        
-        switch (i % 6) {
-            case 0: r = v; g = t; b = p; break;
-            case 1: r = q; g = v; b = p; break;
-            case 2: r = p; g = v; b = t; break;
-            case 3: r = p; g = q; b = v; break;
-            case 4: r = t; g = p; b = v; break;
-            case 5: r = v; g = p; b = q; break;
-        }
-        
-        return `rgb(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)})`;
+    // Get root color from palette
+    function getRootColor(rootIndex) {
+        return PASTEL_COLORS[rootIndex % PASTEL_COLORS.length];
     }
     
     // Check if a point is near a root
@@ -260,10 +257,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     hoverStrokeColor : normalStrokeColor;
                 ctx.fill();
                 
-                // Draw colored fill
+                // Draw colored fill from palette
                 ctx.beginPath();
                 ctx.arc(pixelPos.x, pixelPos.y, circleRadius, 0, 2 * Math.PI);
-                ctx.fillStyle = getColorFromAngle(root);
+                ctx.fillStyle = getRootColor(index);
                 ctx.fill();
             }
         });
@@ -530,6 +527,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Render function
     function render() {
+        // Make sure the program is being used
+        gl.useProgram(program);
+        
         gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
         gl.uniform1f(zoomLocation, zoom);
         gl.uniform2f(offsetLocation, offset.x, offset.y);
