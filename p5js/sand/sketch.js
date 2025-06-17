@@ -72,7 +72,7 @@ function setup() {
   world = generateWorld()
 }
 
-function newGrain(idx) {
+function addGrain(idx) {
   const clr = color(frameCount % 360, 100, 100)
   world.set(idx, clr)
 }
@@ -81,7 +81,7 @@ function draw() {
   background(0);
   drawWorld(world)
   if (mouseIsPressed) {
-    newGrain({row: Math.floor(mouseY), col: Math.floor(mouseX)})
+    addGrain({row: Math.floor(mouseY), col: Math.floor(mouseX)})
   }
   for (let i = 0; i < 1; i++) {
     world = step(world)
