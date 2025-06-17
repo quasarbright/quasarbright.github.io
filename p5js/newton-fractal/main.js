@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Get UI elements
     const controlsPanel = document.getElementById('controls');
     const resetViewBtn = document.getElementById('reset-view');
+    const resetRootsBtn = document.getElementById('reset-roots');
     const addRootBtn = document.getElementById('add-root');
     const removeRootBtn = document.getElementById('remove-root');
     const rootCountDisplay = document.getElementById('root-count');
@@ -310,6 +311,11 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
         zoom = 1.0;
         offset = { x: 0.0, y: 0.0 };
+        render();
+    });
+    
+    resetRootsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         roots = JSON.parse(JSON.stringify(defaultRoots));
         updateRootCountDisplay();
         render();
