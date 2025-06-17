@@ -174,9 +174,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const dx = e.clientX - lastMousePos.x;
             const dy = e.clientY - lastMousePos.y;
             
-            // Convert screen space to complex plane space
-            offset.x -= dx * 4.0 / (canvas.width * zoom);
-            offset.y += dy * 4.0 / (canvas.height * zoom);
+            // Calculate aspect ratio
+            const aspect = canvas.width / canvas.height;
+            
+            // Convert screen space to complex plane space with proper aspect ratio handling
+            offset.x -= (dx / canvas.width) * (4.0 * aspect) / zoom;
+            offset.y += (dy / canvas.height) * 4.0 / zoom;
             
             lastMousePos = { x: e.clientX, y: e.clientY };
             render();
@@ -232,8 +235,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const dx = e.touches[0].clientX - lastMousePos.x;
             const dy = e.touches[0].clientY - lastMousePos.y;
             
-            offset.x -= dx * 4.0 / (canvas.width * zoom);
-            offset.y += dy * 4.0 / (canvas.height * zoom);
+            // Calculate aspect ratio
+            const aspect = canvas.width / canvas.height;
+            
+            // Convert screen space to complex plane space with proper aspect ratio handling
+            offset.x -= (dx / canvas.width) * (4.0 * aspect) / zoom;
+            offset.y += (dy / canvas.height) * 4.0 / zoom;
             
             lastMousePos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
             render();
