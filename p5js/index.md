@@ -72,6 +72,12 @@ This project was originally implemented by me (without AI), and it ran on the CP
 
 The original CPU version is [here](https://quasarbright.github.io/p5js/majority-automaton).
 
+## [Newton's Fractal](./newton-fractal)
+
+
+
+[![newton](./screenshots/newton.png)](./newton-fractal)
+
 ## [Double Slit Interference](https://quasarbright.github.io/spring-wave/dist/index.html)
 
 A physics-simulation of waves powered by balls connected with springs, demonstrating diffraction and double-slit interference.
