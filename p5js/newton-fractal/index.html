@@ -150,6 +150,16 @@
         .MathJax {
             color: white !important;
         }
+        .slider-container {
+            margin-top: 10px;
+            color: white;
+            font-size: 14px;
+        }
+        .slider-container input {
+            width: 100px;
+            margin: 0 10px;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -161,6 +171,11 @@
         <button id="add-root">Add Root</button>
         <button id="remove-root">Remove Root</button>
         <span id="root-count">4 roots</span>
+        <div class="slider-container">
+            <label for="shade-intensity">Shade Intensity:</label>
+            <input type="range" id="shade-intensity" min="0.2" max="3.0" step="0.1" value="1.5">
+            <span id="intensity-value">1.5</span>
+        </div>
     </div>
     
     <div id="info">
@@ -219,6 +234,7 @@
         uniform vec2 u_offset;
         uniform int u_max_iterations;
         uniform float u_convergence_threshold;
+        uniform float u_shade_intensity;
         
         // Roots of the polynomial as uniforms - we support up to 10 roots
         uniform vec2 u_root1;
@@ -403,9 +419,22 @@
             // Get color from palette based on root index
             vec3 baseColor = getColor(getWrappedColorIndex(rootIndex));
             
-            // Adjust brightness based on iteration count - keeping more of the original color
-            float brightness = 0.9 + 0.1 * (1.0 - float(iterations) / float(u_max_iterations));
-            vec3 color = baseColor * brightness;
+            // Calculate shade based on iteration count
+            // More iterations = darker shade
+            float iterationRatio = float(iterations) / float(u_max_iterations);
+            
+            // Create a more pronounced banding effect
+            // Apply sine wave to create oscillating bands based on iteration count
+            float bandingFactor = 0.15 * sin(iterationRatio * 20.0) + 0.85;
+            
+            // Base shade on iteration count with higher contrast
+            float shade = 1.0 - pow(iterationRatio, 0.8);
+            
+            // Apply user-controlled intensity and banding
+            shade = 0.05 + 0.95 * pow(shade * bandingFactor, u_shade_intensity);
+            
+            // Apply shading to the base color
+            vec3 color = baseColor * shade;
             
             gl_FragColor = vec4(color, 1.0);
         }

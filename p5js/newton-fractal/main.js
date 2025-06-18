@@ -59,6 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const addRootBtn = document.getElementById('add-root');
     const removeRootBtn = document.getElementById('remove-root');
     const rootCountDisplay = document.getElementById('root-count');
+    const shadeIntensitySlider = document.getElementById('shade-intensity');
+    const intensityValueDisplay = document.getElementById('intensity-value');
     
     // About modal elements
     const aboutBtn = document.getElementById('about-btn');
@@ -176,6 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const maxIterationsLocation = gl.getUniformLocation(program, 'u_max_iterations');
     const convergenceThresholdLocation = gl.getUniformLocation(program, 'u_convergence_threshold');
     const rootCountLocation = gl.getUniformLocation(program, 'u_root_count');
+    const shadeIntensityLocation = gl.getUniformLocation(program, 'u_shade_intensity');
     
     // Root location uniforms - support up to 10 roots
     const rootLocations = [
@@ -197,6 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let maxIterations = 100;
     let convergenceThreshold = 5.0;
     let showRoots = true;
+    let shadeIntensity = 1.5;
     
     // Root dragging state
     let isDraggingRoot = false;
@@ -345,6 +349,14 @@ document.addEventListener('DOMContentLoaded', () => {
             updateRootCountDisplay();
             render();
         }
+    });
+    
+    // Shade intensity slider
+    shadeIntensitySlider.addEventListener('input', (e) => {
+        e.stopPropagation();
+        shadeIntensity = parseFloat(shadeIntensitySlider.value);
+        intensityValueDisplay.textContent = shadeIntensity.toFixed(1);
+        render();
     });
     
     // Handle mouse interactions for panning and root dragging
@@ -592,6 +604,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gl.uniform2f(offsetLocation, offset.x, offset.y);
         gl.uniform1i(maxIterationsLocation, maxIterations);
         gl.uniform1f(convergenceThresholdLocation, convergenceThreshold);
+        gl.uniform1f(shadeIntensityLocation, shadeIntensity);
         
         // Pass the actual root count to the shader
         gl.uniform1i(rootCountLocation, roots.length);
