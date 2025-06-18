@@ -60,6 +60,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const removeRootBtn = document.getElementById('remove-root');
     const rootCountDisplay = document.getElementById('root-count');
     
+    // About modal elements
+    const aboutBtn = document.getElementById('about-btn');
+    const modalOverlay = document.getElementById('modal-overlay');
+    const closeModalBtn = document.getElementById('close-modal');
+    
     // Function to update the root count display
     function updateRootCountDisplay() {
         rootCountDisplay.textContent = `${roots.length} root${roots.length !== 1 ? 's' : ''}`;
@@ -611,4 +616,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial render
     updateRootCountDisplay();
     render();
+    
+    // About modal functionality
+    aboutBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        modalOverlay.style.display = 'flex';
+    });
+    
+    closeModalBtn.addEventListener('click', () => {
+        modalOverlay.style.display = 'none';
+    });
+    
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+            modalOverlay.style.display = 'none';
+        }
+    });
 }); 

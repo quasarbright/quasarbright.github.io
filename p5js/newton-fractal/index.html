@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Newton Fractal</title>
+    <!-- MathJax for rendering mathematical formulas -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
         body {
             margin: 0;
@@ -62,6 +65,91 @@
             z-index: 2;
             pointer-events: none;
         }
+        #about-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 12px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 2;
+        }
+        #about-btn:hover {
+            background-color: #444;
+        }
+        #modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            z-index: 3;
+            justify-content: center;
+            align-items: center;
+        }
+        #modal {
+            background-color: #222;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            color: white;
+            position: relative;
+        }
+        #close-modal {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        #modal h2 {
+            margin-top: 0;
+            color: #4d90fe;
+        }
+        #modal p {
+            line-height: 1.6;
+        }
+        #modal .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            margin: 20px 0;
+        }
+        #modal .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #modal code {
+            background-color: #333;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        #modal .math {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #333;
+            border-radius: 5px;
+            text-align: center;
+            color: white;
+        }
+        /* Fix MathJax styling in dark mode */
+        .MathJax {
+            color: white !important;
+        }
     </style>
 </head>
 <body>
@@ -77,6 +165,50 @@
     
     <div id="info">
         <div>Pan: Click and drag | Zoom: Mouse wheel or pinch | Drag roots to change the polynomial</div>
+    </div>
+    
+    <button id="about-btn">About</button>
+    
+    <div id="modal-overlay">
+        <div id="modal">
+            <button id="close-modal">&times;</button>
+            <h2>Newton's Method Fractal Visualization</h2>
+            
+            <h3>What is Newton's Method?</h3>
+            <p>Newton's method is an numerical method for finding roots (zeros) of a function. For a function \(f(z)\) and some starting point \(z_0\), we iteratively apply the following recurrence relation:</p>
+            
+            <div class="math">
+                \[z_{n+1} = z_n - \frac{f(z_n)}{f'(z_n)}\]
+            </div>
+            
+            <p>This process brings the point closer to \(f(z) = 0\).</p>
+            
+            <h3>How This Visualization Works</h3>
+            <p>Each pixel on the screen represents a \(z_0\) point in the complex plane. We apply Newton's method to each point and color it based on which root it converges to, or black if it doesn't converge.</p>
+            
+            <p>The polynomial \(f(z)\) being visualized is in the form:</p>
+            <div class="math">
+                \[f(z) = (z-r_1)(z-r_2)(z-r_3)\ldots(z-r_n)\]
+            </div>
+            
+            <p>Where \(r_1\), \(r_2\), etc. are the roots represented by draggable circles. You can add, remove, and drag roots to change the polynomial and see how the fractal changes in real-time.</p>
+            
+            <h3>Interactive Features</h3>
+            <ul>
+                <li><strong>Pan:</strong> Click and drag to move around</li>
+                <li><strong>Zoom:</strong> Use mouse wheel or pinch gestures</li>
+                <li><strong>Modify Roots:</strong> Drag the colored circles to change the polynomial</li>
+                <li><strong>Add/Remove Roots:</strong> Use the buttons to add or remove roots</li>
+                <li><strong>Reset:</strong> Reset the view or roots to their default state</li>
+            </ul>
+            
+            <h3>Inspiration</h3>
+            <p>This visualization was inspired by 3Blue1Brown's excellent video on Newton's Fractal:</p>
+            
+            <div class="video-container">
+                <iframe width="560" height="315" src="https://www.youtube.com/embed/-RdOwhmqP5s" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        </div>
     </div>
     
     <script id="fragment-shader" type="x-shader/x-fragment">
