@@ -243,6 +243,7 @@
             const float epsilon = 0.00001;
             int iterations = 0;
             vec2 z0 = z;
+            bool converged = false;
             
             for (int i = 0; i < 200; i++) {
                 if (i >= u_max_iterations) break;
@@ -253,8 +254,15 @@
                 
                 // Check for convergence
                 if (length(z - prev_z) < epsilon) {
+                    converged = true;
                     break;
                 }
+            }
+            
+            if (!converged) {
+                // If the point doesn't converge, color it black
+                gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+                return;
             }
             
             // Find which root we converged to
