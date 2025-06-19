@@ -234,23 +234,23 @@
             <h3>Mandelbrot Mode</h3>
             <p>
                 In standard mode, we fix a polynomial \(f(z) = (z-r_1)(z-r_2)...(z-r_n)\) and for each pixel \(z_0\) in the complex plane, 
-                we run Newton's method to see which root it converges to.
+                we run Newton's method to see which root it converges to. We are fixing a function and each pixel corresponds to a starting point, like julia sets.
             </p>
             <p>
-                In Mandelbrot mode, each pixel \(z_0\) becomes a new root of the polynomial. For each pixel:
+                In Mandelbrot mode, each pixel \(r_p\) becomes a new root of the polynomial. For each pixel:
             </p>
             <ol>
-                <li>We treat the pixel's position \(z_0\) as a new root</li>
-                <li>We calculate the average of all roots (including \(z_0\))</li>
-                <li>We run Newton's method on this average position</li>
+                <li>We treat the pixel's position \(r_p\) as a new root</li>
+                <li>We calculate the average of all roots (including \(r_p\))</li>
+                <li>We run Newton's method on this average of the roots</li>
                 <li>We color the pixel based on which root it converges to (or black if it doesn't converge)</li>
             </ol>
             <p>
-                This creates a different kind of fractal analogous to the mandelbrot set fractal, whereas standard mode is analogous to the julia set fractal. In fact, you can get the mandelbrot set to appear by reducing down to 2 roots and looking for black pixels.
+                Here, each pixel determines the function we're working with, and the starting point is fixed, like the mandelbrot set. In fact, if you reduce the number of roots to 2, you can get the mandelbrot set to appear by looking for black pixels.
             </p>
             
             <h3>Inspiration</h3>
-            <p>This visualization was inspired by 3Blue1Brown's excellent video on Newton's Fractal:</p>
+            <p>This visualization was inspired by 3Blue1Brown's great video on Newton's Fractal:</p>
             
             <div class="video-container">
                 <iframe width="560" height="315" src="https://www.youtube.com/embed/-RdOwhmqP5s" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
