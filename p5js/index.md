@@ -74,7 +74,9 @@ The original CPU version is [here](https://quasarbright.github.io/p5js/majority-
 
 ## [Newton's Fractal](./newton-fractal)
 
+This visualizes newton's fractal, which is a root-finding algorithm.
 
+ Inspired by [3blue1brown's great video on this fractal](https://www.youtube.com/watch?v=-RdOwhmqP5s).
 
 [![newton](./screenshots/newton.png)](./newton-fractal)
 
