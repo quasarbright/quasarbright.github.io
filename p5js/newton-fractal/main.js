@@ -201,6 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let convergenceThreshold = 5.0;
     let showRoots = true;
     let shadeIntensity = 1.5;
+    let mandelbrotMode = false;
     
     // Root dragging state
     let isDraggingRoot = false;
@@ -356,6 +357,13 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
         shadeIntensity = parseFloat(shadeIntensitySlider.value);
         intensityValueDisplay.textContent = shadeIntensity.toFixed(1);
+        render();
+    });
+    
+    // Mandelbrot mode checkbox
+    document.getElementById('mandelbrot-mode').addEventListener('change', function(e) {
+        e.stopPropagation();
+        mandelbrotMode = this.checked;
         render();
     });
     
@@ -605,10 +613,11 @@ document.addEventListener('DOMContentLoaded', () => {
         gl.uniform1i(maxIterationsLocation, maxIterations);
         gl.uniform1f(convergenceThresholdLocation, convergenceThreshold);
         gl.uniform1f(shadeIntensityLocation, shadeIntensity);
+        gl.uniform1i(gl.getUniformLocation(program, 'u_mandelbrot_mode'), mandelbrotMode ? 1 : 0);
         
         // Pass the actual root count to the shader
         gl.uniform1i(rootCountLocation, roots.length);
-        console.log(`Rendering with ${roots.length} roots`);
+        console.log(`Rendering with ${roots.length} roots${mandelbrotMode ? ' in Mandelbrot mode' : ''}`);
         
         // Pass all roots to the shader
         for (let i = 0; i < roots.length; i++) {

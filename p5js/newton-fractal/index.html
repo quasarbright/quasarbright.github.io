@@ -160,6 +160,15 @@
             margin: 0 10px;
             vertical-align: middle;
         }
+        .checkbox-container {
+            margin-top: 10px;
+            color: white;
+            font-size: 14px;
+        }
+        .checkbox-container input {
+            margin-right: 8px;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -175,6 +184,10 @@
             <label for="shade-intensity">Shade Intensity:</label>
             <input type="range" id="shade-intensity" min="0.2" max="3.0" step="0.1" value="1.5">
             <span id="intensity-value">1.5</span>
+        </div>
+        <div class="checkbox-container">
+            <input type="checkbox" id="mandelbrot-mode">
+            <label for="mandelbrot-mode">Mandelbrot Mode</label>
         </div>
     </div>
     
@@ -215,7 +228,26 @@
                 <li><strong>Modify Roots:</strong> Drag the colored circles to change the polynomial</li>
                 <li><strong>Add/Remove Roots:</strong> Use the buttons to add or remove roots</li>
                 <li><strong>Reset:</strong> Reset the view or roots to their default state</li>
+                <li><strong>Mandelbrot Mode:</strong> Each pixel becomes a new root, and the color is determined by which root the average of all roots (including the pixel) converges to</li>
             </ul>
+            
+            <h3>Mandelbrot Mode</h3>
+            <p>
+                In standard mode, we fix a polynomial \(f(z) = (z-r_1)(z-r_2)...(z-r_n)\) and for each pixel \(z_0\) in the complex plane, 
+                we run Newton's method to see which root it converges to.
+            </p>
+            <p>
+                In Mandelbrot mode, each pixel \(z_0\) becomes a new root of the polynomial. For each pixel:
+            </p>
+            <ol>
+                <li>We treat the pixel's position \(z_0\) as a new root</li>
+                <li>We calculate the average of all roots (including \(z_0\))</li>
+                <li>We run Newton's method on this average position</li>
+                <li>We color the pixel based on which root it converges to (or black if it doesn't converge)</li>
+            </ol>
+            <p>
+                This creates a different kind of fractal analogous to the mandelbrot set fractal, whereas the normal mode is analogous to the  julia set fractal. In fact, you can get the mandelbrot set to appear by reducing down to 2 roots and looking for black pixels.
+            </p>
             
             <h3>Inspiration</h3>
             <p>This visualization was inspired by 3Blue1Brown's excellent video on Newton's Fractal:</p>
@@ -235,6 +267,7 @@
         uniform int u_max_iterations;
         uniform float u_convergence_threshold;
         uniform float u_shade_intensity;
+        uniform bool u_mandelbrot_mode;
         
         // Roots of the polynomial as uniforms - we support up to 10 roots
         uniform vec2 u_root1;
@@ -250,7 +283,11 @@
         uniform int u_root_count; // Number of active roots
         
         // Get a root by index - WebGL 1.0 doesn't support dynamic array indexing
-        vec2 getRoot(int index) {
+        vec2 getRoot(int index, vec2 pixelRoot) {
+            if (u_mandelbrot_mode && index == u_root_count) {
+                return pixelRoot;
+            }
+            
             if (index == 0) return u_root1;
             if (index == 1) return u_root2;
             if (index == 2) return u_root3;
@@ -261,6 +298,27 @@
             if (index == 7) return u_root8;
             if (index == 8) return u_root9;
             return u_root10;
+        }
+        
+        // Calculate the average of all roots
+        vec2 calculateAverageRoot(vec2 pixelRoot) {
+            vec2 sum = vec2(0.0, 0.0);
+            int totalRoots = u_root_count;
+            
+            // Sum all the predefined roots
+            for (int i = 0; i < 10; i++) {
+                if (i >= u_root_count) break;
+                sum += getRoot(i, pixelRoot);
+            }
+            
+            // Add the pixel as a root in Mandelbrot mode
+            if (u_mandelbrot_mode) {
+                sum += pixelRoot;
+                totalRoots += 1;
+            }
+            
+            // Calculate the average
+            return sum / float(totalRoots);
         }
         
         // Pastel color palette - defined individually since WebGL 1.0 doesn't support array constructors
@@ -292,14 +350,17 @@
         }
         
         // Function f(z) = product of (z-root) for all roots
-        vec2 f(vec2 z) {
+        vec2 f(vec2 z, vec2 pixelRoot) {
             vec2 result = vec2(1.0, 0.0); // Start with 1+0i
+            
+            // Get the total number of roots to consider
+            int totalRoots = u_mandelbrot_mode ? u_root_count + 1 : u_root_count;
             
             // Multiply by each (z-root) factor
             // We need to use a fixed loop since WebGL 1.0 doesn't support dynamic loop bounds
             for (int i = 0; i < 10; i++) {
-                if (i >= u_root_count) break;
-                vec2 root = getRoot(i);
+                if (i >= totalRoots) break;
+                vec2 root = getRoot(i, pixelRoot);
                 vec2 factor = vec2(z.x - root.x, z.y - root.y);
                 result = complex_mul(result, factor);
             }
@@ -308,25 +369,28 @@
         }
         
         // Derivative f'(z) computed using the product rule
-        vec2 df(vec2 z) {
+        vec2 df(vec2 z, vec2 pixelRoot) {
+            // Get the total number of roots to consider
+            int totalRoots = u_mandelbrot_mode ? u_root_count + 1 : u_root_count;
+            
             // If we have no roots or just one root, the derivative is simple
-            if (u_root_count <= 0) return vec2(0.0, 0.0);
-            if (u_root_count == 1) return vec2(1.0, 0.0);
+            if (totalRoots <= 0) return vec2(0.0, 0.0);
+            if (totalRoots == 1) return vec2(1.0, 0.0);
             
             // For multiple roots, we compute the sum of products
             vec2 result = vec2(0.0, 0.0);
             
             // For each root, we compute the product of (z-root) for all other roots
             for (int i = 0; i < 10; i++) {
-                if (i >= u_root_count) break;
+                if (i >= totalRoots) break;
                 
                 vec2 term = vec2(1.0, 0.0);
                 
                 for (int j = 0; j < 10; j++) {
-                    if (j >= u_root_count) break;
+                    if (j >= totalRoots) break;
                     if (i == j) continue; // Skip the current root
                     
-                    vec2 root = getRoot(j);
+                    vec2 root = getRoot(j, pixelRoot);
                     vec2 factor = vec2(z.x - root.x, z.y - root.y);
                     term = complex_mul(term, factor);
                 }
@@ -338,19 +402,22 @@
         }
         
         // Newton's method: z = z - f(z) / f'(z)
-        vec2 newton_step(vec2 z) {
-            return z - complex_div(f(z), df(z));
+        vec2 newton_step(vec2 z, vec2 pixelRoot) {
+            return z - complex_div(f(z, pixelRoot), df(z, pixelRoot));
         }
         
         // Find the closest root to a point
-        int findClosestRoot(vec2 z) {
+        int findClosestRoot(vec2 z, vec2 pixelRoot) {
             float minDist = 1000.0;
             int closestIndex = 0;
             
+            // Get the total number of roots to consider
+            int totalRoots = u_mandelbrot_mode ? u_root_count + 1 : u_root_count;
+            
             for (int i = 0; i < 10; i++) {
-                if (i >= u_root_count) break;
+                if (i >= totalRoots) break;
                 
-                vec2 root = getRoot(i);
+                vec2 root = getRoot(i, pixelRoot);
                 float dist = length(z - root);
                 
                 if (dist < minDist) {
@@ -387,21 +454,26 @@
                 (uv.y - 0.5) * 4.0 / u_zoom + u_offset.y
             );
             
+            // In Mandelbrot mode, the current pixel position is treated as an additional root
+            vec2 pixelRoot = u_mandelbrot_mode ? z : vec2(0.0, 0.0);
+            
+            // In Mandelbrot mode, we use the average of all roots as the starting point
+            vec2 startingPoint = u_mandelbrot_mode ? calculateAverageRoot(pixelRoot) : z;
+            
             // Newton's method iteration
             const float epsilon = 0.00001;
             int iterations = 0;
-            vec2 z0 = z;
             bool converged = false;
             
             for (int i = 0; i < 200; i++) {
                 if (i >= u_max_iterations) break;
                 
-                vec2 prev_z = z;
-                z = newton_step(z);
+                vec2 prev_z = startingPoint;
+                startingPoint = newton_step(startingPoint, pixelRoot);
                 iterations = i;
                 
                 // Check for convergence
-                if (length(z - prev_z) < epsilon) {
+                if (length(startingPoint - prev_z) < epsilon) {
                     converged = true;
                     break;
                 }
@@ -414,7 +486,7 @@
             }
             
             // Find which root we converged to
-            int rootIndex = findClosestRoot(z);
+            int rootIndex = findClosestRoot(startingPoint, pixelRoot);
             
             // Get color from palette based on root index
             vec3 baseColor = getColor(getWrappedColorIndex(rootIndex));

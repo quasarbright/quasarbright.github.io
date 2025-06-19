@@ -79,6 +79,7 @@ This visualizes newton's fractal, which is a root-finding algorithm.
  Inspired by [3blue1brown's great video on this fractal](https://www.youtube.com/watch?v=-RdOwhmqP5s).
 
 [![newton](./screenshots/newton.png)](./newton-fractal)
+[![newton-mandelbrot](./screenshots/newton-mandelbrot.png)](./newton-fractal)
 
 ## [Double Slit Interference](https://quasarbright.github.io/spring-wave/dist/index.html)
 
