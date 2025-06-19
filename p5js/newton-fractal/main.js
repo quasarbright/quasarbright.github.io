@@ -202,6 +202,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let showRoots = true;
     let shadeIntensity = 1.5;
     let mandelbrotMode = false;
+    let showTrail = true;
+    let trailPoints = [];
     
     // Root dragging state
     let isDraggingRoot = false;
@@ -282,6 +284,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function drawRootIndicators() {
         ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
         
+        // Draw the Newton's method trail
+        drawTrail();
+        
         if (!showRoots) return;
         
         roots.forEach((root, index) => {
@@ -314,6 +319,123 @@ document.addEventListener('DOMContentLoaded', () => {
             real: Math.cos(angle),
             imag: Math.sin(angle)
         };
+    }
+    
+    // Complex number operations for trail calculations
+    function complexMul(a, b) {
+        return {
+            real: a.real * b.real - a.imag * b.imag,
+            imag: a.real * b.imag + a.imag * b.real
+        };
+    }
+    
+    function complexDiv(a, b) {
+        const denom = b.real * b.real + b.imag * b.imag;
+        return {
+            real: (a.real * b.real + a.imag * b.imag) / denom,
+            imag: (a.imag * b.real - a.real * b.imag) / denom
+        };
+    }
+    
+    // Calculate f(z) = product of (z-root) for all roots
+    function f(z) {
+        let result = { real: 1.0, imag: 0.0 }; // Start with 1+0i
+        
+        for (let i = 0; i < roots.length; i++) {
+            const factor = {
+                real: z.real - roots[i].real,
+                imag: z.imag - roots[i].imag
+            };
+            result = complexMul(result, factor);
+        }
+        
+        return result;
+    }
+    
+    // Calculate derivative f'(z) using the product rule
+    function df(z) {
+        // If we have no roots or just one root, the derivative is simple
+        if (roots.length <= 0) return { real: 0.0, imag: 0.0 };
+        if (roots.length == 1) return { real: 1.0, imag: 0.0 };
+        
+        // For multiple roots, we compute the sum of products
+        let result = { real: 0.0, imag: 0.0 };
+        
+        // For each root, we compute the product of (z-root) for all other roots
+        for (let i = 0; i < roots.length; i++) {
+            let term = { real: 1.0, imag: 0.0 };
+            
+            for (let j = 0; j < roots.length; j++) {
+                if (i === j) continue; // Skip the current root
+                
+                const factor = {
+                    real: z.real - roots[j].real,
+                    imag: z.imag - roots[j].imag
+                };
+                term = complexMul(term, factor);
+            }
+            
+            result.real += term.real;
+            result.imag += term.imag;
+        }
+        
+        return result;
+    }
+    
+    // Newton's method: z = z - f(z) / f'(z)
+    function newtonStep(z) {
+        const fz = f(z);
+        const dfz = df(z);
+        const quotient = complexDiv(fz, dfz);
+        
+        return {
+            real: z.real - quotient.real,
+            imag: z.imag - quotient.imag
+        };
+    }
+    
+    // Calculate Newton's method trail for a given starting point
+    function calculateTrail(startPoint) {
+        if (mandelbrotMode) return []; // No trail in mandelbrot mode
+        
+        const trail = [startPoint];
+        let z = { ...startPoint };
+        const epsilon = 0.00001;
+        const maxSteps = 20; // Limit the number of steps to avoid infinite loops
+        
+        for (let i = 0; i < maxSteps; i++) {
+            const prevZ = { ...z };
+            z = newtonStep(z);
+            trail.push(z);
+            
+            // Check for convergence
+            const dx = z.real - prevZ.real;
+            const dy = z.imag - prevZ.imag;
+            if (Math.sqrt(dx * dx + dy * dy) < epsilon) {
+                break;
+            }
+        }
+        
+        return trail;
+    }
+    
+    // Draw the Newton's method trail on the overlay canvas
+    function drawTrail() {
+        if (!showTrail || mandelbrotMode || trailPoints.length < 2) return;
+        
+        ctx.beginPath();
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        
+        const startPixel = complexToPixel(trailPoints[0]);
+        ctx.moveTo(startPixel.x, startPixel.y);
+        
+        for (let i = 1; i < trailPoints.length; i++) {
+            const pixel = complexToPixel(trailPoints[i]);
+            ctx.lineTo(pixel.x, pixel.y);
+        }
+        
+        ctx.stroke();
     }
     
     // Handle UI controls
@@ -367,6 +489,13 @@ document.addEventListener('DOMContentLoaded', () => {
         render();
     });
     
+    // Show trail checkbox
+    document.getElementById('show-trail').addEventListener('change', function(e) {
+        e.stopPropagation();
+        showTrail = this.checked;
+        render();
+    });
+    
     // Handle mouse interactions for panning and root dragging
     let isPanning = false;
     let lastMousePos = { x: 0, y: 0 };
@@ -392,6 +521,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Start panning
             isPanning = true;
             lastMousePos = mousePos;
+            trailPoints = []; // Clear the trail when panning starts
         }
         
         render();
@@ -435,6 +565,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 render();
             }
         }
+        
+        // Calculate and update trail for the current mouse position
+        if (showTrail && !mandelbrotMode && !isPanning && !isDraggingRoot) {
+            const complexPos = pixelToComplex(mousePos);
+            trailPoints = calculateTrail(complexPos);
+            render();
+        }
     });
     
     overlayCanvas.addEventListener('mouseup', () => {
@@ -449,6 +586,7 @@ document.addEventListener('DOMContentLoaded', () => {
         draggedRootIndex = -1;
         hoveredRootIndex = -1;
         overlayCanvas.style.cursor = 'default';
+        trailPoints = []; // Clear the trail when mouse leaves
         render();
     });
     
@@ -475,6 +613,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Adjust offset to zoom around mouse position
         offset.x = complexX - (ndcX * 2.0 * aspect / zoom);
         offset.y = complexY - (ndcY * 2.0 / zoom);
+        
+        // Clear the trail when zooming
+        trailPoints = [];
         
         render();
     });
@@ -510,6 +651,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             touchStartPos = touchPos;
+            
+            // Clear trail on touch interaction
+            trailPoints = [];
         } else if (e.touches.length === 2) {
             // Calculate distance between two touch points
             const dx = e.touches[0].clientX - e.touches[1].clientX;
@@ -520,6 +664,9 @@ document.addEventListener('DOMContentLoaded', () => {
             isPanning = false;
             isDraggingRoot = false;
             draggedRootIndex = -1;
+            
+            // Clear trail on pinch
+            trailPoints = [];
         }
         
         render();
@@ -556,6 +703,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 offset.y += (dy / canvas.height) * 4.0 / zoom;
                 
                 lastMousePos = touchPos;
+                render();
+            } else if (showTrail && !mandelbrotMode) {
+                // Calculate and update trail for the current touch position
+                const complexPos = pixelToComplex(touchPos);
+                trailPoints = calculateTrail(complexPos);
                 render();
             }
         } else if (e.touches.length === 2) {
@@ -600,6 +752,7 @@ document.addEventListener('DOMContentLoaded', () => {
         draggedRootIndex = -1;
         lastTouchDistance = 0;
         touchStartPos = null;
+        trailPoints = []; // Clear the trail when touch ends
     });
     
     // Render function

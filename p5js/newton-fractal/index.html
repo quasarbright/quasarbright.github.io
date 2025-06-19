@@ -189,6 +189,10 @@
             <input type="checkbox" id="mandelbrot-mode">
             <label for="mandelbrot-mode">Mandelbrot Mode</label>
         </div>
+        <div class="checkbox-container">
+            <input type="checkbox" id="show-trail" checked>
+            <label for="show-trail">Show Trail</label>
+        </div>
     </div>
     
     <div id="info">
@@ -212,7 +216,7 @@
             <p>This process brings the point closer to \(f(z) = 0\).</p>
             
             <h3>How This Visualization Works</h3>
-            <p>Each pixel on the screen represents a \(z_0\) point in the complex plane. We apply Newton's method to each point and color it based on which root it converges to, or black if it doesn't converge.</p>
+            <p>Each pixel on the screen represents a \(z_0\) point in the complex plane. We apply Newton's method to each point and color it based on which root it converges to, or black if it doesn't converge. The trail indicates the path of a point starting from the mouse cursor as it undergoes this process. Notice the chaotic behavior near the boundaries of colors.</p>
             
             <p>The polynomial \(f(z)\) being visualized is in the form:</p>
             <div class="math">
@@ -228,7 +232,6 @@
                 <li><strong>Modify Roots:</strong> Drag the colored circles to change the polynomial</li>
                 <li><strong>Add/Remove Roots:</strong> Use the buttons to add or remove roots</li>
                 <li><strong>Reset:</strong> Reset the view or roots to their default state</li>
-                <li><strong>Mandelbrot Mode:</strong> Each pixel becomes a new root, and the color is determined by which root the average of all roots (including the pixel) converges to</li>
             </ul>
             
             <h3>Mandelbrot Mode</h3>
