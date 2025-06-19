@@ -25,20 +25,18 @@ document.addEventListener('DOMContentLoaded', () => {
         return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
     }
     
-    // Pastel color palette - same as in the shader
-    const PASTEL_COLORS = [
-        'rgb(255, 51, 51)',    // Intense Red
-        'rgb(51, 255, 51)',    // Intense Green
-        'rgb(51, 102, 255)',   // Intense Blue
-        'rgb(255, 230, 26)',   // Intense Yellow
-        'rgb(230, 51, 255)',   // Intense Purple
-        'rgb(26, 204, 255)',   // Intense Cyan
-        'rgb(255, 51, 179)',   // Intense Magenta
-        'rgb(153, 255, 26)',   // Intense Lime
-        'rgb(255, 128, 26)',   // Intense Orange
-        'rgb(128, 51, 255)',   // Intense Violet
-        'rgb(26, 179, 153)',   // Intense Teal
-        'rgb(230, 153, 26)'    // Intense Gold
+    // Color palette. Originally from https://www.color-hex.com/color-palette/46007
+    const PALETTE = [
+        'rgb(230, 110, 110)',  // #e66e6e - Brighter Red
+        'rgb(65, 130, 205)',   // #4182cd - Brighter Blue
+        'rgb(40, 190, 110)',   // #28be6e - Brighter Green
+        'rgb(75, 35, 180)',    // #4b23b4 - Brighter Deep Purple
+        'rgb(190, 55, 130)',   // #be3782 - Brighter Magenta
+        'rgb(255, 210, 80)',   // #ffd250 - Brighter Golden Yellow
+        'rgb(80, 210, 220)',   // #50d2dc - Brighter Teal
+        'rgb(140, 100, 225)',  // #8c64e1 - Brighter Lavender
+        'rgb(250, 160, 70)',   // #faa046 - Brighter Orange
+        'rgb(110, 210, 150)'   // #6ed296 - Brighter Mint
     ];
     
     // Initial polynomial roots in the complex plane
@@ -255,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Get root color from palette
     function getRootColor(rootIndex) {
-        return PASTEL_COLORS[rootIndex % PASTEL_COLORS.length];
+        return PALETTE[rootIndex % PALETTE.length];
     }
     
     // Check if a point is near a root

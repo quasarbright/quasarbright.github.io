@@ -326,17 +326,17 @@
         
         // Pastel color palette - defined individually since WebGL 1.0 doesn't support array constructors
         vec3 getColor(int index) {
-            if (index == 0) return vec3(1.0, 0.2, 0.2);   // Intense Red
-            if (index == 1) return vec3(0.2, 1.0, 0.2);   // Intense Green
-            if (index == 2) return vec3(0.2, 0.4, 1.0);   // Intense Blue
-            if (index == 3) return vec3(1.0, 0.9, 0.1);   // Intense Yellow
-            if (index == 4) return vec3(0.9, 0.2, 1.0);   // Intense Purple
-            if (index == 5) return vec3(0.1, 0.8, 1.0);   // Intense Cyan
-            if (index == 6) return vec3(1.0, 0.2, 0.7);   // Intense Magenta
-            if (index == 7) return vec3(0.6, 1.0, 0.1);   // Intense Lime
-            if (index == 8) return vec3(1.0, 0.5, 0.1);   // Intense Orange
-            if (index == 9) return vec3(0.5, 0.2, 1.0);   // Intense Violet
-            return vec3(0.1, 0.7, 0.6);                   // Intense Teal
+            if (index == 0) return vec3(0.90, 0.43, 0.43);   // #e66e6e - Brighter Red
+            if (index == 1) return vec3(0.25, 0.51, 0.80);   // #4182cd - Brighter Blue
+            if (index == 2) return vec3(0.16, 0.75, 0.43);   // #28be6e - Brighter Green
+            if (index == 3) return vec3(0.29, 0.14, 0.71);   // #4b23b4 - Brighter Deep Purple
+            if (index == 4) return vec3(0.75, 0.22, 0.51);   // #be3782 - Brighter Magenta
+            if (index == 5) return vec3(1.00, 0.82, 0.31);   // #ffd250 - Brighter Golden Yellow
+            if (index == 6) return vec3(0.31, 0.82, 0.86);   // #50d2dc - Brighter Teal
+            if (index == 7) return vec3(0.55, 0.39, 0.88);   // #8c64e1 - Brighter Lavender
+            if (index == 8) return vec3(0.98, 0.63, 0.27);   // #faa046 - Brighter Orange
+            if (index == 9) return vec3(0.43, 0.82, 0.59);   // #6ed296 - Brighter Mint
+            return vec3(0.90, 0.43, 0.43);                   // Default to first color
         }
         
         // Complex number operations
@@ -437,8 +437,8 @@
             // WebGL 1.0 doesn't support modulo on integers or while loops with non-constant expressions
             // Replace with a for loop with a fixed iteration count
             for (int i = 0; i < 10; i++) {
-                if (index > 11) {
-                    index = index - 12;
+                if (index > 9) {
+                    index = index - 10;
                 } else {
                     break;
                 }
