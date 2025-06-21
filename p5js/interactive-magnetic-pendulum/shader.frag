@@ -31,6 +31,7 @@ uniform float trap_velocity; // actually velocity squared
 uniform float max_magnetism;
 uniform float shading_strength;
 uniform vec2 magnet_positions[NUM_MAGNETS]; // Positions of the magnets
+uniform vec2 pendulum_center; // Position of the pendulum center
 
 float sigmoid(float x){
   return 1./(1.+exp(-x));
@@ -118,8 +119,8 @@ result simulate_pde(magnet[NUM_MAGNETS] magnets, vec2 position) {
       force += temp;
     }
 
-    // pendulum (hookes' law)
-    force += position * -kp;
+    // pendulum (hookes' law) - now using pendulum_center instead of origin
+    force += (pendulum_center - position) * kp;
 
     acceleration = force;
     velocity += acceleration;

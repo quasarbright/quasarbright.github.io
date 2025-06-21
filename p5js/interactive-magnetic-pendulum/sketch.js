@@ -28,6 +28,11 @@ let isDraggingMagnet = false;
 let magnetRadius = 0.05; // Radius for magnet hitbox in coordinate space
 let hoveredMagnetIndex = -1; // Track which magnet is being hovered over
 
+// Variables for pendulum center dragging
+let isDraggingCenter = false;
+let isHoveringCenter = false;
+let pendulumCenterPos = [0, 0]; // Pendulum center position in coordinate space
+
 // utility functions
 function toCoord(x, y) {
   let width = canvas.width;
@@ -98,7 +103,7 @@ function hsvToRgb(h, s, v) {
   return [r, g, b];
 }
 
-// Initialize magnet positions
+// Initialize magnet positions and pendulum center
 function initMagnetPositions(numMagnets) {
   magnetPositions = [];
   for (let i = 0; i < numMagnets; i++) {
@@ -106,12 +111,23 @@ function initMagnetPositions(numMagnets) {
     const r = 1.0; // Initial radius
     magnetPositions.push([r * Math.cos(angle), r * Math.sin(angle)]);
   }
+  
+  // Initialize pendulum center at the origin
+  pendulumCenterPos = [0, 0];
 }
 
 // Check if a point is inside a magnet
 function isPointInMagnet(point, magnetPos) {
   const dx = point[0] - magnetPos[0];
   const dy = point[1] - magnetPos[1];
+  const distSquared = dx * dx + dy * dy;
+  return distSquared <= magnetRadius * magnetRadius;
+}
+
+// Check if a point is inside the pendulum center
+function isPointInCenter(point) {
+  const dx = point[0] - pendulumCenterPos[0];
+  const dy = point[1] - pendulumCenterPos[1];
   const distSquared = dx * dx + dy * dy;
   return distSquared <= magnetRadius * magnetRadius;
 }
@@ -143,7 +159,8 @@ let shaderData = {
     // Flatten the array of positions
     const flatPositions = magnetPositions.flat();
     gl.uniform2fv(loc, flatPositions);
-  }
+  },
+  'pendulum_center': (gl, loc) => gl.uniform2fv(loc, pendulumCenterPos) // Position of the pendulum center
 };
 
 // canvas event listeners for interactivity
@@ -155,6 +172,12 @@ canvas.addEventListener('mousedown', (e) => {
   const x = e.clientX - rect.left;
   const y = canvas.height - (e.clientY - rect.top);
   const clickCoord = toCoord(x, y);
+  
+  // Check if we clicked on the pendulum center
+  if (isPointInCenter(clickCoord)) {
+    isDraggingCenter = true;
+    return;
+  }
   
   // Check if we clicked on a magnet
   const magnetIndex = findClickedMagnet(clickCoord);
@@ -174,6 +197,9 @@ canvas.addEventListener('mouseup', (e) => {
     isDraggingMagnet = false;
     selectedMagnetIndex = -1;
   }
+  if (isDraggingCenter) {
+    isDraggingCenter = false;
+  }
   if (e.button === 0) {
     dragging = false;
   }
@@ -183,17 +209,21 @@ canvas.addEventListener('mousemove', (e) => {
   const rect = canvas.getBoundingClientRect();
   const x = e.clientX - rect.left;
   const y = canvas.height - (e.clientY - rect.top);
-  
-  // Check if we're hovering over a magnet
   const mouseCoord = toCoord(x, y);
-  hoveredMagnetIndex = findClickedMagnet(mouseCoord);
+  
+  // Check if we're hovering over the pendulum center or a magnet
+  isHoveringCenter = isPointInCenter(mouseCoord);
+  hoveredMagnetIndex = isHoveringCenter ? -1 : findClickedMagnet(mouseCoord);
   
   // Update cursor style based on hover state
-  canvas.style.cursor = hoveredMagnetIndex !== -1 ? 'pointer' : 'default';
+  canvas.style.cursor = (hoveredMagnetIndex !== -1 || isHoveringCenter) ? 'pointer' : 'default';
   
-  if (isDraggingMagnet && selectedMagnetIndex !== -1) {
+  if (isDraggingCenter) {
+    // Update the position of the pendulum center
+    pendulumCenterPos = mouseCoord;
+  } else if (isDraggingMagnet && selectedMagnetIndex !== -1) {
     // Update the position of the selected magnet
-    magnetPositions[selectedMagnetIndex] = toCoord(x, y);
+    magnetPositions[selectedMagnetIndex] = mouseCoord;
   } else if (dragging) {
     const curr = [x, y];
     const dx = curr[0] - dragStart[0];
@@ -252,10 +282,12 @@ function drawMagnetDots(gl) {
     attribute vec3 a_color;
     attribute float a_index;
     attribute float a_isHovered;
+    attribute float a_isCenter;
     uniform vec2 u_resolution;
     varying vec3 v_color;
     varying float v_index;
     varying float v_isHovered;
+    varying float v_isCenter;
     
     void main() {
       // Convert from world space to clip space
@@ -272,6 +304,7 @@ function drawMagnetDots(gl) {
       v_color = a_color;
       v_index = a_index;
       v_isHovered = a_isHovered;
+      v_isCenter = a_isCenter;
     }
   `);
   
@@ -280,6 +313,7 @@ function drawMagnetDots(gl) {
     varying vec3 v_color;
     varying float v_index;
     varying float v_isHovered;
+    varying float v_isCenter;
     
     void main() {
       float dist = length(gl_PointCoord - vec2(0.5));
@@ -292,8 +326,8 @@ function drawMagnetDots(gl) {
         // White outline
         gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
       } else {
-        // Magnet color
-        gl_FragColor = vec4(v_color, 1.0);
+        // Magnet color or gray for center
+        gl_FragColor = v_isCenter > 0.5 ? vec4(0.5, 0.5, 0.5, 1.0) : vec4(v_color, 1.0);
       }
     }
   `);
@@ -306,6 +340,7 @@ function drawMagnetDots(gl) {
   const colorLocation = gl.getAttribLocation(dotProgram, "a_color");
   const indexLocation = gl.getAttribLocation(dotProgram, "a_index");
   const isHoveredLocation = gl.getAttribLocation(dotProgram, "a_isHovered");
+  const isCenterLocation = gl.getAttribLocation(dotProgram, "a_isCenter");
   const resolutionLocation = gl.getUniformLocation(dotProgram, "u_resolution");
   
   gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height);
@@ -319,7 +354,9 @@ function drawMagnetDots(gl) {
   const colors = [];
   const indices = [];
   const hoverStates = [];
+  const centerStates = [];
   
+  // Add all magnet positions
   for (let i = 0; i < magnetPositions.length; i++) {
     const pos = magnetPositions[i];
     const screenPos = coordToScreen(pos[0], pos[1]);
@@ -334,7 +371,18 @@ function drawMagnetDots(gl) {
     
     // Store hover state (1.0 if hovered, 0.0 if not)
     hoverStates.push(i === hoveredMagnetIndex ? 1.0 : 0.0);
+    
+    // Not a center dot
+    centerStates.push(0.0);
   }
+  
+  // Add pendulum center position
+  const centerScreenPos = coordToScreen(pendulumCenterPos[0], pendulumCenterPos[1]);
+  screenPositions.push(centerScreenPos[0], centerScreenPos[1]);
+  colors.push(0.5, 0.5, 0.5); // Gray color
+  indices.push(-1); // Special index for center
+  hoverStates.push(isHoveringCenter ? 1.0 : 0.0);
+  centerStates.push(1.0); // This is a center dot
   
   // Upload positions
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -363,8 +411,15 @@ function drawMagnetDots(gl) {
   gl.enableVertexAttribArray(isHoveredLocation);
   gl.vertexAttribPointer(isHoveredLocation, 1, gl.FLOAT, false, 0, 0);
   
-  // Draw the points
-  gl.drawArrays(gl.POINTS, 0, magnetPositions.length);
+  // Upload center states
+  const centerBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, centerBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(centerStates), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(isCenterLocation);
+  gl.vertexAttribPointer(isCenterLocation, 1, gl.FLOAT, false, 0, 0);
+  
+  // Draw the points (magnets + center)
+  gl.drawArrays(gl.POINTS, 0, magnetPositions.length + 1);
   
   // Restore WebGL state
   gl.disable(gl.BLEND);
