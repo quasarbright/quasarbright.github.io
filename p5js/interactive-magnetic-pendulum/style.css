@@ -1,0 +1,35 @@
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  display: flex;
+
+  /* This centers our sketch horizontally. */
+  justify-content: center;
+
+  /* This centers our sketch vertically. */
+  align-items: center;
+}
+
+.inputs,
+canvas {
+  position: absolute;
+}
+
+.inputs {
+  /* min-width: 100px; */
+  max-width: 20%;
+  font-family: monospace;
+  color: white;
+  background-color: rgba(0, 0, 0, .8);
+  padding: 2px;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+}
+
+.slider {
+  width: 99%;
+} 
