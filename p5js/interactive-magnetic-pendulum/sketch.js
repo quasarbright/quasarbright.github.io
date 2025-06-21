@@ -26,6 +26,7 @@ let magnetPositions = [];
 let selectedMagnetIndex = -1;
 let isDraggingMagnet = false;
 let magnetRadius = 0.05; // Radius for magnet hitbox in coordinate space
+let hoveredMagnetIndex = -1; // Track which magnet is being hovered over
 
 // utility functions
 function toCoord(x, y) {
@@ -68,6 +69,33 @@ function coordToScreen(coordX, coordY) {
 
 function lerp(a, b, r) {
   return a + r * (b - a);
+}
+
+// Generate magnet colors using HSV
+function getMagnetColor(index, total) {
+  const hue = index / total;
+  return hsvToRgb(hue, 1.0, 1.0);
+}
+
+// HSV to RGB conversion
+function hsvToRgb(h, s, v) {
+  let r, g, b;
+  const i = Math.floor(h * 6);
+  const f = h * 6 - i;
+  const p = v * (1 - s);
+  const q = v * (1 - f * s);
+  const t = v * (1 - (1 - f) * s);
+  
+  switch (i % 6) {
+    case 0: r = v; g = t; b = p; break;
+    case 1: r = q; g = v; b = p; break;
+    case 2: r = p; g = v; b = t; break;
+    case 3: r = p; g = q; b = v; break;
+    case 4: r = t; g = p; b = v; break;
+    case 5: r = v; g = p; b = q; break;
+  }
+  
+  return [r, g, b];
 }
 
 // Initialize magnet positions
@@ -156,6 +184,13 @@ canvas.addEventListener('mousemove', (e) => {
   const x = e.clientX - rect.left;
   const y = canvas.height - (e.clientY - rect.top);
   
+  // Check if we're hovering over a magnet
+  const mouseCoord = toCoord(x, y);
+  hoveredMagnetIndex = findClickedMagnet(mouseCoord);
+  
+  // Update cursor style based on hover state
+  canvas.style.cursor = hoveredMagnetIndex !== -1 ? 'pointer' : 'default';
+  
   if (isDraggingMagnet && selectedMagnetIndex !== -1) {
     // Update the position of the selected magnet
     magnetPositions[selectedMagnetIndex] = toCoord(x, y);
@@ -205,7 +240,7 @@ function loadTextFile(url, callback) {
   request.send();
 }
 
-// Draw white dots for the magnets
+// Draw colored dots with white outlines for the magnets
 function drawMagnetDots(gl) {
   // Save WebGL state
   gl.enable(gl.BLEND);
@@ -214,7 +249,13 @@ function drawMagnetDots(gl) {
   // Create a simple program for drawing points
   const vertexShader = createShader(gl, gl.VERTEX_SHADER, `
     attribute vec2 a_position;
+    attribute vec3 a_color;
+    attribute float a_index;
+    attribute float a_isHovered;
     uniform vec2 u_resolution;
+    varying vec3 v_color;
+    varying float v_index;
+    varying float v_isHovered;
     
     void main() {
       // Convert from world space to clip space
@@ -224,17 +265,36 @@ function drawMagnetDots(gl) {
       // Flip Y in clip space
       clipSpace.y = -clipSpace.y;
       gl_Position = vec4(clipSpace, 0, 1);
-      gl_PointSize = 10.0;
+      
+      // Make hovered dots bigger
+      gl_PointSize = 24.0 + a_isHovered * 8.0; // 24px normal, 32px when hovered
+      
+      v_color = a_color;
+      v_index = a_index;
+      v_isHovered = a_isHovered;
     }
   `);
   
   const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, `
     precision mediump float;
+    varying vec3 v_color;
+    varying float v_index;
+    varying float v_isHovered;
     
     void main() {
       float dist = length(gl_PointCoord - vec2(0.5));
-      if (dist > 0.5) discard;
-      gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+      if (dist > 0.5) discard; // Outside the circle
+      
+      // Adjust outline thickness based on hover state
+      float outlineThreshold = v_isHovered > 0.5 ? 0.32 : 0.35;
+      
+      if (dist > outlineThreshold) {
+        // White outline
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+      } else {
+        // Magnet color
+        gl_FragColor = vec4(v_color, 1.0);
+      }
     }
   `);
   
@@ -243,27 +303,65 @@ function drawMagnetDots(gl) {
   
   // Set up attributes and uniforms
   const positionLocation = gl.getAttribLocation(dotProgram, "a_position");
+  const colorLocation = gl.getAttribLocation(dotProgram, "a_color");
+  const indexLocation = gl.getAttribLocation(dotProgram, "a_index");
+  const isHoveredLocation = gl.getAttribLocation(dotProgram, "a_isHovered");
   const resolutionLocation = gl.getUniformLocation(dotProgram, "u_resolution");
   
   gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height);
   
-  // Create and fill position buffer with screen coordinates
+  // Create position buffer
   const positionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   
   // Convert magnet positions from coordinate space to screen space
   const screenPositions = [];
+  const colors = [];
+  const indices = [];
+  const hoverStates = [];
+  
   for (let i = 0; i < magnetPositions.length; i++) {
     const pos = magnetPositions[i];
     const screenPos = coordToScreen(pos[0], pos[1]);
     screenPositions.push(screenPos[0], screenPos[1]);
+    
+    // Get color for this magnet
+    const color = getMagnetColor(i, magnetPositions.length);
+    colors.push(color[0], color[1], color[2]);
+    
+    // Store the index
+    indices.push(i);
+    
+    // Store hover state (1.0 if hovered, 0.0 if not)
+    hoverStates.push(i === hoveredMagnetIndex ? 1.0 : 0.0);
   }
   
+  // Upload positions
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(screenPositions), gl.STATIC_DRAW);
-  
-  // Set up the position attribute
   gl.enableVertexAttribArray(positionLocation);
   gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+  
+  // Upload colors
+  const colorBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(colorLocation);
+  gl.vertexAttribPointer(colorLocation, 3, gl.FLOAT, false, 0, 0);
+  
+  // Upload indices
+  const indexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, indexBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(indices), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(indexLocation);
+  gl.vertexAttribPointer(indexLocation, 1, gl.FLOAT, false, 0, 0);
+  
+  // Upload hover states
+  const hoverBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, hoverBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(hoverStates), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(isHoveredLocation);
+  gl.vertexAttribPointer(isHoveredLocation, 1, gl.FLOAT, false, 0, 0);
   
   // Draw the points
   gl.drawArrays(gl.POINTS, 0, magnetPositions.length);
