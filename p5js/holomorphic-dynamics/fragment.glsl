@@ -5,27 +5,95 @@ uniform int u_maxIterations;
 uniform vec2 u_center;
 uniform float u_zoom;
 
+// Implement hyperbolic functions that aren't built into GLSL
+float sinh(float x) {
+    return (exp(x) - exp(-x)) / 2.0;
+}
+
+float cosh(float x) {
+    return (exp(x) + exp(-x)) / 2.0;
+}
+
 // Complex number operations
-vec2 complex_mul(vec2 a, vec2 b) {
+vec2 cmul(vec2 a, vec2 b) {
     return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
 }
 
-vec2 complex_square(vec2 z) {
+vec2 cdiv(vec2 a, vec2 b) {
+    float denominator = b.x * b.x + b.y * b.y;
+    return vec2(
+        (a.x * b.x + a.y * b.y) / denominator,
+        (a.y * b.x - a.x * b.y) / denominator
+    );
+}
+
+vec2 csquare(vec2 z) {
     return vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y);
 }
 
-// Complex function to iterate (can be replaced with other functions)
+vec2 ccube(vec2 z) {
+    // z^3 = (x + yi)^3 = x^3 - 3xy^2 + i(3x^2y - y^3)
+    float x2 = z.x * z.x;
+    float y2 = z.y * z.y;
+    return vec2(
+        z.x * (x2 - 3.0 * y2),
+        z.y * (3.0 * x2 - y2)
+    );
+}
+
+vec2 cpow(vec2 z, float n) {
+    // Only works for integer powers, approximation for other powers
+    if (n == 2.0) return csquare(z);
+    if (n == 3.0) return ccube(z);
+    if (n == 1.0) return z;
+    if (n == 0.0) return vec2(1.0, 0.0);
+    
+    // For higher integer powers, use repeated multiplication
+    vec2 result = vec2(1.0, 0.0);
+    for (int i = 0; i < 10; i++) {
+        if (float(i) >= n) break;
+        result = cmul(result, z);
+    }
+    return result;
+}
+
+vec2 csin(vec2 z) {
+    // sin(x + yi) = sin(x)cosh(y) + i cos(x)sinh(y)
+    return vec2(
+        sin(z.x) * cosh(z.y),
+        cos(z.x) * sinh(z.y)
+    );
+}
+
+vec2 ccos(vec2 z) {
+    // cos(x + yi) = cos(x)cosh(y) - i sin(x)sinh(y)
+    return vec2(
+        cos(z.x) * cosh(z.y),
+        -sin(z.x) * sinh(z.y)
+    );
+}
+
+vec2 cexp(vec2 z) {
+    // exp(x + yi) = e^x * (cos(y) + i sin(y))
+    float expx = exp(z.x);
+    return vec2(
+        expx * cos(z.y),
+        expx * sin(z.y)
+    );
+}
+
+vec2 clog(vec2 z) {
+    // log(z) = log|z| + i*arg(z)
+    float magnitude = length(z);
+    return vec2(
+        log(magnitude),
+        atan(z.y, z.x)
+    );
+}
+
+// USER_FUNCTION_PLACEHOLDER
 vec2 complex_function(vec2 z, vec2 c) {
-    // Mandelbrot: f(z) = z^2 + c
-    return complex_square(z) + c;
-    
-    // For other functions, uncomment and modify as needed:
-    // Example - Burning Ship:
-    // return vec2(abs(z.x) * abs(z.x) - abs(z.y) * abs(z.y), 2.0 * abs(z.x) * abs(z.y)) + c;
-    
-    // Example - Cubic Mandelbrot:
-    // vec2 z2 = complex_square(z);
-    // return vec2(z.x * z2.x - z.y * z2.y, z.x * z2.y + z.y * z2.x) + c;
+    return csquare(z) + c; // Default Mandelbrot function
 }
 
 vec3 hsv2rgb(vec3 c) {
@@ -78,7 +146,7 @@ void main() {
         gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); // Black
     } else {
         // Color based on iteration count
-        float hue = fract(normalizedIter * 10.0); // Multiply for more color bands
+        float hue = fract(normalizedIter * 3.0); // Multiply for more color bands
         float saturation = 0.8;
         float value = escaped ? 1.0 : 0.7; // Slightly dimmer for non-escaping points
         

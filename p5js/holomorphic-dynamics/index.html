@@ -10,16 +10,138 @@
             padding: 0;
             overflow: hidden;
             background-color: #000;
+            font-family: 'Arial', sans-serif;
         }
         canvas {
             display: block;
             width: 100vw;
             height: 100vh;
         }
+        #controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+            color: white;
+            z-index: 100;
+            max-width: 350px;
+        }
+        #function-input {
+            width: 100%;
+            height: 60px;
+            padding: 5px;
+            margin-bottom: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #555;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            margin-top: 5px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #function-examples {
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        .example {
+            cursor: pointer;
+            text-decoration: underline;
+            margin-right: 8px;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        #debug {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-family: monospace;
+            background-color: rgba(0,0,0,0.8);
+            padding: 10px;
+            font-size: 14px;
+            max-width: 400px;
+            border-radius: 5px;
+            border: 1px solid #555;
+            z-index: 1000;
+        }
+        #info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: white;
+            font-family: monospace;
+            background-color: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .instructions {
+            font-size: 12px;
+            margin-top: 10px;
+            color: #ccc;
+            line-height: 1.4;
+        }
     </style>
+    <!-- Include math.js for parsing mathematical expressions -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
 </head>
 <body>
     <canvas id="glCanvas"></canvas>
+    
+    <div id="controls">
+        <div>
+            <label for="function-input">Enter GLSL function code:</label>
+            <textarea id="function-input" placeholder="return csquare(z) + c;">return csquare(z) + c;</textarea>
+            <button id="apply-function">Apply Function</button>
+        </div>
+        <div class="instructions">
+            <p>Enter GLSL code that returns a vec2 result. Your function should use the variables <code>z</code> and <code>c</code> which are both vec2 (complex numbers).</p>
+            <p>Available complex functions:</p>
+            <ul>
+                <li><code>csquare(z)</code> : z²</li>
+                <li><code>ccube(z)</code> : z³</li>
+                <li><code>cpow(z, n)</code> : z^n</li>
+                <li><code>cmul(a, b)</code> : a * b</li>
+                <li><code>cdiv(a, b)</code> : a / b</li>
+                <li><code>csin(z)</code>, <code>ccos(z)</code></li>
+                <li><code>cexp(z)</code>, <code>clog(z)</code></li>
+            </ul>
+        </div>
+        <div id="function-examples">
+            Examples:
+            <div>
+                <span class="example" data-func="return csquare(z) + c;">z² + c</span>
+                <span class="example" data-func="return ccube(z) + c;">z³ + c</span>
+                <span class="example" data-func="return csquare(z) + csquare(c);">z² + c²</span>
+                <span class="example" data-func="return csin(z) + c;">sin(z) + c</span>
+                <span class="example" data-func="return csquare(z) + csin(c);">z² + sin(c)</span>
+                <span class="example" data-func="return cmul(z, c) + z;">z * c + z</span>
+                <span class="example" data-func="vec2 absZ = vec2(abs(z.x), abs(z.y)); return csquare(absZ) + c;">Burning Ship</span>
+                <span class="example" data-func="return cpow(z, 4.0) + c;">z⁴ + c</span>
+                <span class="example" data-func="return cdiv(csin(z), ccos(z)) + c;">tan(z) + c</span>
+            </div>
+        </div>
+    </div>
+    
+    <div id="debug">Debug info:</div>
+    
+    <div id="info">
+        Mouse: drag to pan, wheel to zoom<br>
+        +/-: increase/decrease iterations (current: <span id="iterationCount">100</span>)<br>
+        R: reset view | D: toggle debug info
+    </div>
+    
     <script type="module" src="script.js"></script>
 </body>
 </html> 

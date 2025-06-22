@@ -1,6 +1,6 @@
 # Complex Function Visualization
 
-A WebGL-based visualization of complex functions using vanilla JavaScript. Currently set up to visualize the Mandelbrot set, but designed to be easily extended to other complex functions.
+A WebGL-based visualization of complex functions using vanilla JavaScript. Allows you to directly enter GLSL code to visualize arbitrary complex functions in the complex plane.
 
 ## Features
 
@@ -8,7 +8,30 @@ A WebGL-based visualization of complex functions using vanilla JavaScript. Curre
 - Interactive panning and zooming
 - Coloring based on iteration count
 - Adjustable iteration count
-- No escape magnitude check, making it suitable for arbitrary complex functions
+- **Direct GLSL code input** - Enter your own complex functions as GLSL code
+- Runtime shader generation with no page reload required
+
+## How It Works
+
+This visualization uses WebGL shaders to compute complex function iterations directly on the GPU. The key innovation is that you can enter your own GLSL code directly in the interface, and the application will:
+
+1. Validate your GLSL code
+2. Generate a new shader with your function
+3. Compile and run it in real-time
+
+This allows for extremely flexible and powerful function definitions without being limited to predefined patterns.
+
+## Available Complex Functions
+
+The following complex number operations are available in the shader:
+
+- `complex_square(z)` - z²
+- `complex_cube(z)` - z³
+- `complex_pow(z, n)` - z^n (for integer n)
+- `complex_mul(a, b)` - Complex multiplication
+- `complex_div(a, b)` - Complex division
+- `complex_sin(z)`, `complex_cos(z)` - Complex trigonometric functions
+- `complex_exp(z)`, `complex_log(z)` - Complex exponential and logarithm
 
 ## How to Run
 
@@ -48,27 +71,34 @@ Then open your browser and navigate to the URL shown in the terminal.
 - **Mouse wheel**: Zoom in/out
 - **+/-**: Increase/decrease maximum iterations
 - **R**: Reset view
+- **D**: Toggle debug info
+- **Function input**: Enter GLSL code and click "Apply Function"
+
+## Example Functions
+
+Here are some example functions you can try:
+
+```glsl
+// Mandelbrot set
+return complex_square(z) + c;
+
+// Cubic Mandelbrot
+return complex_cube(z) + c;
+
+// Burning Ship fractal
+vec2 absZ = vec2(abs(z.x), abs(z.y));
+return complex_square(absZ) + c;
+
+// Complex sine
+return complex_sin(z) + c;
+
+// Complex tangent
+return complex_div(complex_sin(z), complex_cos(z)) + c;
+```
 
 ## Technical Details
 
 - Uses WebGL for GPU-accelerated rendering
 - Implements complex function iteration in GLSL
-- Coloring is based on iteration count
-- No escape magnitude check is used, making it suitable for arbitrary complex functions
-
-## Extending with Other Complex Functions
-
-The visualization is designed to be easily extended to other complex functions. To change the function:
-
-1. Edit the `complex_function` function in `fragment.glsl`
-2. Uncomment or add your desired function implementation
-3. Reload the page to see the new visualization
-
-Examples of other functions you can try:
-- Burning Ship fractal
-- Cubic Mandelbrot
-- Julia sets
-- Tricorn (Mandelbar)
-- Newton fractals
-
-See `complexFunctions.js` for JavaScript implementations of these functions that can be adapted for GLSL. 
+- Runtime shader generation and compilation
+- Supports arbitrary complex functions 
