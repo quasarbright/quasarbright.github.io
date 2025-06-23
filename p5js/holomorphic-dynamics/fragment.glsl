@@ -5,6 +5,7 @@ uniform int u_maxIterations;
 uniform vec2 u_center;
 uniform float u_zoom;
 uniform vec2 u_initialZ; // Initial value of z (z_0)
+uniform vec2 u_paramC;   // Parameter c for Julia sets
 
 // Implement hyperbolic functions that aren't built into GLSL
 float sinh(float x) {
@@ -108,16 +109,32 @@ void main() {
     
     // Map to complex plane
     float aspectRatio = u_resolution.x / u_resolution.y;
-    vec2 c = u_center + (st * 2.0 - 1.0) * vec2(aspectRatio, 1.0) / u_zoom;
+    vec2 pixelPos = u_center + (st * 2.0 - 1.0) * vec2(aspectRatio, 1.0) / u_zoom;
     
-    // Initialize with user-provided initial value
-    vec2 z = u_initialZ;
+    // Determine z and c based on the current mode
+    // This will be controlled by JavaScript
+    vec2 z, c;
+    
+    // We're using the same shader for both Mandelbrot and Julia sets
+    // The JavaScript code will pass the appropriate values based on the UI controls
+    z = u_initialZ;  // If z is in "pixel" mode, JS will set this to vec2(0,0)
+    c = u_paramC;    // If c is in "pixel" mode, JS will set this to vec2(0,0)
+    
+    // If z is in "pixel" mode, use the pixel position
+    if (z == vec2(0.0, 0.0)) {
+        z = pixelPos;
+    }
+    
+    // If c is in "pixel" mode, use the pixel position
+    if (c == vec2(0.0, 0.0)) {
+        c = pixelPos;
+    }
+    
     float zMagnitude = 0.0;
     int iterations = 0;
     bool escaped = false;
     
     // Iterate and track if the point escapes
-    // We'll still check for escape to determine coloring, but we won't use a fixed radius
     for (int i = 0; i < 10000; i++) {
         if (i >= u_maxIterations) break;
         
@@ -128,8 +145,6 @@ void main() {
         zMagnitude = length(z);
         
         // Check if the magnitude is getting very large
-        // This helps distinguish between points that are definitely escaping
-        // and those that might be in the set
         if (zMagnitude > 1000.0) {
             escaped = true;
             break;

@@ -99,6 +99,47 @@
             color: #ccc;
             line-height: 1.4;
         }
+        .parameter-controls {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #555;
+        }
+        .parameter-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .parameter-name {
+            font-weight: bold;
+            width: 30px;
+        }
+        .radio-group {
+            display: flex;
+            gap: 10px;
+        }
+        .radio-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .radio-label input {
+            margin-right: 4px;
+        }
+        .dot-color {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 5px;
+            border: 1px solid white;
+        }
+        .dot-z {
+            background-color: #00AAFF;
+        }
+        .dot-c {
+            background-color: #FF5500;
+        }
     </style>
     <!-- Include math.js for parsing mathematical expressions -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
@@ -113,6 +154,41 @@
             <textarea id="function-input" placeholder="return csquare(z) + c;">return csquare(z) + c;</textarea>
             <button id="apply-function">Apply Function</button>
         </div>
+        
+        <div class="parameter-controls">
+            <h4 style="margin-top: 0;">Parameter Controls</h4>
+            <div class="parameter-row">
+                <span class="parameter-name">z₀:</span>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="z-control" value="dot" checked>
+                        Dot <span class="dot-color dot-z"></span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="z-control" value="pixel">
+                        Pixel
+                    </label>
+                </div>
+            </div>
+            <div class="parameter-row">
+                <span class="parameter-name">c:</span>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="c-control" value="dot">
+                        Dot <span class="dot-color dot-c"></span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="c-control" value="pixel" checked>
+                        Pixel
+                    </label>
+                </div>
+            </div>
+            <div style="font-size: 11px; margin-top: 5px;">
+                <p>Mandelbrot set: c=pixel, z₀=dot (default)</p>
+                <p>Julia set: z₀=pixel, c=dot</p>
+            </div>
+        </div>
+        
         <div class="instructions">
             <p>Enter GLSL code that returns a vec2 result. Your function should use the variables <code>z</code> and <code>c</code> which are both vec2 (complex numbers).</p>
             <p>Available complex functions:</p>
@@ -146,7 +222,7 @@
     
     <div id="info">
         Mouse: drag to pan, wheel to zoom<br>
-        Drag the black dot (z₀) to set initial value<br>
+        Drag colored dots to set parameter values<br>
         +/-: increase/decrease iterations (current: <span id="iterationCount">100</span>)<br>
         R: reset view | D: toggle debug info
     </div>

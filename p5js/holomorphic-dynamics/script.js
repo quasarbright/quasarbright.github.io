@@ -8,6 +8,7 @@ let maxIterationsUniformLocation;
 let centerUniformLocation;
 let zoomUniformLocation;
 let initialZUniformLocation;
+let paramCUniformLocation;
 
 // Visualization parameters
 let maxIterations = 100;
@@ -15,12 +16,18 @@ let center = [-0.5, 0.0];
 let zoom = 1.0;
 let currentFunctionGLSL = "return csquare(z) + c;"; // Default Mandelbrot function
 let initialZ = [0.0, 0.0]; // Initial value of z (z_0)
+let paramC = [0.0, 0.0];   // Parameter c for Julia sets
+
+// Parameter control modes
+let zControlMode = "dot";  // "dot" or "pixel"
+let cControlMode = "pixel"; // "dot" or "pixel"
 
 // Mouse interaction
 let isDragging = false;
 let lastMousePos = { x: 0, y: 0 };
 let isDraggingDot = false;
 let isHoveringDot = false;
+let activeDot = null; // Which dot is being dragged: "z" or "c"
 
 // Canvas elements
 let glCanvas;
@@ -176,6 +183,7 @@ function createShaderProgram(vertexSource, fragmentSource) {
     centerUniformLocation = gl.getUniformLocation(program, 'u_center');
     zoomUniformLocation = gl.getUniformLocation(program, 'u_zoom');
     initialZUniformLocation = gl.getUniformLocation(program, 'u_initialZ');
+    paramCUniformLocation = gl.getUniformLocation(program, 'u_paramC');
     
     return true;
 }
@@ -261,42 +269,70 @@ function complexToScreen(cx, cy, canvas) {
     };
 }
 
-// Check if a point is near the dot
-function isNearDot(x, y) {
-    const dotScreenPos = complexToScreen(initialZ[0], initialZ[1], glCanvas);
+// Check if a point is near a dot
+function isNearDot(x, y, param) {
+    let dotPos;
+    if (param === 'z') {
+        dotPos = complexToScreen(initialZ[0], initialZ[1], glCanvas);
+    } else if (param === 'c') {
+        dotPos = complexToScreen(paramC[0], paramC[1], glCanvas);
+    }
+    
+    if (!dotPos) return false;
+    
     const distance = Math.sqrt(
-        Math.pow(x - dotScreenPos.x, 2) + 
-        Math.pow(y - dotScreenPos.y, 2)
+        Math.pow(x - dotPos.x, 2) + 
+        Math.pow(y - dotPos.y, 2)
     );
     
     // Consider the point near if it's within 15 pixels of the dot
     return distance < 15;
 }
 
-// Draw the z_0 dot on the overlay canvas
-function drawDot() {
+// Draw dots on the overlay canvas
+function drawDots() {
     // Clear the overlay canvas
     overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
     
-    // Convert complex coordinates to screen coordinates
-    const dotScreenPos = complexToScreen(initialZ[0], initialZ[1], glCanvas);
+    // Draw z₀ dot if in dot mode
+    if (zControlMode === "dot") {
+        const zDotScreenPos = complexToScreen(initialZ[0], initialZ[1], glCanvas);
+        const zDotRadius = (isHoveringDot && activeDot === "z") ? 8 : 6;
+        
+        // Draw the dot with white outline
+        overlayCtx.beginPath();
+        overlayCtx.arc(zDotScreenPos.x, zDotScreenPos.y, zDotRadius, 0, Math.PI * 2);
+        overlayCtx.fillStyle = '#00AAFF'; // Blue
+        overlayCtx.fill();
+        overlayCtx.lineWidth = 2;
+        overlayCtx.strokeStyle = 'white';
+        overlayCtx.stroke();
+        
+        // Add a label
+        overlayCtx.fillStyle = 'white';
+        overlayCtx.font = '12px Arial';
+        overlayCtx.fillText('z₀', zDotScreenPos.x + zDotRadius + 2, zDotScreenPos.y - zDotRadius - 2);
+    }
     
-    // Determine dot size based on hover state
-    const dotRadius = isHoveringDot ? 8 : 6;
-    
-    // Draw the dot with white outline
-    overlayCtx.beginPath();
-    overlayCtx.arc(dotScreenPos.x, dotScreenPos.y, dotRadius, 0, Math.PI * 2);
-    overlayCtx.fillStyle = 'black';
-    overlayCtx.fill();
-    overlayCtx.lineWidth = 2;
-    overlayCtx.strokeStyle = 'white';
-    overlayCtx.stroke();
-    
-    // Add a label
-    overlayCtx.fillStyle = 'white';
-    overlayCtx.font = '12px Arial';
-    overlayCtx.fillText('z₀', dotScreenPos.x + dotRadius + 2, dotScreenPos.y - dotRadius - 2);
+    // Draw c dot if in dot mode
+    if (cControlMode === "dot") {
+        const cDotScreenPos = complexToScreen(paramC[0], paramC[1], glCanvas);
+        const cDotRadius = (isHoveringDot && activeDot === "c") ? 8 : 6;
+        
+        // Draw the dot with white outline
+        overlayCtx.beginPath();
+        overlayCtx.arc(cDotScreenPos.x, cDotScreenPos.y, cDotRadius, 0, Math.PI * 2);
+        overlayCtx.fillStyle = '#FF5500'; // Orange
+        overlayCtx.fill();
+        overlayCtx.lineWidth = 2;
+        overlayCtx.strokeStyle = 'white';
+        overlayCtx.stroke();
+        
+        // Add a label
+        overlayCtx.fillStyle = 'white';
+        overlayCtx.font = '12px Arial';
+        overlayCtx.fillText('c', cDotScreenPos.x + cDotRadius + 2, cDotScreenPos.y - cDotRadius - 2);
+    }
 }
 
 // Resize both canvases
@@ -369,6 +405,9 @@ async function init() {
         // Set up function input
         setupFunctionInput();
         
+        // Set up parameter controls
+        setupParameterControls();
+        
         // Initial resize
         resizeCanvases();
         
@@ -435,13 +474,38 @@ function setupFunctionInput() {
     });
 }
 
+// Set up parameter controls
+function setupParameterControls() {
+    // Z control radio buttons
+    const zRadios = document.querySelectorAll('input[name="z-control"]');
+    zRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            zControlMode = radio.value;
+            draw();
+        });
+    });
+    
+    // C control radio buttons
+    const cRadios = document.querySelectorAll('input[name="c-control"]');
+    cRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            cControlMode = radio.value;
+            draw();
+        });
+    });
+}
+
 // Set up mouse events
 function setupMouseEvents() {
     // Use the glCanvas for events, but we'll draw the dot on the overlayCanvas
     glCanvas.addEventListener('mousedown', (e) => {
-        // Check if we're clicking on the dot
-        if (isNearDot(e.clientX, e.clientY)) {
+        // Check if we're clicking on a dot
+        if (zControlMode === "dot" && isNearDot(e.clientX, e.clientY, "z")) {
             isDraggingDot = true;
+            activeDot = "z";
+        } else if (cControlMode === "dot" && isNearDot(e.clientX, e.clientY, "c")) {
+            isDraggingDot = true;
+            activeDot = "c";
         } else {
             isDragging = true;
         }
@@ -451,19 +515,28 @@ function setupMouseEvents() {
     glCanvas.addEventListener('mouseup', () => {
         isDragging = false;
         isDraggingDot = false;
+        activeDot = null;
     });
     
     glCanvas.addEventListener('mouseleave', () => {
         isDragging = false;
         isDraggingDot = false;
         isHoveringDot = false;
-        drawDot(); // Update dot appearance
+        activeDot = null;
+        drawDots(); // Update dot appearance
     });
     
     glCanvas.addEventListener('mousemove', (e) => {
         if (isDraggingDot) {
-            // Update initialZ based on mouse position
-            initialZ = screenToComplex(e.clientX, e.clientY, glCanvas);
+            // Update the appropriate parameter based on mouse position
+            const complexCoords = screenToComplex(e.clientX, e.clientY, glCanvas);
+            
+            if (activeDot === "z") {
+                initialZ = complexCoords;
+            } else if (activeDot === "c") {
+                paramC = complexCoords;
+            }
+            
             draw();
         } else if (isDragging) {
             const dx = e.clientX - lastMousePos.x;
@@ -476,13 +549,27 @@ function setupMouseEvents() {
             lastMousePos = { x: e.clientX, y: e.clientY };
             draw();
         } else {
-            // Check if we're hovering over the dot
+            // Check if we're hovering over a dot
             const wasHovering = isHoveringDot;
-            isHoveringDot = isNearDot(e.clientX, e.clientY);
+            const oldActiveDot = activeDot;
+            
+            isHoveringDot = false;
+            activeDot = null;
+            
+            // Check z dot first
+            if (zControlMode === "dot" && isNearDot(e.clientX, e.clientY, "z")) {
+                isHoveringDot = true;
+                activeDot = "z";
+            } 
+            // Then check c dot
+            else if (cControlMode === "dot" && isNearDot(e.clientX, e.clientY, "c")) {
+                isHoveringDot = true;
+                activeDot = "c";
+            }
             
             // Only redraw if hover state changed
-            if (wasHovering !== isHoveringDot) {
-                drawDot();
+            if (wasHovering !== isHoveringDot || oldActiveDot !== activeDot) {
+                drawDots();
             }
         }
     });
@@ -531,11 +618,46 @@ function setupMouseEvents() {
                 zoom = 1.0;
                 maxIterations = 100;
                 initialZ = [0.0, 0.0]; // Reset initial Z
+                paramC = [0.0, 0.0];   // Reset parameter C
                 document.getElementById('iterationCount').textContent = maxIterations;
                 break;
             case 'd':
                 // Toggle debug info
                 debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+                break;
+            case 'j':
+                // Quick switch to Julia set mode
+                if (cControlMode !== "dot") {
+                    // Save current pixel position as c parameter
+                    const centerOfScreen = screenToComplex(glCanvas.width/2, glCanvas.height/2, glCanvas);
+                    paramC = centerOfScreen;
+                    
+                    // Update radio buttons
+                    document.querySelector('input[name="z-control"][value="pixel"]').checked = true;
+                    document.querySelector('input[name="c-control"][value="dot"]').checked = true;
+                    
+                    // Update control modes
+                    zControlMode = "pixel";
+                    cControlMode = "dot";
+                    
+                    draw();
+                    showInfo('Switched to Julia set mode');
+                }
+                break;
+            case 'm':
+                // Quick switch to Mandelbrot set mode
+                if (zControlMode !== "dot") {
+                    // Update radio buttons
+                    document.querySelector('input[name="z-control"][value="dot"]').checked = true;
+                    document.querySelector('input[name="c-control"][value="pixel"]').checked = true;
+                    
+                    // Update control modes
+                    zControlMode = "dot";
+                    cControlMode = "pixel";
+                    
+                    draw();
+                    showInfo('Switched to Mandelbrot set mode');
+                }
                 break;
             default:
                 return;
@@ -543,6 +665,25 @@ function setupMouseEvents() {
         
         draw();
     });
+}
+
+// Get shader uniform values based on control modes
+function getShaderParameters() {
+    // For the shader, we need to pass either the actual value or (0,0) to indicate "use pixel position"
+    let shaderInitialZ = [0.0, 0.0];
+    let shaderParamC = [0.0, 0.0];
+    
+    // If z is controlled by a dot, pass the actual value
+    if (zControlMode === "dot") {
+        shaderInitialZ = initialZ;
+    }
+    
+    // If c is controlled by a dot, pass the actual value
+    if (cControlMode === "dot") {
+        shaderParamC = paramC;
+    }
+    
+    return { shaderInitialZ, shaderParamC };
 }
 
 // Draw the complex function visualization
@@ -559,27 +700,38 @@ function draw() {
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
         gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
         
+        // Get shader parameters based on control modes
+        const { shaderInitialZ, shaderParamC } = getShaderParameters();
+        
         // Set uniforms
         gl.uniform2f(resolutionUniformLocation, glCanvas.width, glCanvas.height);
         gl.uniform1i(maxIterationsUniformLocation, maxIterations);
         gl.uniform2f(centerUniformLocation, center[0], center[1]);
         gl.uniform1f(zoomUniformLocation, zoom);
-        gl.uniform2f(initialZUniformLocation, initialZ[0], initialZ[1]);
+        gl.uniform2f(initialZUniformLocation, shaderInitialZ[0], shaderInitialZ[1]);
+        gl.uniform2f(paramCUniformLocation, shaderParamC[0], shaderParamC[1]);
         
         // Draw
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         
-        // Draw the z_0 dot on the overlay canvas
-        drawDot();
+        // Draw the parameter dots on the overlay canvas
+        drawDots();
         
         // Update debug info if visible
         if (debugInfo.style.display !== 'none' && debugInfo.style.color !== 'red') {
+            const modeDescription = 
+                zControlMode === "dot" && cControlMode === "pixel" ? "Mandelbrot Set" :
+                zControlMode === "pixel" && cControlMode === "dot" ? "Julia Set" :
+                "Custom Mode";
+            
             debugInfo.innerHTML = `Debug info:<br>
+                Mode: ${modeDescription}<br>
                 Resolution: ${glCanvas.width}x${glCanvas.height}<br>
                 Center: (${center[0].toFixed(4)}, ${center[1].toFixed(4)})<br>
                 Zoom: ${zoom.toFixed(2)}<br>
                 Max Iterations: ${maxIterations}<br>
-                Initial Z: (${initialZ[0].toFixed(4)}, ${initialZ[1].toFixed(4)})<br>
+                Initial Z: (${initialZ[0].toFixed(4)}, ${initialZ[1].toFixed(4)}) [${zControlMode}]<br>
+                Param C: (${paramC[0].toFixed(4)}, ${paramC[1].toFixed(4)}) [${cControlMode}]<br>
                 Current Function: ${currentFunctionGLSL}`;
         }
     } catch (error) {
