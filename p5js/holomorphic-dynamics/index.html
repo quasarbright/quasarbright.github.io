@@ -16,6 +16,13 @@
             display: block;
             width: 100vw;
             height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #overlayCanvas {
+            z-index: 10;
+            pointer-events: none; /* Allow events to pass through to the WebGL canvas */
         }
         #controls {
             position: absolute;
@@ -98,6 +105,7 @@
 </head>
 <body>
     <canvas id="glCanvas"></canvas>
+    <canvas id="overlayCanvas"></canvas>
     
     <div id="controls">
         <div>
@@ -138,6 +146,7 @@
     
     <div id="info">
         Mouse: drag to pan, wheel to zoom<br>
+        Drag the black dot (z₀) to set initial value<br>
         +/-: increase/decrease iterations (current: <span id="iterationCount">100</span>)<br>
         R: reset view | D: toggle debug info
     </div>

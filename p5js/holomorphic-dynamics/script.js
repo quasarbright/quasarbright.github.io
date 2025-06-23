@@ -7,16 +7,25 @@ let resolutionUniformLocation;
 let maxIterationsUniformLocation;
 let centerUniformLocation;
 let zoomUniformLocation;
+let initialZUniformLocation;
 
 // Visualization parameters
 let maxIterations = 100;
 let center = [-0.5, 0.0];
 let zoom = 1.0;
 let currentFunctionGLSL = "return csquare(z) + c;"; // Default Mandelbrot function
+let initialZ = [0.0, 0.0]; // Initial value of z (z_0)
 
 // Mouse interaction
 let isDragging = false;
 let lastMousePos = { x: 0, y: 0 };
+let isDraggingDot = false;
+let isHoveringDot = false;
+
+// Canvas elements
+let glCanvas;
+let overlayCanvas;
+let overlayCtx;
 
 // Debug info
 let debugInfo;
@@ -166,6 +175,7 @@ function createShaderProgram(vertexSource, fragmentSource) {
     maxIterationsUniformLocation = gl.getUniformLocation(program, 'u_maxIterations');
     centerUniformLocation = gl.getUniformLocation(program, 'u_center');
     zoomUniformLocation = gl.getUniformLocation(program, 'u_zoom');
+    initialZUniformLocation = gl.getUniformLocation(program, 'u_initialZ');
     
     return true;
 }
@@ -223,27 +233,106 @@ async function loadShaderFromFile(url) {
     }
 }
 
+// Convert screen coordinates to complex plane coordinates
+function screenToComplex(x, y, canvas) {
+    const aspectRatio = canvas.width / canvas.height;
+    // Note: y is inverted because screen coordinates have origin at top-left
+    const normalizedX = (x / canvas.width) * 2 - 1;
+    const normalizedY = 1 - (y / canvas.height) * 2; // Invert Y
+    
+    return [
+        center[0] + normalizedX * aspectRatio / zoom,
+        center[1] + normalizedY / zoom
+    ];
+}
+
+// Convert complex plane coordinates to screen coordinates
+function complexToScreen(cx, cy, canvas) {
+    const aspectRatio = canvas.width / canvas.height;
+    
+    // Convert from complex coordinates to normalized device coordinates
+    const normalizedX = ((cx - center[0]) * zoom / aspectRatio + 1) / 2;
+    const normalizedY = ((cy - center[1]) * zoom + 1) / 2;
+    
+    // Convert to screen coordinates (invert Y)
+    return {
+        x: normalizedX * canvas.width,
+        y: (1 - normalizedY) * canvas.height // Invert Y
+    };
+}
+
+// Check if a point is near the dot
+function isNearDot(x, y) {
+    const dotScreenPos = complexToScreen(initialZ[0], initialZ[1], glCanvas);
+    const distance = Math.sqrt(
+        Math.pow(x - dotScreenPos.x, 2) + 
+        Math.pow(y - dotScreenPos.y, 2)
+    );
+    
+    // Consider the point near if it's within 15 pixels of the dot
+    return distance < 15;
+}
+
+// Draw the z_0 dot on the overlay canvas
+function drawDot() {
+    // Clear the overlay canvas
+    overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    
+    // Convert complex coordinates to screen coordinates
+    const dotScreenPos = complexToScreen(initialZ[0], initialZ[1], glCanvas);
+    
+    // Determine dot size based on hover state
+    const dotRadius = isHoveringDot ? 8 : 6;
+    
+    // Draw the dot with white outline
+    overlayCtx.beginPath();
+    overlayCtx.arc(dotScreenPos.x, dotScreenPos.y, dotRadius, 0, Math.PI * 2);
+    overlayCtx.fillStyle = 'black';
+    overlayCtx.fill();
+    overlayCtx.lineWidth = 2;
+    overlayCtx.strokeStyle = 'white';
+    overlayCtx.stroke();
+    
+    // Add a label
+    overlayCtx.fillStyle = 'white';
+    overlayCtx.font = '12px Arial';
+    overlayCtx.fillText('z₀', dotScreenPos.x + dotRadius + 2, dotScreenPos.y - dotRadius - 2);
+}
+
+// Resize both canvases
+function resizeCanvases() {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    
+    // Resize WebGL canvas
+    glCanvas.width = width;
+    glCanvas.height = height;
+    
+    // Resize overlay canvas
+    overlayCanvas.width = width;
+    overlayCanvas.height = height;
+    
+    if (gl) {
+        gl.viewport(0, 0, width, height);
+        draw();
+    }
+}
+
 // Initialize WebGL
 async function init() {
     // Set up debug info
     debugInfo = document.getElementById('debug');
     
-    const canvas = document.getElementById('glCanvas');
+    // Get canvases
+    glCanvas = document.getElementById('glCanvas');
+    overlayCanvas = document.getElementById('overlayCanvas');
+    overlayCtx = overlayCanvas.getContext('2d');
     
     // Handle canvas resize
-    function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        if (gl) {
-            gl.viewport(0, 0, canvas.width, canvas.height);
-            draw();
-        }
-    }
-    
-    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('resize', resizeCanvases);
     
     // Initialize WebGL context
-    gl = canvas.getContext('webgl', { preserveDrawingBuffer: true });
+    gl = glCanvas.getContext('webgl', { preserveDrawingBuffer: true });
     if (!gl) {
         showError('WebGL not supported in your browser');
         return;
@@ -275,13 +364,13 @@ async function init() {
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
         
         // Set up mouse events for interaction
-        setupMouseEvents(canvas);
+        setupMouseEvents();
         
         // Set up function input
         setupFunctionInput();
         
         // Initial resize
-        resizeCanvas();
+        resizeCanvases();
         
         // Get the initial function from the input field
         const functionInput = document.getElementById('function-input');
@@ -347,44 +436,67 @@ function setupFunctionInput() {
 }
 
 // Set up mouse events
-function setupMouseEvents(canvas) {
-    canvas.addEventListener('mousedown', (e) => {
-        isDragging = true;
+function setupMouseEvents() {
+    // Use the glCanvas for events, but we'll draw the dot on the overlayCanvas
+    glCanvas.addEventListener('mousedown', (e) => {
+        // Check if we're clicking on the dot
+        if (isNearDot(e.clientX, e.clientY)) {
+            isDraggingDot = true;
+        } else {
+            isDragging = true;
+        }
         lastMousePos = { x: e.clientX, y: e.clientY };
     });
     
-    canvas.addEventListener('mouseup', () => {
+    glCanvas.addEventListener('mouseup', () => {
         isDragging = false;
+        isDraggingDot = false;
     });
     
-    canvas.addEventListener('mouseleave', () => {
+    glCanvas.addEventListener('mouseleave', () => {
         isDragging = false;
+        isDraggingDot = false;
+        isHoveringDot = false;
+        drawDot(); // Update dot appearance
     });
     
-    canvas.addEventListener('mousemove', (e) => {
-        if (isDragging) {
+    glCanvas.addEventListener('mousemove', (e) => {
+        if (isDraggingDot) {
+            // Update initialZ based on mouse position
+            initialZ = screenToComplex(e.clientX, e.clientY, glCanvas);
+            draw();
+        } else if (isDragging) {
             const dx = e.clientX - lastMousePos.x;
             const dy = e.clientY - lastMousePos.y;
             
-            const aspectRatio = canvas.width / canvas.height;
-            center[0] -= dx / zoom / canvas.width * 2 * aspectRatio;
-            center[1] += dy / zoom / canvas.height * 2;
+            const aspectRatio = glCanvas.width / glCanvas.height;
+            center[0] -= dx / zoom / glCanvas.width * 2 * aspectRatio;
+            center[1] += dy / zoom / glCanvas.height * 2;
             
             lastMousePos = { x: e.clientX, y: e.clientY };
             draw();
+        } else {
+            // Check if we're hovering over the dot
+            const wasHovering = isHoveringDot;
+            isHoveringDot = isNearDot(e.clientX, e.clientY);
+            
+            // Only redraw if hover state changed
+            if (wasHovering !== isHoveringDot) {
+                drawDot();
+            }
         }
     });
     
-    canvas.addEventListener('wheel', (e) => {
+    glCanvas.addEventListener('wheel', (e) => {
         e.preventDefault();
         
         // Get mouse position in normalized device coordinates
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = (e.clientX - rect.left) / canvas.width * 2 - 1;
-        const mouseY = 1 - (e.clientY - rect.top) / canvas.height * 2;
+        const rect = glCanvas.getBoundingClientRect();
+        const mouseX = (e.clientX - rect.left) / glCanvas.width * 2 - 1;
+        const mouseY = 1 - (e.clientY - rect.top) / glCanvas.height * 2;
         
         // Convert to complex plane coordinates
-        const aspectRatio = canvas.width / canvas.height;
+        const aspectRatio = glCanvas.width / glCanvas.height;
         const mouseComplex = [
             center[0] + mouseX * aspectRatio / zoom,
             center[1] + mouseY / zoom
@@ -418,6 +530,7 @@ function setupMouseEvents(canvas) {
                 center = [-0.5, 0.0];
                 zoom = 1.0;
                 maxIterations = 100;
+                initialZ = [0.0, 0.0]; // Reset initial Z
                 document.getElementById('iterationCount').textContent = maxIterations;
                 break;
             case 'd':
@@ -435,6 +548,7 @@ function setupMouseEvents(canvas) {
 // Draw the complex function visualization
 function draw() {
     try {
+        // Draw the fractal on the WebGL canvas
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
         
@@ -446,21 +560,26 @@ function draw() {
         gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
         
         // Set uniforms
-        gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
+        gl.uniform2f(resolutionUniformLocation, glCanvas.width, glCanvas.height);
         gl.uniform1i(maxIterationsUniformLocation, maxIterations);
         gl.uniform2f(centerUniformLocation, center[0], center[1]);
         gl.uniform1f(zoomUniformLocation, zoom);
+        gl.uniform2f(initialZUniformLocation, initialZ[0], initialZ[1]);
         
         // Draw
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         
+        // Draw the z_0 dot on the overlay canvas
+        drawDot();
+        
         // Update debug info if visible
         if (debugInfo.style.display !== 'none' && debugInfo.style.color !== 'red') {
             debugInfo.innerHTML = `Debug info:<br>
-                Resolution: ${gl.canvas.width}x${gl.canvas.height}<br>
+                Resolution: ${glCanvas.width}x${glCanvas.height}<br>
                 Center: (${center[0].toFixed(4)}, ${center[1].toFixed(4)})<br>
                 Zoom: ${zoom.toFixed(2)}<br>
                 Max Iterations: ${maxIterations}<br>
+                Initial Z: (${initialZ[0].toFixed(4)}, ${initialZ[1].toFixed(4)})<br>
                 Current Function: ${currentFunctionGLSL}`;
         }
     } catch (error) {

@@ -4,6 +4,7 @@ uniform vec2 u_resolution;
 uniform int u_maxIterations;
 uniform vec2 u_center;
 uniform float u_zoom;
+uniform vec2 u_initialZ; // Initial value of z (z_0)
 
 // Implement hyperbolic functions that aren't built into GLSL
 float sinh(float x) {
@@ -109,8 +110,8 @@ void main() {
     float aspectRatio = u_resolution.x / u_resolution.y;
     vec2 c = u_center + (st * 2.0 - 1.0) * vec2(aspectRatio, 1.0) / u_zoom;
     
-    // Initialize
-    vec2 z = vec2(0.0);
+    // Initialize with user-provided initial value
+    vec2 z = u_initialZ;
     float zMagnitude = 0.0;
     int iterations = 0;
     bool escaped = false;
