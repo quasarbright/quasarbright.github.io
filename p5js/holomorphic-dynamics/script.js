@@ -10,6 +10,10 @@ let zoomUniformLocation;
 let initialZUniformLocation;
 let paramCUniformLocation;
 
+// Custom parameters storage
+let customParameters = {};
+let customParameterUniformLocations = {};
+
 // Visualization parameters
 let maxIterations = 100;
 let center = [-0.5, 0.0];
@@ -21,13 +25,16 @@ let paramC = [0.0, 0.0];   // Parameter c for Julia sets
 // Parameter control modes
 let zControlMode = "dot";  // "dot" or "pixel"
 let cControlMode = "pixel"; // "dot" or "pixel"
+// Custom parameter control modes
+let customParameterModes = {}; // name -> "dot", "pixel", or "fixed"
+let customParameterColors = {}; // name -> color for dot
 
 // Mouse interaction
 let isDragging = false;
 let lastMousePos = { x: 0, y: 0 };
 let isDraggingDot = false;
 let isHoveringDot = false;
-let activeDot = null; // Which dot is being dragged: "z" or "c"
+let activeDot = null; // Which dot is being dragged: "z", "c", or a custom parameter name
 
 // Canvas elements
 let glCanvas;
@@ -92,17 +99,43 @@ function applyFunctionToShader(functionCode) {
         };
     }
     
+    // Check if the function is trying to use custom parameters that don't exist
+    const paramWarning = checkForMissingParameters(functionCode);
+    
     try {
-        // Create the full function code
-        const fullFunctionCode = `vec2 complex_function(vec2 z, vec2 c) {\n    ${functionCode}\n}`;
+        // Generate custom parameter uniforms
+        let customUniformsCode = '';
+        Object.keys(customParameters).forEach(paramName => {
+            customUniformsCode += `uniform vec2 u_param_${paramName};\n`;
+        });
+        
+        // Create a preamble that defines local variables for each custom parameter
+        let paramPreamble = '';
+        Object.keys(customParameters).forEach(paramName => {
+            paramPreamble += `    vec2 ${paramName} = u_param_${paramName};\n`;
+        });
+        
+        // Create the full function code with parameter preamble
+        const fullFunctionCode = `vec2 complex_function(vec2 z, vec2 c) {\n${paramPreamble}    ${functionCode}\n}`;
         
         console.log("Full function code:", fullFunctionCode);
         
-        // Find the function placeholder in the template
-        const placeholderRegex = /\/\/ USER_FUNCTION_PLACEHOLDER\s*vec2 complex_function\(vec2 z, vec2 c\) \{[\s\S]*?\}/;
-        const match = fragmentShaderSourceTemplate.match(placeholderRegex);
+        // Start with a fresh copy of the template
+        let fragmentShaderSource = fragmentShaderSourceTemplate;
         
-        if (!match) {
+        // Insert custom uniforms at the custom uniforms placeholder
+        if (customUniformsCode) {
+            fragmentShaderSource = fragmentShaderSource.replace(
+                '// CUSTOM_UNIFORMS_PLACEHOLDER',
+                customUniformsCode
+            );
+        }
+        
+        // Find the function placeholder in the modified shader
+        const placeholderRegex = /\/\/ USER_FUNCTION_PLACEHOLDER\s*vec2 complex_function\(vec2 z, vec2 c\) \{[\s\S]*?\}/;
+        const placeholderMatch = fragmentShaderSource.match(placeholderRegex);
+        
+        if (!placeholderMatch) {
             console.error("Could not find function placeholder in shader template");
             return {
                 success: false,
@@ -110,10 +143,8 @@ function applyFunctionToShader(functionCode) {
             };
         }
         
-        console.log("Found placeholder:", match[0]);
-        
-        // Replace the placeholder in the fragment shader
-        const fragmentShaderSource = fragmentShaderSourceTemplate.replace(
+        // Replace the placeholder with the user function
+        fragmentShaderSource = fragmentShaderSource.replace(
             placeholderRegex,
             fullFunctionCode
         );
@@ -125,6 +156,12 @@ function applyFunctionToShader(functionCode) {
         
         if (success) {
             currentFunctionGLSL = functionCode;
+            
+            // Show parameter warning if needed
+            if (paramWarning) {
+                showInfo(paramWarning);
+            }
+            
             return {
                 success: true,
                 message: "Function applied successfully"
@@ -142,6 +179,46 @@ function applyFunctionToShader(functionCode) {
             message: "Error: " + error.message
         };
     }
+}
+
+// Check if the function is trying to use custom parameters that don't exist
+function checkForMissingParameters(functionCode) {
+    // Look for both direct parameter names and u_param_ references
+    const directParamRegex = /\b(\w+)\b/g;
+    const prefixedParamRegex = /u_param_(\w+)/g;
+    const usedParams = new Set();
+    let match;
+    
+    // Check for direct parameter names (excluding common GLSL keywords and function names)
+    const keywords = new Set([
+        'return', 'vec2', 'vec3', 'vec4', 'float', 'int', 'bool',
+        'if', 'else', 'for', 'while', 'break', 'continue',
+        'z', 'c', 'abs', 'sin', 'cos', 'tan', 'exp', 'log',
+        'length', 'dot', 'cross', 'normalize', 'mix', 'clamp',
+        'min', 'max', 'fract', 'floor', 'ceil', 'mod',
+        'csquare', 'ccube', 'cpow', 'cmul', 'cdiv', 'csin', 'ccos', 'cexp', 'clog'
+    ]);
+    
+    // We don't need to check for direct parameter names anymore since we're adding them as local variables
+    
+    // Check for prefixed parameter references
+    while ((match = prefixedParamRegex.exec(functionCode)) !== null) {
+        usedParams.add(match[1]);
+    }
+    
+    // Check if all used parameters exist
+    const missingParams = [];
+    usedParams.forEach(param => {
+        if (!customParameters[param]) {
+            missingParams.push(param);
+        }
+    });
+    
+    if (missingParams.length > 0) {
+        return `Warning: You're using parameter(s) that haven't been added yet: ${missingParams.join(', ')}. Add them in the Parameters tab.`;
+    }
+    
+    return null;
 }
 
 // Create shader program
@@ -185,6 +262,17 @@ function createShaderProgram(vertexSource, fragmentSource) {
     initialZUniformLocation = gl.getUniformLocation(program, 'u_initialZ');
     paramCUniformLocation = gl.getUniformLocation(program, 'u_paramC');
     
+    // Get custom parameter uniform locations
+    customParameterUniformLocations = {};
+    Object.keys(customParameters).forEach(paramName => {
+        const location = gl.getUniformLocation(program, `u_param_${paramName}`);
+        if (location !== null) {
+            customParameterUniformLocations[paramName] = location;
+        } else {
+            console.warn(`Could not find uniform location for parameter ${paramName}`);
+        }
+    });
+    
     return true;
 }
 
@@ -197,6 +285,7 @@ function loadShader(gl, type, source) {
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
         const error = gl.getShaderInfoLog(shader);
         console.error('Shader compilation error:', error);
+        console.error('Shader source:', source);
         showError('Shader compilation error: ' + error);
         gl.deleteShader(shader);
         return null;
@@ -276,6 +365,10 @@ function isNearDot(x, y, param) {
         dotPos = complexToScreen(initialZ[0], initialZ[1], glCanvas);
     } else if (param === 'c') {
         dotPos = complexToScreen(paramC[0], paramC[1], glCanvas);
+    } else if (customParameters[param] && customParameterModes[param] === 'dot') {
+        // Check for custom parameter dots
+        const customParam = customParameters[param];
+        dotPos = complexToScreen(customParam[0], customParam[1], glCanvas);
     }
     
     if (!dotPos) return false;
@@ -333,6 +426,51 @@ function drawDots() {
         overlayCtx.font = '12px Arial';
         overlayCtx.fillText('c', cDotScreenPos.x + cDotRadius + 2, cDotScreenPos.y - cDotRadius - 2);
     }
+    
+    // Draw custom parameter dots if in dot mode
+    Object.keys(customParameters).forEach(paramName => {
+        if (customParameterModes[paramName] === 'dot') {
+            const param = customParameters[paramName];
+            const dotScreenPos = complexToScreen(param[0], param[1], glCanvas);
+            const dotRadius = (isHoveringDot && activeDot === paramName) ? 8 : 6;
+            const dotColor = customParameterColors[paramName] || getRandomColor(paramName);
+            
+            // Draw the dot with white outline
+            overlayCtx.beginPath();
+            overlayCtx.arc(dotScreenPos.x, dotScreenPos.y, dotRadius, 0, Math.PI * 2);
+            overlayCtx.fillStyle = dotColor;
+            overlayCtx.fill();
+            overlayCtx.lineWidth = 2;
+            overlayCtx.strokeStyle = 'white';
+            overlayCtx.stroke();
+            
+            // Add a label
+            overlayCtx.fillStyle = 'white';
+            overlayCtx.font = '12px Arial';
+            overlayCtx.fillText(paramName, dotScreenPos.x + dotRadius + 2, dotScreenPos.y - dotRadius - 2);
+        }
+    });
+}
+
+// Generate a deterministic color from a string
+function getRandomColor(str) {
+    // Simple hash function
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    
+    // Convert to hex color
+    let color = '#';
+    for (let i = 0; i < 3; i++) {
+        const value = (hash >> (i * 8)) & 0xFF;
+        color += ('00' + value.toString(16)).substr(-2);
+    }
+    
+    // Store the color for future use
+    customParameterColors[str] = color;
+    
+    return color;
 }
 
 // Resize both canvases
@@ -399,6 +537,9 @@ async function init() {
         
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
         
+        // Set up tab switching
+        setupTabSwitching();
+        
         // Set up mouse events for interaction
         setupMouseEvents();
         
@@ -430,6 +571,30 @@ async function init() {
         console.error('Initialization error:', error);
         showError('Initialization error: ' + error.message);
     }
+}
+
+// Set up tab switching
+function setupTabSwitching() {
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Remove active class from all tabs and content
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Add active class to clicked tab
+            tab.classList.add('active');
+            
+            // Add active class to corresponding content
+            const tabId = tab.getAttribute('data-tab');
+            const content = document.getElementById(tabId + '-tab');
+            if (content) {
+                content.classList.add('active');
+            }
+        });
+    });
 }
 
 // Set up function input
@@ -465,13 +630,7 @@ function setupFunctionInput() {
     });
     
     // Set up example functions
-    examples.forEach(example => {
-        example.addEventListener('click', () => {
-            const funcCode = example.dataset.func;
-            functionInput.value = funcCode;
-            applyButton.click();
-        });
-    });
+    updateFunctionExamples();
 }
 
 // Set up parameter controls
@@ -493,6 +652,118 @@ function setupParameterControls() {
             draw();
         });
     });
+    
+    // Custom parameters
+    setupCustomParameterControls();
+}
+
+// Set up custom parameter controls
+function setupCustomParameterControls() {
+    const container = document.getElementById('custom-params-container');
+    const newParamName = document.getElementById('new-param-name');
+    const newParamValueReal = document.getElementById('new-param-value-real');
+    const newParamValueImag = document.getElementById('new-param-value-imag');
+    const addParamBtn = document.getElementById('add-param-btn');
+    
+    // Function to refresh the custom parameters UI
+    function refreshCustomParamsUI() {
+        // Clear the container
+        container.innerHTML = '';
+        
+        // Add each parameter
+        Object.keys(customParameters).forEach(paramName => {
+            const param = customParameters[paramName];
+            const mode = customParameterModes[paramName] || 'fixed';
+            const color = customParameterColors[paramName] || getRandomColor(paramName);
+            
+            const paramRow = document.createElement('div');
+            paramRow.className = 'custom-param-row';
+            
+            // Parameter name
+            const nameElem = document.createElement('div');
+            nameElem.className = 'custom-param-name';
+            nameElem.textContent = paramName;
+            paramRow.appendChild(nameElem);
+            
+            // Parameter value
+            const valueElem = document.createElement('div');
+            valueElem.className = 'custom-param-value';
+            valueElem.textContent = `(${param[0].toFixed(2)}, ${param[1].toFixed(2)})`;
+            paramRow.appendChild(valueElem);
+            
+            // Parameter controls
+            const controlsElem = document.createElement('div');
+            controlsElem.className = 'custom-param-controls';
+            
+            // Mode selection
+            const modeSelect = document.createElement('select');
+            modeSelect.innerHTML = `
+                <option value="fixed" ${mode === 'fixed' ? 'selected' : ''}>Fixed</option>
+                <option value="dot" ${mode === 'dot' ? 'selected' : ''}>Dot</option>
+                <option value="pixel" ${mode === 'pixel' ? 'selected' : ''}>Pixel</option>
+            `;
+            modeSelect.addEventListener('change', () => {
+                customParameterModes[paramName] = modeSelect.value;
+                draw();
+            });
+            controlsElem.appendChild(modeSelect);
+            
+            // Color indicator for dot mode
+            const colorIndicator = document.createElement('div');
+            colorIndicator.className = 'color-indicator';
+            colorIndicator.style.backgroundColor = color;
+            colorIndicator.style.display = mode === 'dot' ? 'inline-block' : 'none';
+            controlsElem.appendChild(colorIndicator);
+            
+            // Update modeSelect display when mode changes
+            modeSelect.addEventListener('change', () => {
+                colorIndicator.style.display = modeSelect.value === 'dot' ? 'inline-block' : 'none';
+            });
+            
+            // Delete button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'small-button';
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.addEventListener('click', () => {
+                delete customParameters[paramName];
+                delete customParameterModes[paramName];
+                delete customParameterColors[paramName];
+                refreshCustomParamsUI();
+                applyFunctionToShader(currentFunctionGLSL);
+            });
+            controlsElem.appendChild(deleteBtn);
+            
+            paramRow.appendChild(controlsElem);
+            container.appendChild(paramRow);
+        });
+    }
+    
+    // Add new parameter button
+    addParamBtn.addEventListener('click', () => {
+        const name = newParamName.value.trim();
+        const realValue = parseFloat(newParamValueReal.value) || 0;
+        const imagValue = parseFloat(newParamValueImag.value) || 0;
+        
+        if (name) {
+            // Add the parameter
+            customParameters[name] = [realValue, imagValue];
+            customParameterModes[name] = 'fixed'; // Default to fixed mode
+            
+            // Clear the input fields
+            newParamName.value = '';
+            newParamValueReal.value = '';
+            newParamValueImag.value = '';
+            
+            // Refresh the UI
+            refreshCustomParamsUI();
+            
+            // Recompile the shader with the new parameter
+            applyFunctionToShader(currentFunctionGLSL);
+        }
+    });
+    
+    // Initial UI refresh
+    refreshCustomParamsUI();
 }
 
 // Set up mouse events
@@ -507,7 +778,19 @@ function setupMouseEvents() {
             isDraggingDot = true;
             activeDot = "c";
         } else {
-            isDragging = true;
+            // Check for custom parameter dots
+            let foundCustomDot = false;
+            Object.keys(customParameters).forEach(paramName => {
+                if (customParameterModes[paramName] === 'dot' && isNearDot(e.clientX, e.clientY, paramName)) {
+                    isDraggingDot = true;
+                    activeDot = paramName;
+                    foundCustomDot = true;
+                }
+            });
+            
+            if (!foundCustomDot) {
+                isDragging = true;
+            }
         }
         lastMousePos = { x: e.clientX, y: e.clientY };
     });
@@ -535,6 +818,9 @@ function setupMouseEvents() {
                 initialZ = complexCoords;
             } else if (activeDot === "c") {
                 paramC = complexCoords;
+            } else if (customParameters[activeDot]) {
+                // Update custom parameter
+                customParameters[activeDot] = complexCoords;
             }
             
             draw();
@@ -565,6 +851,15 @@ function setupMouseEvents() {
             else if (cControlMode === "dot" && isNearDot(e.clientX, e.clientY, "c")) {
                 isHoveringDot = true;
                 activeDot = "c";
+            }
+            // Then check custom parameter dots
+            else {
+                Object.keys(customParameters).forEach(paramName => {
+                    if (customParameterModes[paramName] === 'dot' && isNearDot(e.clientX, e.clientY, paramName)) {
+                        isHoveringDot = true;
+                        activeDot = paramName;
+                    }
+                });
             }
             
             // Only redraw if hover state changed
@@ -667,6 +962,24 @@ function setupMouseEvents() {
     });
 }
 
+// Get custom parameter value based on its control mode
+function getCustomParameterValue(paramName) {
+    const mode = customParameterModes[paramName] || 'fixed';
+    
+    if (mode === 'fixed') {
+        // Return the stored value
+        return customParameters[paramName] || [0.0, 0.0];
+    } else if (mode === 'pixel') {
+        // For pixel mode, return [0,0] to indicate that the shader should use pixel position
+        return [0.0, 0.0];
+    } else if (mode === 'dot') {
+        // For dot mode, return the stored value
+        return customParameters[paramName] || [0.0, 0.0];
+    }
+    
+    return [0.0, 0.0];
+}
+
 // Get shader uniform values based on control modes
 function getShaderParameters() {
     // For the shader, we need to pass either the actual value or (0,0) to indicate "use pixel position"
@@ -711,6 +1024,15 @@ function draw() {
         gl.uniform2f(initialZUniformLocation, shaderInitialZ[0], shaderInitialZ[1]);
         gl.uniform2f(paramCUniformLocation, shaderParamC[0], shaderParamC[1]);
         
+        // Set custom parameter uniforms
+        Object.keys(customParameterUniformLocations).forEach(paramName => {
+            const location = customParameterUniformLocations[paramName];
+            if (location !== null) {
+                const paramValue = getCustomParameterValue(paramName);
+                gl.uniform2f(location, paramValue[0], paramValue[1]);
+            }
+        });
+        
         // Draw
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         
@@ -724,6 +1046,16 @@ function draw() {
                 zControlMode === "pixel" && cControlMode === "dot" ? "Julia Set" :
                 "Custom Mode";
             
+            let customParamsDebug = '';
+            Object.keys(customParameters).forEach(name => {
+                const param = customParameters[name];
+                const mode = customParameterModes[name] || 'fixed';
+                const actualValue = getCustomParameterValue(name);
+                const effectiveValue = mode === 'pixel' ? 'pixel position' : `(${actualValue[0].toFixed(4)}, ${actualValue[1].toFixed(4)})`;
+                
+                customParamsDebug += `${name}: ${effectiveValue} [${mode}]<br>`;
+            });
+            
             debugInfo.innerHTML = `Debug info:<br>
                 Mode: ${modeDescription}<br>
                 Resolution: ${glCanvas.width}x${glCanvas.height}<br>
@@ -732,6 +1064,7 @@ function draw() {
                 Max Iterations: ${maxIterations}<br>
                 Initial Z: (${initialZ[0].toFixed(4)}, ${initialZ[1].toFixed(4)}) [${zControlMode}]<br>
                 Param C: (${paramC[0].toFixed(4)}, ${paramC[1].toFixed(4)}) [${cControlMode}]<br>
+                ${customParamsDebug}
                 Current Function: ${currentFunctionGLSL}`;
         }
     } catch (error) {
@@ -761,4 +1094,18 @@ infoDiv.innerHTML = `
     R: reset view<br>
     D: toggle debug info
 `;
-document.body.appendChild(infoDiv); 
+document.body.appendChild(infoDiv);
+
+// Function to update the function examples in the UI
+function updateFunctionExamples() {
+    const examples = document.querySelectorAll('.example');
+    examples.forEach(example => {
+        // Update the event listener
+        const oldFunc = example.getAttribute('data-func');
+        example.addEventListener('click', () => {
+            const functionInput = document.getElementById('function-input');
+            functionInput.value = oldFunc;
+            document.getElementById('apply-function').click();
+        });
+    });
+} 

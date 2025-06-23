@@ -34,6 +34,8 @@
             color: white;
             z-index: 100;
             max-width: 350px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         #function-input {
             width: 100%;
@@ -140,6 +142,79 @@
         .dot-c {
             background-color: #FF5500;
         }
+        .custom-parameters {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #555;
+        }
+        .custom-param-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed #444;
+        }
+        .custom-param-name {
+            flex: 1;
+            min-width: 60px;
+        }
+        .custom-param-value {
+            flex: 1;
+            min-width: 80px;
+        }
+        .custom-param-controls {
+            flex: 2;
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        .small-button {
+            padding: 2px 5px;
+            font-size: 10px;
+            margin: 0;
+        }
+        .color-indicator {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            display: inline-block;
+            border: 1px solid white;
+        }
+        .add-param-row {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .add-param-row input {
+            flex: 1;
+            padding: 3px;
+        }
+        .add-param-row button {
+            margin-top: 0;
+        }
+        .tab-container {
+            display: flex;
+            border-bottom: 1px solid #555;
+            margin-bottom: 10px;
+        }
+        .tab {
+            padding: 5px 10px;
+            cursor: pointer;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
+        }
+        .tab.active {
+            background-color: rgba(76, 175, 80, 0.5);
+            border-bottom: 2px solid #4CAF50;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
     </style>
     <!-- Include math.js for parsing mathematical expressions -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
@@ -149,71 +224,127 @@
     <canvas id="overlayCanvas"></canvas>
     
     <div id="controls">
-        <div>
+        <div class="tab-container">
+            <div class="tab active" data-tab="function">Function</div>
+            <div class="tab" data-tab="parameters">Parameters</div>
+            <div class="tab" data-tab="help">Help</div>
+        </div>
+        
+        <div id="function-tab" class="tab-content active">
             <label for="function-input">Enter GLSL function code:</label>
             <textarea id="function-input" placeholder="return csquare(z) + c;">return csquare(z) + c;</textarea>
             <button id="apply-function">Apply Function</button>
-        </div>
-        
-        <div class="parameter-controls">
-            <h4 style="margin-top: 0;">Parameter Controls</h4>
-            <div class="parameter-row">
-                <span class="parameter-name">z₀:</span>
-                <div class="radio-group">
-                    <label class="radio-label">
-                        <input type="radio" name="z-control" value="dot" checked>
-                        Dot <span class="dot-color dot-z"></span>
-                    </label>
-                    <label class="radio-label">
-                        <input type="radio" name="z-control" value="pixel">
-                        Pixel
-                    </label>
+            
+            <div id="function-examples">
+                Examples:
+                <div>
+                    <span class="example" data-func="return csquare(z) + c;">z² + c</span>
+                    <span class="example" data-func="return ccube(z) + c;">z³ + c</span>
+                    <span class="example" data-func="return csquare(z) + csquare(c);">z² + c²</span>
+                    <span class="example" data-func="return csin(z) + c;">sin(z) + c</span>
+                    <span class="example" data-func="return csquare(z) + csin(c);">z² + sin(c)</span>
+                    <span class="example" data-func="return cmul(z, c) + z;">z * c + z</span>
+                    <span class="example" data-func="vec2 absZ = vec2(abs(z.x), abs(z.y)); return csquare(absZ) + c;">Burning Ship</span>
+                    <span class="example" data-func="return cpow(z, 4.0) + c;">z⁴ + c</span>
+                    <span class="example" data-func="return cdiv(csin(z), ccos(z)) + c;">tan(z) + c</span>
+                    <span class="example" data-func="// Add parameter 'p' first! 
+return csquare(z) + cmul(c, p);">z² + c*p (add p first)</span>
+                    <span class="example" data-func="// Add parameter 'p' first! 
+return csquare(z) + cmul(p, csin(c));">z² + p*sin(c) (add p first)</span>
                 </div>
-            </div>
-            <div class="parameter-row">
-                <span class="parameter-name">c:</span>
-                <div class="radio-group">
-                    <label class="radio-label">
-                        <input type="radio" name="c-control" value="dot">
-                        Dot <span class="dot-color dot-c"></span>
-                    </label>
-                    <label class="radio-label">
-                        <input type="radio" name="c-control" value="pixel" checked>
-                        Pixel
-                    </label>
-                </div>
-            </div>
-            <div style="font-size: 11px; margin-top: 5px;">
-                <p>Mandelbrot set: c=pixel, z₀=dot (default)</p>
-                <p>Julia set: z₀=pixel, c=dot</p>
             </div>
         </div>
         
-        <div class="instructions">
-            <p>Enter GLSL code that returns a vec2 result. Your function should use the variables <code>z</code> and <code>c</code> which are both vec2 (complex numbers).</p>
-            <p>Available complex functions:</p>
-            <ul>
-                <li><code>csquare(z)</code> : z²</li>
-                <li><code>ccube(z)</code> : z³</li>
-                <li><code>cpow(z, n)</code> : z^n</li>
-                <li><code>cmul(a, b)</code> : a * b</li>
-                <li><code>cdiv(a, b)</code> : a / b</li>
-                <li><code>csin(z)</code>, <code>ccos(z)</code></li>
-                <li><code>cexp(z)</code>, <code>clog(z)</code></li>
-            </ul>
+        <div id="parameters-tab" class="tab-content">
+            <div class="parameter-controls">
+                <h4 style="margin-top: 0;">Built-in Parameters</h4>
+                <div class="parameter-row">
+                    <span class="parameter-name">z₀:</span>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="z-control" value="dot" checked>
+                            Dot <span class="dot-color dot-z"></span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="z-control" value="pixel">
+                            Pixel
+                        </label>
+                    </div>
+                </div>
+                <div class="parameter-row">
+                    <span class="parameter-name">c:</span>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="c-control" value="dot">
+                            Dot <span class="dot-color dot-c"></span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="c-control" value="pixel" checked>
+                            Pixel
+                        </label>
+                    </div>
+                </div>
+                <div style="font-size: 11px; margin-top: 5px;">
+                    <p>Mandelbrot set: c=pixel, z₀=dot (default)</p>
+                    <p>Julia set: z₀=pixel, c=dot</p>
+                </div>
+            </div>
+            
+            <div class="custom-parameters">
+                <h4>Custom Parameters</h4>
+                <div id="custom-params-container">
+                    <!-- Custom parameters will be added here dynamically -->
+                </div>
+                
+                <div class="add-param-row">
+                    <input type="text" id="new-param-name" placeholder="Name (e.g. 'p')">
+                    <input type="text" id="new-param-value-real" placeholder="Real value">
+                    <input type="text" id="new-param-value-imag" placeholder="Imag value">
+                    <button id="add-param-btn" class="small-button">Add</button>
+                </div>
+            </div>
         </div>
-        <div id="function-examples">
-            Examples:
-            <div>
-                <span class="example" data-func="return csquare(z) + c;">z² + c</span>
-                <span class="example" data-func="return ccube(z) + c;">z³ + c</span>
-                <span class="example" data-func="return csquare(z) + csquare(c);">z² + c²</span>
-                <span class="example" data-func="return csin(z) + c;">sin(z) + c</span>
-                <span class="example" data-func="return csquare(z) + csin(c);">z² + sin(c)</span>
-                <span class="example" data-func="return cmul(z, c) + z;">z * c + z</span>
-                <span class="example" data-func="vec2 absZ = vec2(abs(z.x), abs(z.y)); return csquare(absZ) + c;">Burning Ship</span>
-                <span class="example" data-func="return cpow(z, 4.0) + c;">z⁴ + c</span>
-                <span class="example" data-func="return cdiv(csin(z), ccos(z)) + c;">tan(z) + c</span>
+        
+        <div id="help-tab" class="tab-content">
+            <div class="instructions">
+                <h4>Complex Function Visualization</h4>
+                <p>Enter GLSL code that returns a vec2 result. Your function should use the variables <code>z</code> and <code>c</code> which are both vec2 (complex numbers).</p>
+                <p>Available complex functions:</p>
+                <ul>
+                    <li><code>csquare(z)</code> : z²</li>
+                    <li><code>ccube(z)</code> : z³</li>
+                    <li><code>cpow(z, n)</code> : z^n</li>
+                    <li><code>cmul(a, b)</code> : a * b</li>
+                    <li><code>cdiv(a, b)</code> : a / b</li>
+                    <li><code>csin(z)</code>, <code>ccos(z)</code></li>
+                    <li><code>cexp(z)</code>, <code>clog(z)</code></li>
+                </ul>
+                
+                <h4>Custom Parameters</h4>
+                <p>You can add custom parameters to use in your function:</p>
+                <ol>
+                    <li>Go to the Parameters tab</li>
+                    <li>Enter a name (e.g., "p"), real and imaginary values</li>
+                    <li>Click Add</li>
+                    <li>Use the parameter in your function directly by its name (e.g., if you named your parameter "p", just use <code>p</code> in your function)</li>
+                </ol>
+                <p>For each parameter, you can choose between three modes:</p>
+                <ul>
+                    <li><b>Fixed</b>: Uses the specified constant value</li>
+                    <li><b>Dot</b>: Allows you to drag a colored dot to set the value</li>
+                    <li><b>Pixel</b>: Uses the current pixel position (like the Mandelbrot set)</li>
+                </ul>
+                <p>Example: If you create a parameter named "p", refer to it simply as <code>p</code> in your function:</p>
+                <pre>return csquare(z) + cmul(c, p);</pre>
+                
+                <h4>Keyboard Shortcuts</h4>
+                <ul>
+                    <li><b>+/-</b>: Increase/decrease iterations</li>
+                    <li><b>R</b>: Reset view</li>
+                    <li><b>D</b>: Toggle debug info</li>
+                    <li><b>J</b>: Switch to Julia set mode</li>
+                    <li><b>M</b>: Switch to Mandelbrot set mode</li>
+                </ul>
             </div>
         </div>
     </div>

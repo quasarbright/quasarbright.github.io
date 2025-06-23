@@ -7,6 +7,8 @@ uniform float u_zoom;
 uniform vec2 u_initialZ; // Initial value of z (z_0)
 uniform vec2 u_paramC;   // Parameter c for Julia sets
 
+// CUSTOM_UNIFORMS_PLACEHOLDER
+
 // Implement hyperbolic functions that aren't built into GLSL
 float sinh(float x) {
     return (exp(x) - exp(-x)) / 2.0;
@@ -129,6 +131,10 @@ void main() {
     if (c == vec2(0.0, 0.0)) {
         c = pixelPos;
     }
+    
+    // Handle custom parameters - if a uniform is set to vec2(0,0), use pixel position
+    // This is handled automatically because any custom parameter uniforms
+    // that should use pixel position will be set to vec2(0,0) by JavaScript
     
     float zMagnitude = 0.0;
     int iterations = 0;
