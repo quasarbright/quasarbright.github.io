@@ -715,6 +715,7 @@ function refreshParametersUI() {
 function addParameterRow(container, name, value, mode, color, isBuiltIn) {
     const paramRow = document.createElement('div');
     paramRow.className = 'parameter-row';
+    paramRow.setAttribute('data-param-name', name);
     
     // Parameter name
     const nameElem = document.createElement('div');
@@ -722,11 +723,78 @@ function addParameterRow(container, name, value, mode, color, isBuiltIn) {
     nameElem.textContent = name;
     paramRow.appendChild(nameElem);
     
-    // Parameter value
-    const valueElem = document.createElement('div');
-    valueElem.className = 'parameter-value';
-    valueElem.textContent = `(${value[0].toFixed(2)}, ${value[1].toFixed(2)})`;
-    paramRow.appendChild(valueElem);
+    // Parameter value container
+    const valueContainer = document.createElement('div');
+    valueContainer.className = 'parameter-value-container';
+    
+    // For dot mode, create input fields
+    const realInput = document.createElement('input');
+    realInput.type = 'number';
+    realInput.className = 'param-input param-real';
+    realInput.step = '0.0001';
+    realInput.value = value[0].toFixed(4);
+    realInput.style.width = '60px';
+    
+    const plusSign = document.createElement('span');
+    plusSign.textContent = ' + ';
+    
+    const imagInput = document.createElement('input');
+    imagInput.type = 'number';
+    imagInput.className = 'param-input param-imag';
+    imagInput.step = '0.0001';
+    imagInput.value = value[1].toFixed(4);
+    imagInput.style.width = '60px';
+    
+    const iSymbol = document.createElement('span');
+    iSymbol.textContent = 'i';
+    iSymbol.style.marginLeft = '4px'; // Add space between input and i symbol
+    
+    // For pixel mode, show placeholder text
+    const pixelText = document.createElement('div');
+    pixelText.className = 'pixel-text';
+    pixelText.textContent = '(pixel position)';
+    pixelText.style.opacity = '0.5';
+    pixelText.style.fontStyle = 'italic';
+    
+    // Add event listeners to update parameter values when inputs change
+    function updateFromInputs() {
+        const realValue = parseFloat(realInput.value) || 0;
+        const imagValue = parseFloat(imagInput.value) || 0;
+        
+        if (name === "z₀") {
+            initialZ = [realValue, imagValue];
+        } else {
+            customParameters[name] = [realValue, imagValue];
+        }
+        
+        draw(); // Redraw to update the visualization
+    }
+    
+    realInput.addEventListener('change', updateFromInputs);
+    imagInput.addEventListener('change', updateFromInputs);
+    
+    // Add elements to the value container based on mode
+    if (mode === 'pixel') {
+        valueContainer.appendChild(pixelText);
+        realInput.style.display = 'none';
+        plusSign.style.display = 'none';
+        imagInput.style.display = 'none';
+        iSymbol.style.display = 'none';
+    } else {
+        valueContainer.appendChild(realInput);
+        valueContainer.appendChild(plusSign);
+        valueContainer.appendChild(imagInput);
+        valueContainer.appendChild(iSymbol);
+        pixelText.style.display = 'none';
+    }
+    
+    valueContainer.appendChild(realInput);
+    valueContainer.appendChild(plusSign);
+    valueContainer.appendChild(imagInput);
+    valueContainer.appendChild(iSymbol);
+    valueContainer.appendChild(pixelText);
+    
+    paramRow.appendChild(valueContainer);
     
     // Parameter controls
     const controlsElem = document.createElement('div');
@@ -745,12 +813,20 @@ function addParameterRow(container, name, value, mode, color, isBuiltIn) {
         // For z₀
         modeSelect.addEventListener('change', () => {
             zControlMode = modeSelect.value;
+            
+            // Update the value display
+            updateParameterValueDisplay(name, initialZ, modeSelect.value);
+            
             draw();
         });
     } else {
         // For custom parameters
         modeSelect.addEventListener('change', () => {
             customParameterModes[name] = modeSelect.value;
+            
+            // Update the value display
+            updateParameterValueDisplay(name, customParameters[name], modeSelect.value);
+            
             draw();
         });
     }
@@ -775,6 +851,21 @@ function addParameterRow(container, name, value, mode, color, isBuiltIn) {
     modeSelect.addEventListener('change', () => {
         colorIndicator.style.display = modeSelect.value === 'dot' ? 'inline-block' : 'none';
         pixelIndicator.style.display = modeSelect.value === 'pixel' ? 'inline-block' : 'none';
+        
+        // Show/hide input fields based on mode
+        if (modeSelect.value === 'pixel') {
+            realInput.style.display = 'none';
+            plusSign.style.display = 'none';
+            imagInput.style.display = 'none';
+            iSymbol.style.display = 'none';
+            pixelText.style.display = 'inline';
+        } else {
+            realInput.style.display = 'inline';
+            plusSign.style.display = 'inline';
+            imagInput.style.display = 'inline';
+            iSymbol.style.display = 'inline';
+            pixelText.style.display = 'none';
+        }
     });
     
     // Delete button
@@ -801,6 +892,39 @@ function addParameterRow(container, name, value, mode, color, isBuiltIn) {
     
     paramRow.appendChild(controlsElem);
     container.appendChild(paramRow);
+}
+
+// Helper function to update parameter value display
+function updateParameterValueDisplay(name, value, mode) {
+    const paramRow = document.querySelector(`.parameter-row[data-param-name="${name}"]`);
+    if (paramRow) {
+        const realInput = paramRow.querySelector('.param-real');
+        const imagInput = paramRow.querySelector('.param-imag');
+        const pixelText = paramRow.querySelector('.pixel-text');
+        const plusSign = paramRow.querySelector('.param-input + span');
+        const iSymbol = paramRow.querySelector('.param-imag + span');
+        
+        if (realInput && imagInput && pixelText) {
+            if (mode === 'pixel') {
+                realInput.style.display = 'none';
+                if (plusSign) plusSign.style.display = 'none';
+                imagInput.style.display = 'none';
+                if (iSymbol) iSymbol.style.display = 'none';
+                pixelText.style.display = 'inline';
+            } else {
+                realInput.value = value[0].toFixed(4);
+                imagInput.value = value[1].toFixed(4);
+                realInput.style.display = 'inline';
+                if (plusSign) plusSign.style.display = 'inline';
+                imagInput.style.display = 'inline';
+                if (iSymbol) {
+                    iSymbol.style.display = 'inline';
+                    iSymbol.style.marginLeft = '4px'; // Ensure spacing is maintained
+                }
+                pixelText.style.display = 'none';
+            }
+        }
+    }
 }
 
 // Set up mouse events
@@ -850,9 +974,13 @@ function setupMouseEvents() {
             
             if (activeDot === "z₀") {
                 initialZ = complexCoords;
+                // Update the display
+                updateParameterValueDisplay("z₀", initialZ, "dot");
             } else if (customParameters[activeDot]) {
                 // Update custom parameter
                 customParameters[activeDot] = complexCoords;
+                // Update the display
+                updateParameterValueDisplay(activeDot, complexCoords, "dot");
             }
             
             draw();
@@ -915,9 +1043,9 @@ function setupMouseEvents() {
         const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
         zoom *= zoomFactor;
         
-        // Adjust center to zoom toward mouse position
-        center[0] = mouseComplex[0] - (mouseComplex[0] - center[0]) / zoomFactor;
-        center[1] = mouseComplex[1] - (mouseComplex[1] - center[1]) / zoomFactor;
+        // Adjust center to keep mouse position fixed in complex plane
+        center[0] = mouseComplex[0] - mouseX * aspectRatio / zoom;
+        center[1] = mouseComplex[1] - mouseY / zoom;
         
         draw();
     });
@@ -1108,23 +1236,40 @@ function draw() {
                 }
             }
             
+            // Format complex number for display
+            function formatComplex(value) {
+                const realPart = value[0].toFixed(4);
+                const imagPart = Math.abs(value[1]).toFixed(4);
+                const sign = value[1] >= 0 ? '+' : '-';
+                return `${realPart}${sign}${imagPart}i`;
+            }
+            
+            // Format center as complex number
+            const centerComplex = formatComplex(center);
+            
             let customParamsDebug = '';
             Object.keys(customParameters).forEach(name => {
                 const param = customParameters[name];
                 const mode = customParameterModes[name] || 'dot';
-                const actualValue = getCustomParameterValue(name);
-                const effectiveValue = mode === 'pixel' ? 'pixel position' : `(${actualValue[0].toFixed(4)}, ${actualValue[1].toFixed(4)})`;
                 
-                customParamsDebug += `${name}: ${effectiveValue} [${mode}]<br>`;
+                if (mode === 'pixel') {
+                    customParamsDebug += `${name}: (pixel position) [${mode}]<br>`;
+                } else {
+                    const valueDisplay = formatComplex(param);
+                    customParamsDebug += `${name}: ${valueDisplay} [${mode}]<br>`;
+                }
             });
+            
+            // Format initialZ as complex number
+            const initialZDisplay = zControlMode === 'pixel' ? '(pixel position)' : formatComplex(initialZ);
             
             debugInfo.innerHTML = `Debug info:<br>
                 Mode: ${modeDescription}<br>
                 Resolution: ${glCanvas.width}x${glCanvas.height}<br>
-                Center: (${center[0].toFixed(4)}, ${center[1].toFixed(4)})<br>
+                Center: ${centerComplex}<br>
                 Zoom: ${zoom.toFixed(2)}<br>
                 Max Iterations: ${maxIterations}<br>
-                Initial Z: (${initialZ[0].toFixed(4)}, ${initialZ[1].toFixed(4)}) [${zControlMode}]<br>
+                Initial Z: ${initialZDisplay} [${zControlMode}]<br>
                 ${customParamsDebug}
                 Current Function: ${currentFunctionGLSL}`;
         }

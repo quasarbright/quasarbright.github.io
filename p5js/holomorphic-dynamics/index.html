@@ -121,12 +121,30 @@
         .parameter-name {
             font-weight: bold;
             width: 30px;
+            flex-shrink: 0;
         }
-        .parameter-value {
+        .parameter-value-container {
             flex: 1;
             font-size: 11px;
             color: #ccc;
             padding: 0 5px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .param-input {
+            width: 60px;
+            padding: 2px 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid #555;
+            border-radius: 3px;
+            color: white;
+            font-size: 11px;
+            text-align: right;
+        }
+        .pixel-text {
+            font-style: italic;
+            opacity: 0.7;
         }
         .parameter-controls-group {
             display: flex;
@@ -280,6 +298,15 @@
             border: 1px solid #555;
             color: white;
             border-radius: 3px;
+        }
+        /* Hide number input arrows */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
         }
     </style>
     <!-- Include math.js for parsing mathematical expressions -->
