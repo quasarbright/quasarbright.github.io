@@ -141,26 +141,36 @@ void main() {
         zMagnitude = length(z);
         
         // Check if the magnitude is getting very large
-        if (zMagnitude > 1000.0) {
+        if (zMagnitude > 1000.0) {  // Lower escape threshold for better coloring
             escaped = true;
+            iterations = i;
             break;
         }
         
         iterations = i;
     }
     
-    // Normalize iteration count for coloring
-    float normalizedIter = float(iterations) / float(u_maxIterations);
-    
     // Color based on whether the point escaped and how many iterations it took
     if (!escaped && iterations >= u_maxIterations - 1) {
         // Points that reached max iterations without escaping are likely in the set
         gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); // Black
     } else {
-        // Color based on iteration count
-        float hue = fract(normalizedIter * 3.0); // Multiply for more color bands
+        // Improved coloring using logarithmic smoothing
+        // This makes the coloring more stable when changing max iterations
+        float log_zn = log(zMagnitude);
+        float nu = log(log_zn / log(1000.0)) / log(2.0);
+        
+        // Smooth iteration count
+        float smoothed = float(iterations) + 1.0 - nu;
+        
+        // Scale by a constant factor instead of max iterations
+        // This keeps colors consistent when changing max iterations
+        float colorIndex = smoothed * 0.01;
+        
+        // Use modulo to create repeating color bands
+        float hue = fract(colorIndex);
         float saturation = 0.8;
-        float value = escaped ? 1.0 : 0.7; // Slightly dimmer for non-escaping points
+        float value = escaped ? 1.0 : 0.7;
         
         vec3 color = hsv2rgb(vec3(hue, saturation, value));
         gl_FragColor = vec4(color, 1.0);

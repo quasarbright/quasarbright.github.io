@@ -14,7 +14,7 @@ let customParameters = {};
 let customParameterUniformLocations = {};
 
 // Visualization parameters
-let maxIterations = 100;
+let maxIterations = 500;
 let center = [-0.5, 0.0];
 let zoom = 1.0;
 let currentFunctionGLSL = "return csquare(z) + c;"; // Default Mandelbrot function
@@ -1076,7 +1076,7 @@ function setupMouseEvents() {
                 // Reset view
                 center = [-0.5, 0.0];
                 zoom = 1.0;
-                maxIterations = 100;
+                maxIterations = 500;
                 initialZ = [0.0, 0.0]; // Reset initial Z
                 
                 // Reset c parameter if it exists
