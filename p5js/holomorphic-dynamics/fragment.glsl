@@ -5,7 +5,6 @@ uniform int u_maxIterations;
 uniform vec2 u_center;
 uniform float u_zoom;
 uniform vec2 u_initialZ; // Initial value of z (z_0)
-uniform vec2 u_paramC;   // Parameter c for Julia sets
 
 // CUSTOM_UNIFORMS_PLACEHOLDER
 
@@ -95,9 +94,20 @@ vec2 clog(vec2 z) {
     );
 }
 
+// Function to get the actual value for a parameter, handling pixel mode
+vec2 getParameterValue(vec2 param, vec2 pixelPos) {
+    // If param is set to the special value (-999,-999), use pixel position
+    if (param.x == -999.0 && param.y == -999.0) {
+        return pixelPos;
+    }
+    return param;
+}
+
 // USER_FUNCTION_PLACEHOLDER
-vec2 complex_function(vec2 z, vec2 c) {
-    return csquare(z) + c; // Default Mandelbrot function
+vec2 complex_function(vec2 z, vec2 pixelPos) {
+    // Default function: z² + c (where c will be provided as a custom parameter)
+    // This is just a placeholder and will be replaced by the user's function
+    return z;
 }
 
 vec3 hsv2rgb(vec3 c) {
@@ -113,28 +123,8 @@ void main() {
     float aspectRatio = u_resolution.x / u_resolution.y;
     vec2 pixelPos = u_center + (st * 2.0 - 1.0) * vec2(aspectRatio, 1.0) / u_zoom;
     
-    // Determine z and c based on the current mode
-    // This will be controlled by JavaScript
-    vec2 z, c;
-    
-    // We're using the same shader for both Mandelbrot and Julia sets
-    // The JavaScript code will pass the appropriate values based on the UI controls
-    z = u_initialZ;  // If z is in "pixel" mode, JS will set this to vec2(-999,-999)
-    c = u_paramC;    // If c is in "pixel" mode, JS will set this to vec2(-999,-999)
-    
-    // If z is in "pixel" mode, use the pixel position
-    if (z.x == -999.0 && z.y == -999.0) {
-        z = pixelPos;
-    }
-    
-    // If c is in "pixel" mode, use the pixel position
-    if (c.x == -999.0 && c.y == -999.0) {
-        c = pixelPos;
-    }
-    
-    // Handle custom parameters - if a uniform is set to the special value, use pixel position
-    // This is handled automatically because any custom parameter uniforms
-    // that should use pixel position will be set to the special value by JavaScript
+    // Determine z based on the current mode
+    vec2 z = getParameterValue(u_initialZ, pixelPos);
     
     float zMagnitude = 0.0;
     int iterations = 0;
@@ -145,7 +135,7 @@ void main() {
         if (i >= u_maxIterations) break;
         
         // Apply the complex function
-        z = complex_function(z, c);
+        z = complex_function(z, pixelPos);
         
         // Track magnitude for coloring
         zMagnitude = length(z);

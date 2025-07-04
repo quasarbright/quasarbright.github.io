@@ -60,6 +60,10 @@
         button:hover {
             background-color: #45a049;
         }
+        button:disabled {
+            background-color: #888;
+            cursor: not-allowed;
+        }
         #function-examples {
             margin-top: 10px;
             font-size: 12px;
@@ -111,10 +115,23 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 8px;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed #444;
         }
         .parameter-name {
             font-weight: bold;
             width: 30px;
+        }
+        .parameter-value {
+            flex: 1;
+            font-size: 11px;
+            color: #ccc;
+            padding: 0 5px;
+        }
+        .parameter-controls-group {
+            display: flex;
+            gap: 5px;
+            align-items: center;
         }
         .radio-group {
             display: flex;
@@ -142,44 +159,36 @@
         .dot-c {
             background-color: #FF5500;
         }
-        .custom-parameters {
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px solid #555;
-        }
-        .custom-param-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-bottom: 10px;
-            padding-bottom: 5px;
-            border-bottom: 1px dashed #444;
-        }
-        .custom-param-name {
-            flex: 1;
-            min-width: 60px;
-        }
-        .custom-param-value {
-            flex: 1;
-            min-width: 80px;
-        }
-        .custom-param-controls {
-            flex: 2;
-            display: flex;
-            gap: 5px;
-            align-items: center;
-        }
-        .small-button {
-            padding: 2px 5px;
-            font-size: 10px;
-            margin: 0;
-        }
         .color-indicator {
             width: 15px;
             height: 15px;
             border-radius: 50%;
             display: inline-block;
             border: 1px solid white;
+        }
+        .pixel-indicator {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+            display: inline-block;
+            border: 1px dashed #666;
+            position: relative;
+            background-color: transparent;
+        }
+        .pixel-indicator:after {
+            content: '';
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background-color: #666;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .small-button {
+            padding: 2px 5px;
+            font-size: 10px;
+            margin: 0;
         }
         .add-param-row {
             display: flex;
@@ -265,6 +274,13 @@
             margin-bottom: 10px;
             color: #4CAF50;
         }
+        .mode-select {
+            padding: 2px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid #555;
+            color: white;
+            border-radius: 3px;
+        }
     </style>
     <!-- Include math.js for parsing mathematical expressions -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
@@ -303,44 +319,10 @@ return csquare(z) + cmul(p, csin(c));">z² + p*sin(c) (add p first)</span>
         </div>
         
         <!-- Parameters Section -->
-        <div class="section-title">Built-in Parameters</div>
+        <div class="section-title">Parameters</div>
         <div class="parameter-controls">
-            <div class="parameter-row">
-                <span class="parameter-name">z₀:</span>
-                <div class="radio-group">
-                    <label class="radio-label">
-                        <input type="radio" name="z-control" value="dot" checked>
-                        Dot <span class="dot-color dot-z"></span>
-                    </label>
-                    <label class="radio-label">
-                        <input type="radio" name="z-control" value="pixel">
-                        Pixel
-                    </label>
-                </div>
-            </div>
-            <div class="parameter-row">
-                <span class="parameter-name">c:</span>
-                <div class="radio-group">
-                    <label class="radio-label">
-                        <input type="radio" name="c-control" value="dot">
-                        Dot <span class="dot-color dot-c"></span>
-                    </label>
-                    <label class="radio-label">
-                        <input type="radio" name="c-control" value="pixel" checked>
-                        Pixel
-                    </label>
-                </div>
-            </div>
-            <div style="font-size: 11px; margin-top: 5px;">
-                <p>Mandelbrot set: c=pixel, z₀=dot (default)</p>
-                <p>Julia set: z₀=pixel, c=dot</p>
-            </div>
-        </div>
-        
-        <div class="section-title">Custom Parameters</div>
-        <div class="custom-parameters">
-            <div id="custom-params-container">
-                <!-- Custom parameters will be added here dynamically -->
+            <div id="parameters-container">
+                <!-- All parameters will be added here dynamically -->
             </div>
             
             <div class="add-param-row">
@@ -348,6 +330,11 @@ return csquare(z) + cmul(p, csin(c));">z² + p*sin(c) (add p first)</span>
                 <input type="text" id="new-param-value-real" placeholder="Real">
                 <input type="text" id="new-param-value-imag" placeholder="Imag">
                 <button id="add-param-btn" class="small-button">Add</button>
+            </div>
+            
+            <div style="font-size: 11px; margin-top: 10px;">
+                <p>Mandelbrot set: c=pixel, z₀=dot (default)</p>
+                <p>Julia set: z₀=pixel, c=dot</p>
             </div>
         </div>
     </div>
@@ -397,9 +384,8 @@ return csquare(z) + cmul(p, csin(c));">z² + p*sin(c) (add p first)</span>
                     <li>Click Add</li>
                     <li>Use the parameter in your function directly by its name (e.g., if you named your parameter "p", just use <code>p</code> in your function)</li>
                 </ol>
-                <p>For each parameter, you can choose between three modes:</p>
+                <p>For each parameter, you can choose between two modes:</p>
                 <ul>
-                    <li><b>Fixed</b>: Uses the specified constant value</li>
                     <li><b>Dot</b>: Allows you to drag a colored dot to set the value</li>
                     <li><b>Pixel</b>: Uses the current pixel position (like the Mandelbrot set)</li>
                 </ul>
