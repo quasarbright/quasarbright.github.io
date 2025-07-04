@@ -186,7 +186,7 @@ void main() {
             
             // Add time-based hue shift
             float hue = fract(colorIndex - u_time * 0.05);
-            float saturation = 0.8;
+            float saturation = 1.0;
             float value = escaped ? 1.0 : 0.7;
             
             vec3 color = hsv2rgb(vec3(hue, saturation, value));
@@ -197,19 +197,27 @@ void main() {
         if (converged) {
             // For Newton's method, we want to color based on which root it converged to
             
-            // Use angle for hue and magnitude for brightness
+            // Use angle for hue
             float angle = atan(z.y, z.x); // Range: -PI to PI
             float hue = (angle + 3.14159) / 6.28318; // Normalize to 0-1 range
             
             // Add time-based animation
             hue = fract(hue - u_time * 0.05);
             
-            // Use magnitude for saturation, but cap it to avoid too bright/dark areas
-            float magnitude = min(length(z), 2.0) / 2.0;
-            float brightness = 0.5 + 0.5 * magnitude;
-            float sat = 0.7 + 0.3 * (1.0 - float(iterations) / float(u_maxIterations));
+            // Use convergence speed (iterations) for brightness
+            // Apply a gentler mapping to make differences noticeable but not too stark
+            // For Newton's method, most points converge in very few iterations
+            float iterationRatio = float(iterations) / 15.0; // Normalize to first 15 iterations
+            iterationRatio = min(iterationRatio, 1.0); // Cap at 1.0
             
-            vec3 color = hsv2rgb(vec3(hue, sat, brightness));
+            // Apply a milder non-linear curve for more subtle shading
+            float brightness = 1.0 - pow(iterationRatio, 0.7); // Using 0.7 instead of 0.5 for gentler curve
+            brightness = 0.4 + 0.6 * brightness; // Scale to range [0.4, 1.0] for less darkness
+            
+            // Fixed high saturation
+            float saturation = 1.0;
+            
+            vec3 color = hsv2rgb(vec3(hue, saturation, brightness));
             gl_FragColor = vec4(color, 1.0);
         } else {
             // Non-convergent points are black
