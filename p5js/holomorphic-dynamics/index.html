@@ -336,11 +336,7 @@
                     <span class="example" data-func="return cmul(z, c) + z;">z * c + z</span>
                     <span class="example" data-func="vec2 absZ = vec2(abs(z.x), abs(z.y)); return csquare(absZ) + c;">Burning Ship</span>
                     <span class="example" data-func="return cpow(z, 4.0) + c;">z⁴ + c</span>
-                    <span class="example" data-func="return cdiv(csin(z), ccos(z)) + c;">tan(z) + c</span>
-                    <span class="example" data-func="// Add parameter 'p' first! 
-return csquare(z) + cmul(c, p);">z² + c*p (add p first)</span>
-                    <span class="example" data-func="// Add parameter 'p' first! 
-return csquare(z) + cmul(p, csin(c));">z² + p*sin(c) (add p first)</span>
+                    <span class="example" data-func="return cexp(z) + c;">exp(z) + c</span>
                     <span class="example" data-func="// Newton's method for p(z) = (z-r1)(z-r2)(z-r3)
 // Will add parameters r1, r2, r3 if they don't exist
 // This implementation returns the next iteration value directly
@@ -381,8 +377,8 @@ return z_new - cdiv(p, dp);">Newton's Method</span>
             </div>
             
             <div style="font-size: 11px; margin-top: 10px;">
-                <p>Mandelbrot set: c=pixel, z₀=dot (default)</p>
-                <p>Julia set: z₀=pixel, c=dot</p>
+                <p>Julia set: z₀=pixel, c=dot (default)</p>
+                <p>Mandelbrot set: c=pixel, z₀=dot</p>
             </div>
         </div>
     </div>

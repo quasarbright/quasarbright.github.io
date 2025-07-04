@@ -17,7 +17,7 @@ let customParameterUniformLocations = {};
 
 // Visualization parameters
 let maxIterations = 500;
-let center = [-0.5, 0.0];
+let center = [0.0, 0.0];
 let zoom = 1.0;
 let currentFunctionGLSL = "return csquare(z) + c;"; // Default Mandelbrot function
 let initialZ = [0.0, 0.0]; // Initial value of z (z_0)
@@ -547,8 +547,11 @@ async function init() {
     initialZ = [0.0, 0.0];
     
     // Add 'c' as a custom parameter on startup (for convenience, but it can be deleted)
-    customParameters["c"] = [0.0, 0.0];
-    customParameterModes["c"] = "pixel"; // Default to pixel mode for Mandelbrot set
+    customParameters["c"] = [-0.7559, -0.0709]; // Start with an interesting Julia set value
+    
+    // Start in Julia set mode instead of Mandelbrot set mode
+    zControlMode = "pixel"; // z₀ = pixel for Julia set
+    customParameterModes["c"] = "dot"; // c = dot for Julia set
     customParameterColors["c"] = "#FF5500"; // Orange
     
     console.log("Custom parameters after initialization:", customParameters);
@@ -1088,68 +1091,54 @@ function setupMouseEvents() {
             case 'r':
             case 'R':
                 // Reset view
-                center = [-0.5, 0.0];
-                zoom = 1.0;
-                maxIterations = 500;
-                initialZ = [0.0, 0.0]; // Reset initial Z
-                
-                // Reset c parameter if it exists
-                if (customParameters["c"]) {
-                    customParameters["c"] = [0.0, 0.0];
-                }
-                
-                document.getElementById('iterationCount').textContent = maxIterations;
-                refreshParametersUI(); // Update the UI with reset values
+                resetView();
                 break;
             case 'd':
                 // Toggle debug info
                 debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
                 break;
             case 'j':
-                // Quick switch to Julia set mode
-                // First, ensure 'c' parameter exists
-                if (!customParameters["c"]) {
+                if (zControlMode !== "pixel" || customParameterModes["c"] !== "dot") {
                     // Add 'c' parameter if it doesn't exist
-                    customParameters["c"] = [0.0, 0.0];
-                    customParameterModes["c"] = "dot";
-                    customParameterColors["c"] = "#FF5500";
-                    showInfo("Added 'c' parameter for Julia set mode");
-                } else if (customParameterModes["c"] !== "dot") {
-                    // Save current pixel position as c parameter
-                    const centerOfScreen = screenToComplex(glCanvas.width/2, glCanvas.height/2, glCanvas);
-                    customParameters["c"] = centerOfScreen;
-                    
-                    // Update control modes
-                    zControlMode = "pixel";
-                    customParameterModes["c"] = "dot";
-                    
-                    // Update the UI
-                    refreshParametersUI();
-                    
-                    draw();
-                    showInfo('Switched to Julia set mode');
+                    if (!customParameters["c"]) {
+                        customParameters["c"] = [-0.7559, -0.0709];
+                        customParameterModes["c"] = "dot";
+                        customParameterColors["c"] = "#FF5500";
+                        showInfo("Added 'c' parameter for Julia set mode");
+                        refreshParametersUI();
+                    } else if (zControlMode !== "pixel" || customParameterModes["c"] !== "dot") {
+                        // Update control modes
+                        zControlMode = "pixel";
+                        customParameterModes["c"] = "dot";
+                        
+                        // Update the UI
+                        refreshParametersUI();
+                        
+                        draw();
+                        showInfo('Switched to Julia set mode');
+                    }
                 }
                 break;
             case 'm':
-                // Quick switch to Mandelbrot set mode
-                // First, ensure 'c' parameter exists
-                if (!customParameters["c"]) {
+                if (zControlMode !== "dot" || customParameterModes["c"] !== "pixel") {
                     // Add 'c' parameter if it doesn't exist
-                    customParameters["c"] = [0.0, 0.0];
-                    customParameterModes["c"] = "pixel";
-                    customParameterColors["c"] = "#FF5500";
-                    showInfo("Added 'c' parameter for Mandelbrot set mode");
-                    refreshParametersUI();
-                } else if (zControlMode !== "dot" || customParameterModes["c"] !== "pixel") {
-                    // Update control modes
-                    zControlMode = "dot";
-                    customParameterModes["c"] = "pixel";
-                    
-                    // Update the UI
-                    refreshParametersUI();
-                    
-                    draw();
-                    showInfo('Switched to Mandelbrot set mode');
+                    if (!customParameters["c"]) {
+                        customParameters["c"] = [-0.7559, -0.0709];
+                        customParameterModes["c"] = "pixel";
+                        customParameterColors["c"] = "#FF5500";
+                        showInfo("Added 'c' parameter for Mandelbrot set mode");
+                        refreshParametersUI();
+                    } else if (zControlMode !== "dot" || customParameterModes["c"] !== "pixel") {
+                        // Update control modes
+                        zControlMode = "dot";
+                        customParameterModes["c"] = "pixel";
+                        
+                        // Update the UI
+                        refreshParametersUI();
+                        
+                        draw();
+                        showInfo('Switched to Mandelbrot set mode');
+                    }
                 }
                 break;
             default:
@@ -1169,7 +1158,7 @@ function getCustomParameterValue(paramName) {
         return [-999.0, -999.0];
     } else {
         // For dot mode, return the stored value
-        return customParameters[paramName] || [0.0, 0.0];
+        return customParameters[paramName] || [-0.7559, -0.0709];
     }
 }
 
@@ -1443,4 +1432,23 @@ function setupColoringModeSelector() {
     // Insert the coloring section before the parameters section
     controlsDiv.insertBefore(coloringSelectorDiv, parametersSection);
     controlsDiv.insertBefore(coloringSectionDiv, coloringSelectorDiv);
+}
+
+// Reset view to default
+function resetView() {
+    center = [0.0, 0.0];
+    zoom = 1.0;
+    
+    // Reset c parameter if it exists
+    if (customParameters["c"]) {
+        customParameters["c"] = [-0.7559, -0.0709];
+    }
+    
+    // Reset z₀ parameter
+    initialZ = [0.0, 0.0];
+    
+    // Redraw
+    draw();
+    
+    showInfo('View reset');
 } 
