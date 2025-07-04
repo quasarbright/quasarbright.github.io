@@ -325,16 +325,22 @@ function showError(message) {
 
 // Show info message
 function showInfo(message) {
-    debugInfo.style.display = 'block';
-    debugInfo.innerHTML = message;
-    debugInfo.style.color = 'white';
-    
-    // Hide after 3 seconds
-    setTimeout(() => {
-        if (debugInfo.innerHTML === message) {
-            debugInfo.style.display = 'none';
-        }
-    }, 3000);
+    // Only show info messages after initialization is complete
+    if (document.readyState === 'complete') {
+        debugInfo.style.display = 'block';
+        debugInfo.innerHTML = message;
+        debugInfo.style.color = 'white';
+        
+        // Hide after 3 seconds
+        setTimeout(() => {
+            if (debugInfo.innerHTML === message) {
+                debugInfo.style.display = 'none';
+            }
+        }, 3000);
+    } else {
+        // Just log to console during initialization
+        console.log("Info:", message);
+    }
 }
 
 // Load shaders from file
@@ -527,6 +533,7 @@ function setupAboutModal() {
 async function init() {
     // Set up debug info
     debugInfo = document.getElementById('debug');
+    debugInfo.style.display = 'none'; // Ensure it's hidden by default
     
     // Get canvases
     glCanvas = document.getElementById('glCanvas');
@@ -622,7 +629,7 @@ async function init() {
         animate();
         
         // Show debug info for troubleshooting
-        debugInfo.style.display = 'block';
+        debugInfo.style.display = 'none';
         
     } catch (error) {
         console.error('Initialization error:', error);
@@ -1289,28 +1296,20 @@ function draw() {
     }
 }
 
-// Start the application
-init().catch(error => {
-    console.error('Application error:', error);
-    showError('Application error: ' + error.message);
+// Initialize the application when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Ensure debug panel is hidden on load
+    const debugPanel = document.getElementById('debug');
+    if (debugPanel) {
+        debugPanel.style.display = 'none';
+    }
+    
+    // Initialize the application
+    init().catch(error => {
+        console.error('Application error:', error);
+        showError('Application error: ' + error.message);
+    });
 });
-
-// Add UI info
-const infoDiv = document.createElement('div');
-infoDiv.style.position = 'absolute';
-infoDiv.style.bottom = '10px';
-infoDiv.style.left = '10px';
-infoDiv.style.color = 'white';
-infoDiv.style.fontFamily = 'monospace';
-infoDiv.style.backgroundColor = 'rgba(0,0,0,0.5)';
-infoDiv.style.padding = '10px';
-infoDiv.innerHTML = `
-    Mouse: drag to pan, wheel to zoom<br>
-    +/-: increase/decrease iterations (current: <span id="iterationCount">${maxIterations}</span>)<br>
-    R: reset view<br>
-    D: toggle debug info
-`;
-document.body.appendChild(infoDiv);
 
 // Function to update the function examples in the UI
 function updateFunctionExamples() {

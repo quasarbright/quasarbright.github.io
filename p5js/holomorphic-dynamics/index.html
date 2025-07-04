@@ -27,7 +27,7 @@
         #controls {
             position: absolute;
             top: 10px;
-            right: 10px;
+            left: 10px;
             background-color: rgba(0, 0, 0, 0.7);
             padding: 15px;
             border-radius: 5px;
@@ -78,7 +78,7 @@
         #debug {
             position: absolute;
             top: 10px;
-            left: 10px;
+            right: 10px;
             color: white;
             font-family: monospace;
             background-color: rgba(0,0,0,0.8);
@@ -88,6 +88,7 @@
             border-radius: 5px;
             border: 1px solid #555;
             z-index: 1000;
+            display: none;
         }
         #info {
             position: absolute;
@@ -383,7 +384,7 @@ return z_new - cdiv(p, dp);">Newton's Method</span>
         </div>
     </div>
     
-    <div id="debug">Debug info:</div>
+    <div id="debug" style="display: none;">Debug info:</div>
     
     <div id="info">
         Mouse: drag to pan, wheel to zoom<br>
