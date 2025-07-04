@@ -215,7 +215,7 @@ function checkForMissingParameters(functionCode) {
     });
     
     if (missingParams.length > 0) {
-        return `Warning: You're using parameter(s) that haven't been added yet: ${missingParams.join(', ')}. Add them in the Parameters tab.`;
+        return `Warning: You're using parameter(s) that haven't been added yet: ${missingParams.join(', ')}. Add them in the Custom Parameters section.`;
     }
     
     return null;
@@ -492,6 +492,37 @@ function resizeCanvases() {
     }
 }
 
+// Set up about modal
+function setupAboutModal() {
+    const aboutButton = document.getElementById('about-button');
+    const modalOverlay = document.getElementById('modal-overlay');
+    const closeModal = document.getElementById('close-modal');
+    
+    // Show modal when About button is clicked
+    aboutButton.addEventListener('click', () => {
+        modalOverlay.style.display = 'flex';
+    });
+    
+    // Hide modal when close button is clicked
+    closeModal.addEventListener('click', () => {
+        modalOverlay.style.display = 'none';
+    });
+    
+    // Hide modal when clicking outside the modal content
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+            modalOverlay.style.display = 'none';
+        }
+    });
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modalOverlay.style.display === 'flex') {
+            modalOverlay.style.display = 'none';
+        }
+    });
+}
+
 // Initialize WebGL
 async function init() {
     // Set up debug info
@@ -540,8 +571,8 @@ async function init() {
         
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
         
-        // Set up tab switching
-        setupTabSwitching();
+        // Set up about modal
+        setupAboutModal();
         
         // Set up mouse events for interaction
         setupMouseEvents();
@@ -577,30 +608,6 @@ async function init() {
         console.error('Initialization error:', error);
         showError('Initialization error: ' + error.message);
     }
-}
-
-// Set up tab switching
-function setupTabSwitching() {
-    const tabs = document.querySelectorAll('.tab');
-    const tabContents = document.querySelectorAll('.tab-content');
-    
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            // Remove active class from all tabs and content
-            tabs.forEach(t => t.classList.remove('active'));
-            tabContents.forEach(content => content.classList.remove('active'));
-            
-            // Add active class to clicked tab
-            tab.classList.add('active');
-            
-            // Add active class to corresponding content
-            const tabId = tab.getAttribute('data-tab');
-            const content = document.getElementById(tabId + '-tab');
-            if (content) {
-                content.classList.add('active');
-            }
-        });
-    });
 }
 
 // Set up function input

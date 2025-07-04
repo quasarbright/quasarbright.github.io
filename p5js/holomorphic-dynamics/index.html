@@ -185,35 +185,85 @@
             display: flex;
             gap: 5px;
             margin-top: 10px;
+            width: 100%;
         }
         .add-param-row input {
-            flex: 1;
             padding: 3px;
+            font-size: 11px;
+        }
+        .add-param-row input#new-param-name {
+            width: 35%;
+        }
+        .add-param-row input#new-param-value-real,
+        .add-param-row input#new-param-value-imag {
+            width: 25%;
         }
         .add-param-row button {
             margin-top: 0;
+            width: 15%;
+            padding: 2px 0;
+            font-size: 11px;
         }
-        .tab-container {
-            display: flex;
-            border-bottom: 1px solid #555;
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 15px;
             margin-bottom: 10px;
+            border-bottom: 1px solid #555;
+            padding-bottom: 5px;
         }
-        .tab {
+        #about-button {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: 1px solid #555;
+            border-radius: 3px;
             padding: 5px 10px;
             cursor: pointer;
-            background-color: rgba(0, 0, 0, 0.3);
-            border-top-left-radius: 3px;
-            border-top-right-radius: 3px;
+            z-index: 100;
         }
-        .tab.active {
-            background-color: rgba(76, 175, 80, 0.5);
-            border-bottom: 2px solid #4CAF50;
-        }
-        .tab-content {
+        #modal-overlay {
             display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
         }
-        .tab-content.active {
-            display: block;
+        #about-modal {
+            background-color: rgba(20, 20, 20, 0.95);
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid #555;
+        }
+        #close-modal {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .modal-section {
+            margin-bottom: 15px;
+        }
+        .modal-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #4CAF50;
         }
     </style>
     <!-- Include math.js for parsing mathematical expressions -->
@@ -224,13 +274,10 @@
     <canvas id="overlayCanvas"></canvas>
     
     <div id="controls">
-        <div class="tab-container">
-            <div class="tab active" data-tab="function">Function</div>
-            <div class="tab" data-tab="parameters">Parameters</div>
-            <div class="tab" data-tab="help">Help</div>
-        </div>
+        <h2>Complex Function Visualization</h2>
         
-        <div id="function-tab" class="tab-content active">
+        <!-- Function Section -->
+        <div>
             <label for="function-input">Enter GLSL function code:</label>
             <textarea id="function-input" placeholder="return csquare(z) + c;">return csquare(z) + c;</textarea>
             <button id="apply-function">Apply Function</button>
@@ -255,59 +302,80 @@ return csquare(z) + cmul(p, csin(c));">z² + p*sin(c) (add p first)</span>
             </div>
         </div>
         
-        <div id="parameters-tab" class="tab-content">
-            <div class="parameter-controls">
-                <h4 style="margin-top: 0;">Built-in Parameters</h4>
-                <div class="parameter-row">
-                    <span class="parameter-name">z₀:</span>
-                    <div class="radio-group">
-                        <label class="radio-label">
-                            <input type="radio" name="z-control" value="dot" checked>
-                            Dot <span class="dot-color dot-z"></span>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="z-control" value="pixel">
-                            Pixel
-                        </label>
-                    </div>
-                </div>
-                <div class="parameter-row">
-                    <span class="parameter-name">c:</span>
-                    <div class="radio-group">
-                        <label class="radio-label">
-                            <input type="radio" name="c-control" value="dot">
-                            Dot <span class="dot-color dot-c"></span>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="c-control" value="pixel" checked>
-                            Pixel
-                        </label>
-                    </div>
-                </div>
-                <div style="font-size: 11px; margin-top: 5px;">
-                    <p>Mandelbrot set: c=pixel, z₀=dot (default)</p>
-                    <p>Julia set: z₀=pixel, c=dot</p>
+        <!-- Parameters Section -->
+        <div class="section-title">Built-in Parameters</div>
+        <div class="parameter-controls">
+            <div class="parameter-row">
+                <span class="parameter-name">z₀:</span>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="z-control" value="dot" checked>
+                        Dot <span class="dot-color dot-z"></span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="z-control" value="pixel">
+                        Pixel
+                    </label>
                 </div>
             </div>
-            
-            <div class="custom-parameters">
-                <h4>Custom Parameters</h4>
-                <div id="custom-params-container">
-                    <!-- Custom parameters will be added here dynamically -->
+            <div class="parameter-row">
+                <span class="parameter-name">c:</span>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="c-control" value="dot">
+                        Dot <span class="dot-color dot-c"></span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="c-control" value="pixel" checked>
+                        Pixel
+                    </label>
                 </div>
-                
-                <div class="add-param-row">
-                    <input type="text" id="new-param-name" placeholder="Name (e.g. 'p')">
-                    <input type="text" id="new-param-value-real" placeholder="Real value">
-                    <input type="text" id="new-param-value-imag" placeholder="Imag value">
-                    <button id="add-param-btn" class="small-button">Add</button>
-                </div>
+            </div>
+            <div style="font-size: 11px; margin-top: 5px;">
+                <p>Mandelbrot set: c=pixel, z₀=dot (default)</p>
+                <p>Julia set: z₀=pixel, c=dot</p>
             </div>
         </div>
         
-        <div id="help-tab" class="tab-content">
-            <div class="instructions">
-                <h4>Complex Function Visualization</h4>
+        <div class="section-title">Custom Parameters</div>
+        <div class="custom-parameters">
+            <div id="custom-params-container">
+                <!-- Custom parameters will be added here dynamically -->
+            </div>
+            
+            <div class="add-param-row">
+                <input type="text" id="new-param-name" placeholder="Name (e.g. 'p')">
+                <input type="text" id="new-param-value-real" placeholder="Real">
+                <input type="text" id="new-param-value-imag" placeholder="Imag">
+                <button id="add-param-btn" class="small-button">Add</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="debug">Debug info:</div>
+    
+    <div id="info">
+        Mouse: drag to pan, wheel to zoom<br>
+        Drag colored dots to set parameter values<br>
+        +/-: increase/decrease iterations (current: <span id="iterationCount">100</span>)<br>
+        R: reset view | D: toggle debug info
+    </div>
+    
+    <button id="about-button">About</button>
+    
+    <!-- About Modal -->
+    <div id="modal-overlay">
+        <div id="about-modal">
+            <button id="close-modal">&times;</button>
+            <h2>Complex Function Visualization</h2>
+            
+            <div class="modal-section">
+                <div class="modal-title">About</div>
+                <p>This tool visualizes complex functions using WebGL shaders. You can explore both Mandelbrot and Julia sets, as well as create your own custom complex functions.</p>
+            </div>
+            
+            <div class="modal-section">
+                <div class="modal-title">Complex Functions</div>
                 <p>Enter GLSL code that returns a vec2 result. Your function should use the variables <code>z</code> and <code>c</code> which are both vec2 (complex numbers).</p>
                 <p>Available complex functions:</p>
                 <ul>
@@ -319,11 +387,12 @@ return csquare(z) + cmul(p, csin(c));">z² + p*sin(c) (add p first)</span>
                     <li><code>csin(z)</code>, <code>ccos(z)</code></li>
                     <li><code>cexp(z)</code>, <code>clog(z)</code></li>
                 </ul>
-                
-                <h4>Custom Parameters</h4>
+            </div>
+            
+            <div class="modal-section">
+                <div class="modal-title">Custom Parameters</div>
                 <p>You can add custom parameters to use in your function:</p>
                 <ol>
-                    <li>Go to the Parameters tab</li>
                     <li>Enter a name (e.g., "p"), real and imaginary values</li>
                     <li>Click Add</li>
                     <li>Use the parameter in your function directly by its name (e.g., if you named your parameter "p", just use <code>p</code> in your function)</li>
@@ -336,8 +405,10 @@ return csquare(z) + cmul(p, csin(c));">z² + p*sin(c) (add p first)</span>
                 </ul>
                 <p>Example: If you create a parameter named "p", refer to it simply as <code>p</code> in your function:</p>
                 <pre>return csquare(z) + cmul(c, p);</pre>
-                
-                <h4>Keyboard Shortcuts</h4>
+            </div>
+            
+            <div class="modal-section">
+                <div class="modal-title">Keyboard Shortcuts</div>
                 <ul>
                     <li><b>+/-</b>: Increase/decrease iterations</li>
                     <li><b>R</b>: Reset view</li>
@@ -347,15 +418,6 @@ return csquare(z) + cmul(p, csin(c));">z² + p*sin(c) (add p first)</span>
                 </ul>
             </div>
         </div>
-    </div>
-    
-    <div id="debug">Debug info:</div>
-    
-    <div id="info">
-        Mouse: drag to pan, wheel to zoom<br>
-        Drag colored dots to set parameter values<br>
-        +/-: increase/decrease iterations (current: <span id="iterationCount">100</span>)<br>
-        R: reset view | D: toggle debug info
     </div>
     
     <script type="module" src="script.js"></script>
