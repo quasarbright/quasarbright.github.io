@@ -8,6 +8,7 @@ let maxIterationsUniformLocation;
 let centerUniformLocation;
 let zoomUniformLocation;
 let initialZUniformLocation;
+let timeUniformLocation; // Added for animated hue shift
 
 // Custom parameters storage
 let customParameters = {};
@@ -278,6 +279,7 @@ function createShaderProgram(vertexSource, fragmentSource) {
     centerUniformLocation = gl.getUniformLocation(program, 'u_center');
     zoomUniformLocation = gl.getUniformLocation(program, 'u_zoom');
     initialZUniformLocation = gl.getUniformLocation(program, 'u_initialZ');
+    timeUniformLocation = gl.getUniformLocation(program, 'u_time'); // Get time uniform location
     
     // Get custom parameter uniform locations
     customParameterUniformLocations = {};
@@ -601,8 +603,14 @@ async function init() {
             console.log("Initial function applied successfully");
         }
         
-        // Ensure we draw immediately to show the Mandelbrot set
-        draw();
+        // Start the animation loop
+        function animate() {
+            draw();
+            requestAnimationFrame(animate);
+        }
+        
+        // Start the animation loop
+        animate();
         
         // Show debug info for troubleshooting
         debugInfo.style.display = 'block';
@@ -1203,6 +1211,9 @@ function draw() {
         gl.uniform1f(zoomUniformLocation, zoom);
         gl.uniform2f(initialZUniformLocation, shaderInitialZ[0], shaderInitialZ[1]);
         
+        // Set time uniform for animated hue shift
+        gl.uniform1f(timeUniformLocation, performance.now() / 1000.0);
+        
         console.log("Setting custom parameter uniforms:");
         
         // Set custom parameter uniforms
@@ -1273,6 +1284,7 @@ function draw() {
                 ${customParamsDebug}
                 Current Function: ${currentFunctionGLSL}`;
         }
+        
     } catch (error) {
         console.error('Draw error:', error);
         showError('Draw error: ' + error.message);

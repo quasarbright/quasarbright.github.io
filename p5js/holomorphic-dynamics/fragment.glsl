@@ -5,6 +5,7 @@ uniform int u_maxIterations;
 uniform vec2 u_center;
 uniform float u_zoom;
 uniform vec2 u_initialZ; // Initial value of z (z_0)
+uniform float u_time; // Time for animated hue shift
 
 // CUSTOM_UNIFORMS_PLACEHOLDER
 
@@ -168,7 +169,8 @@ void main() {
         float colorIndex = smoothed * 0.01;
         
         // Use modulo to create repeating color bands
-        float hue = fract(colorIndex);
+        // Add time-based hue shift
+        float hue = fract(colorIndex - u_time * 0.05);
         float saturation = 0.8;
         float value = escaped ? 1.0 : 0.7;
         
