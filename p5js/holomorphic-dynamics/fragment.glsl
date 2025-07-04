@@ -119,22 +119,22 @@ void main() {
     
     // We're using the same shader for both Mandelbrot and Julia sets
     // The JavaScript code will pass the appropriate values based on the UI controls
-    z = u_initialZ;  // If z is in "pixel" mode, JS will set this to vec2(0,0)
-    c = u_paramC;    // If c is in "pixel" mode, JS will set this to vec2(0,0)
+    z = u_initialZ;  // If z is in "pixel" mode, JS will set this to vec2(-999,-999)
+    c = u_paramC;    // If c is in "pixel" mode, JS will set this to vec2(-999,-999)
     
     // If z is in "pixel" mode, use the pixel position
-    if (z == vec2(0.0, 0.0)) {
+    if (z.x == -999.0 && z.y == -999.0) {
         z = pixelPos;
     }
     
     // If c is in "pixel" mode, use the pixel position
-    if (c == vec2(0.0, 0.0)) {
+    if (c.x == -999.0 && c.y == -999.0) {
         c = pixelPos;
     }
     
-    // Handle custom parameters - if a uniform is set to vec2(0,0), use pixel position
+    // Handle custom parameters - if a uniform is set to the special value, use pixel position
     // This is handled automatically because any custom parameter uniforms
-    // that should use pixel position will be set to vec2(0,0) by JavaScript
+    // that should use pixel position will be set to the special value by JavaScript
     
     float zMagnitude = 0.0;
     int iterations = 0;

@@ -512,6 +512,9 @@ async function init() {
         return;
     }
     
+    // Ensure initialZ is set to (0,0)
+    initialZ = [0.0, 0.0];
+    
     showInfo('WebGL context created successfully');
     
     try {
@@ -554,13 +557,16 @@ async function init() {
         
         // Get the initial function from the input field
         const functionInput = document.getElementById('function-input');
-        currentFunctionGLSL = functionInput.value;
+        currentFunctionGLSL = functionInput.value || "return csquare(z) + c;";
         
         // Apply the initial function to create the shader program
         const result = applyFunctionToShader(currentFunctionGLSL);
         if (!result.success) {
             showError(result.message);
         }
+        
+        // Ensure we draw immediately to show the Mandelbrot set
+        draw();
         
         // Hide debug info after initial setup
         setTimeout(() => {
@@ -602,6 +608,11 @@ function setupFunctionInput() {
     const functionInput = document.getElementById('function-input');
     const applyButton = document.getElementById('apply-function');
     const examples = document.querySelectorAll('.example');
+    
+    // Set default function if input is empty
+    if (!functionInput.value.trim()) {
+        functionInput.value = "return csquare(z) + c;";
+    }
     
     // Apply function when button is clicked
     applyButton.addEventListener('click', () => {
@@ -970,8 +981,8 @@ function getCustomParameterValue(paramName) {
         // Return the stored value
         return customParameters[paramName] || [0.0, 0.0];
     } else if (mode === 'pixel') {
-        // For pixel mode, return [0,0] to indicate that the shader should use pixel position
-        return [0.0, 0.0];
+        // For pixel mode, return special value to indicate that the shader should use pixel position
+        return [-999.0, -999.0];
     } else if (mode === 'dot') {
         // For dot mode, return the stored value
         return customParameters[paramName] || [0.0, 0.0];
@@ -982,9 +993,10 @@ function getCustomParameterValue(paramName) {
 
 // Get shader uniform values based on control modes
 function getShaderParameters() {
-    // For the shader, we need to pass either the actual value or (0,0) to indicate "use pixel position"
-    let shaderInitialZ = [0.0, 0.0];
-    let shaderParamC = [0.0, 0.0];
+    // For the shader, we need to pass either the actual value or a special value to indicate "use pixel position"
+    // Using (-999, -999) as a special value to indicate "use pixel position" instead of (0,0)
+    let shaderInitialZ = [-999.0, -999.0]; // Special value for "use pixel position"
+    let shaderParamC = [-999.0, -999.0];   // Special value for "use pixel position"
     
     // If z is controlled by a dot, pass the actual value
     if (zControlMode === "dot") {
