@@ -341,6 +341,27 @@
 return csquare(z) + cmul(c, p);">z² + c*p (add p first)</span>
                     <span class="example" data-func="// Add parameter 'p' first! 
 return csquare(z) + cmul(p, csin(c));">z² + p*sin(c) (add p first)</span>
+                    <span class="example" data-func="// Newton's method for p(z) = (z-r1)(z-r2)(z-r3)
+// Will add parameters r1, r2, r3 if they don't exist
+// This implementation returns the next iteration value directly
+
+// Define the Newton step inline to avoid function declarations
+vec2 z_new = z;
+
+// Compute p(z) = (z-r1)(z-r2)(z-r3)
+vec2 p1 = z_new - r1;
+vec2 p2 = z_new - r2;
+vec2 p3 = z_new - r3;
+vec2 p = cmul(cmul(p1, p2), p3);
+
+// Compute p'(z) = (z-r2)(z-r3) + (z-r1)(z-r3) + (z-r1)(z-r2)
+vec2 dp1 = cmul(p2, p3);
+vec2 dp2 = cmul(p1, p3);
+vec2 dp3 = cmul(p1, p2);
+vec2 dp = dp1 + dp2 + dp3;
+
+// Newton iteration: z - p(z)/p'(z)
+return z_new - cdiv(p, dp);">Newton's Method</span>
                 </div>
             </div>
         </div>

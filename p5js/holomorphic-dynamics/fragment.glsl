@@ -6,6 +6,7 @@ uniform vec2 u_center;
 uniform float u_zoom;
 uniform vec2 u_initialZ; // Initial value of z (z_0)
 uniform float u_time; // Time for animated hue shift
+uniform int u_coloringMode; // 0 = escape, 1 = convergence
 
 // CUSTOM_UNIFORMS_PLACEHOLDER
 
@@ -126,14 +127,19 @@ void main() {
     
     // Determine z based on the current mode
     vec2 z = getParameterValue(u_initialZ, pixelPos);
+    vec2 originalZ = z; // Store the original z for convergence coloring
     
     float zMagnitude = 0.0;
     int iterations = 0;
     bool escaped = false;
+    bool converged = false;
+    vec2 prevZ = z;
     
-    // Iterate and track if the point escapes
+    // Iterate and track if the point escapes or converges
     for (int i = 0; i < 10000; i++) {
         if (i >= u_maxIterations) break;
+        
+        prevZ = z; // Store previous z value to check for convergence
         
         // Apply the complex function
         z = complex_function(z, pixelPos);
@@ -141,40 +147,73 @@ void main() {
         // Track magnitude for coloring
         zMagnitude = length(z);
         
-        // Check if the magnitude is getting very large
-        if (zMagnitude > 1000.0) {  // Lower escape threshold for better coloring
+        // Check if the magnitude is getting very large (escape)
+        if (zMagnitude > 1000.0) {
             escaped = true;
             iterations = i;
             break;
         }
         
+        // Check for convergence (when the change between iterations becomes very small)
+        if (i > 0) {
+            float delta = length(z - prevZ);
+            if (delta < 0.0001) {
+                converged = true;
+                iterations = i;
+                break;
+            }
+        }
+        
         iterations = i;
     }
     
-    // Color based on whether the point escaped and how many iterations it took
-    if (!escaped && iterations >= u_maxIterations - 1) {
-        // Points that reached max iterations without escaping are likely in the set
-        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); // Black
+    // Color based on the selected coloring mode
+    if (u_coloringMode == 0) {
+        // Escape coloring mode (original)
+        if (!escaped && iterations >= u_maxIterations - 1) {
+            // Points that reached max iterations without escaping are likely in the set
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); // Black
+        } else {
+            // Improved coloring using logarithmic smoothing
+            float log_zn = log(zMagnitude);
+            float nu = log(log_zn / log(1000.0)) / log(2.0);
+            
+            // Smooth iteration count
+            float smoothed = float(iterations) + 1.0 - nu;
+            
+            // Scale by a constant factor instead of max iterations
+            float colorIndex = smoothed * 0.01;
+            
+            // Add time-based hue shift
+            float hue = fract(colorIndex - u_time * 0.05);
+            float saturation = 0.8;
+            float value = escaped ? 1.0 : 0.7;
+            
+            vec3 color = hsv2rgb(vec3(hue, saturation, value));
+            gl_FragColor = vec4(color, 1.0);
+        }
     } else {
-        // Improved coloring using logarithmic smoothing
-        // This makes the coloring more stable when changing max iterations
-        float log_zn = log(zMagnitude);
-        float nu = log(log_zn / log(1000.0)) / log(2.0);
-        
-        // Smooth iteration count
-        float smoothed = float(iterations) + 1.0 - nu;
-        
-        // Scale by a constant factor instead of max iterations
-        // This keeps colors consistent when changing max iterations
-        float colorIndex = smoothed * 0.01;
-        
-        // Use modulo to create repeating color bands
-        // Add time-based hue shift
-        float hue = fract(colorIndex - u_time * 0.05);
-        float saturation = 0.8;
-        float value = escaped ? 1.0 : 0.7;
-        
-        vec3 color = hsv2rgb(vec3(hue, saturation, value));
-        gl_FragColor = vec4(color, 1.0);
+        // Convergence coloring mode
+        if (converged) {
+            // For Newton's method, we want to color based on which root it converged to
+            
+            // Use angle for hue and magnitude for brightness
+            float angle = atan(z.y, z.x); // Range: -PI to PI
+            float hue = (angle + 3.14159) / 6.28318; // Normalize to 0-1 range
+            
+            // Add time-based animation
+            hue = fract(hue - u_time * 0.05);
+            
+            // Use magnitude for saturation, but cap it to avoid too bright/dark areas
+            float magnitude = min(length(z), 2.0) / 2.0;
+            float brightness = 0.5 + 0.5 * magnitude;
+            float sat = 0.7 + 0.3 * (1.0 - float(iterations) / float(u_maxIterations));
+            
+            vec3 color = hsv2rgb(vec3(hue, sat, brightness));
+            gl_FragColor = vec4(color, 1.0);
+        } else {
+            // Non-convergent points are black
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        }
     }
 } 

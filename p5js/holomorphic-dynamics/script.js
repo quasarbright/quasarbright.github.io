@@ -9,6 +9,7 @@ let centerUniformLocation;
 let zoomUniformLocation;
 let initialZUniformLocation;
 let timeUniformLocation; // Added for animated hue shift
+let coloringModeUniformLocation; // Added for coloring mode selection
 
 // Custom parameters storage
 let customParameters = {};
@@ -20,6 +21,7 @@ let center = [-0.5, 0.0];
 let zoom = 1.0;
 let currentFunctionGLSL = "return csquare(z) + c;"; // Default Mandelbrot function
 let initialZ = [0.0, 0.0]; // Initial value of z (z_0)
+let coloringMode = 0; // 0 = escape, 1 = convergence
 
 // Parameter control modes
 let zControlMode = "dot";  // "dot" or "pixel"
@@ -280,6 +282,7 @@ function createShaderProgram(vertexSource, fragmentSource) {
     zoomUniformLocation = gl.getUniformLocation(program, 'u_zoom');
     initialZUniformLocation = gl.getUniformLocation(program, 'u_initialZ');
     timeUniformLocation = gl.getUniformLocation(program, 'u_time'); // Get time uniform location
+    coloringModeUniformLocation = gl.getUniformLocation(program, 'u_coloringMode'); // Get coloring mode uniform location
     
     // Get custom parameter uniform locations
     customParameterUniformLocations = {};
@@ -584,6 +587,9 @@ async function init() {
         
         // Set up function input
         setupFunctionInput();
+        
+        // Set up coloring mode selector
+        setupColoringModeSelector();
         
         // Set up parameter controls
         setupParameterControls();
@@ -1214,6 +1220,9 @@ function draw() {
         // Set time uniform for animated hue shift
         gl.uniform1f(timeUniformLocation, performance.now() / 1000.0);
         
+        // Set coloring mode uniform
+        gl.uniform1i(coloringModeUniformLocation, coloringMode);
+        
         console.log("Setting custom parameter uniforms:");
         
         // Set custom parameter uniforms
@@ -1323,7 +1332,115 @@ function updateFunctionExamples() {
         example.addEventListener('click', () => {
             const functionInput = document.getElementById('function-input');
             functionInput.value = oldFunc;
+            
+            // Special handling for Newton's Method: add r1, r2, r3 parameters if they don't exist
+            if (oldFunc.includes("Newton's method")) {
+                // Define the roots as three points evenly spaced on a circle
+                if (!customParameters["r1"]) {
+                    customParameters["r1"] = [1.0, 0.0]; // 1 + 0i
+                    customParameterModes["r1"] = "dot";
+                    customParameterColors["r1"] = getRandomColor("r1");
+                }
+                if (!customParameters["r2"]) {
+                    customParameters["r2"] = [-0.5, 0.866]; // -0.5 + 0.866i (120 degrees)
+                    customParameterModes["r2"] = "dot";
+                    customParameterColors["r2"] = getRandomColor("r2");
+                }
+                if (!customParameters["r3"]) {
+                    customParameters["r3"] = [-0.5, -0.866]; // -0.5 - 0.866i (240 degrees)
+                    customParameterModes["r3"] = "dot";
+                    customParameterColors["r3"] = getRandomColor("r3");
+                }
+                
+                // Switch to convergence coloring mode for Newton's Method
+                coloringMode = 1;
+                
+                // Set z₀ to pixel mode for Newton's Method
+                zControlMode = "pixel";
+                
+                // Update the radio buttons if they exist
+                const convergenceRadio = document.getElementById('convergence-coloring');
+                if (convergenceRadio) {
+                    convergenceRadio.checked = true;
+                }
+                
+                // Refresh the UI to show the new parameters
+                refreshParametersUI();
+                
+                // Show info about the added parameters
+                showInfo("Added r1, r2, r3 parameters for Newton's Method. Try dragging the dots to change the roots!");
+            }
+            
             document.getElementById('apply-function').click();
         });
     });
+}
+
+// Function to set up the coloring mode selector
+function setupColoringModeSelector() {
+    // Create the coloring mode section
+    const controlsDiv = document.getElementById('controls');
+    const parametersSection = document.querySelector('.section-title');
+    
+    // Create the coloring mode section
+    const coloringSectionDiv = document.createElement('div');
+    coloringSectionDiv.className = 'section-title';
+    coloringSectionDiv.textContent = 'Coloring Mode';
+    
+    // Create the coloring mode selector
+    const coloringSelectorDiv = document.createElement('div');
+    coloringSelectorDiv.className = 'coloring-selector';
+    coloringSelectorDiv.style.padding = '10px 0';
+    coloringSelectorDiv.style.marginBottom = '15px';
+    
+    // Create the radio buttons for coloring modes
+    const escapeRadio = document.createElement('input');
+    escapeRadio.type = 'radio';
+    escapeRadio.id = 'escape-coloring';
+    escapeRadio.name = 'coloring-mode';
+    escapeRadio.value = '0';
+    escapeRadio.checked = coloringMode === 0;
+    
+    const escapeLabel = document.createElement('label');
+    escapeLabel.htmlFor = 'escape-coloring';
+    escapeLabel.textContent = 'Escape';
+    escapeLabel.style.marginRight = '20px';
+    escapeLabel.style.cursor = 'pointer';
+    
+    const convergenceRadio = document.createElement('input');
+    convergenceRadio.type = 'radio';
+    convergenceRadio.id = 'convergence-coloring';
+    convergenceRadio.name = 'coloring-mode';
+    convergenceRadio.value = '1';
+    convergenceRadio.checked = coloringMode === 1;
+    
+    const convergenceLabel = document.createElement('label');
+    convergenceLabel.htmlFor = 'convergence-coloring';
+    convergenceLabel.textContent = 'Convergence';
+    convergenceLabel.style.cursor = 'pointer';
+    
+    // Add event listeners
+    escapeRadio.addEventListener('change', () => {
+        if (escapeRadio.checked) {
+            coloringMode = 0;
+            draw();
+        }
+    });
+    
+    convergenceRadio.addEventListener('change', () => {
+        if (convergenceRadio.checked) {
+            coloringMode = 1;
+            draw();
+        }
+    });
+    
+    // Assemble the coloring selector
+    coloringSelectorDiv.appendChild(escapeRadio);
+    coloringSelectorDiv.appendChild(escapeLabel);
+    coloringSelectorDiv.appendChild(convergenceRadio);
+    coloringSelectorDiv.appendChild(convergenceLabel);
+    
+    // Insert the coloring section before the parameters section
+    controlsDiv.insertBefore(coloringSelectorDiv, parametersSection);
+    controlsDiv.insertBefore(coloringSectionDiv, coloringSelectorDiv);
 } 
