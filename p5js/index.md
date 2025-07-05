@@ -36,6 +36,14 @@ Create a fractal curve from a seed pattern of line segments by replacing each se
 
 This was vibe-coded.
 
+## [General Complex Dynamics Visualizer](./complex-dynamics/)
+
+A general, interactive visualizer for complex dynamics, featuring the mandelbrot set, julia sets, newton's fractal, and more.
+
+[![complex-dynamics](./screenshots/complex-dynamics.png)](./complex-dynamics/)
+
+This was vibe-coded.
+
 ## [Mandelbrot Set](https://quasarbright.github.io/p5js/mandelbrotShaderRenormalized/)
 [![mandelbrot set](https://quasarbright.github.io/p5js/mandelbrotShaderRenormalized/screenshot.png)](https://quasarbright.github.io/p5js/mandelbrotShaderRenormalized/)
 Instead of coloring each pixel discretely based on the iteration count upon escape,
