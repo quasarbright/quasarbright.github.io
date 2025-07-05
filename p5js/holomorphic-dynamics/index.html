@@ -75,21 +75,6 @@
             display: inline-block;
             margin-bottom: 5px;
         }
-        #debug {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: white;
-            font-family: monospace;
-            background-color: rgba(0,0,0,0.8);
-            padding: 10px;
-            font-size: 14px;
-            max-width: 400px;
-            border-radius: 5px;
-            border: 1px solid #555;
-            z-index: 1000;
-            display: none;
-        }
         #info {
             position: absolute;
             bottom: 10px;
@@ -332,7 +317,6 @@
                     <span class="example" data-func="return csquare(z) + csquare(c);">z² + c²</span>
                     <span class="example" data-func="return csin(z) + c;">sin(z) + c</span>
                     <span class="example" data-func="return csquare(z) + csin(c);">z² + sin(c)</span>
-                    <span class="example" data-func="return cmul(z, c) + z;">z * c + z</span>
                     <span class="example" data-func="vec2 absZ = vec2(abs(z.x), abs(z.y)); return csquare(absZ) + c;">Burning Ship</span>
                     <span class="example" data-func="return cpow(z, 4.0) + c;">z⁴ + c</span>
                     <span class="example" data-func="return cexp(z) + c;">exp(z) + c</span>
@@ -382,13 +366,16 @@ return z_new - cdiv(p, dp);">Newton's Method</span>
         </div>
     </div>
     
-    <div id="debug" style="display: none;">Debug info:</div>
-    
     <div id="info">
         Mouse: drag to pan, wheel to zoom<br>
         Drag colored dots to set parameter values<br>
         +/-: increase/decrease iterations (current: <span id="iterationCount">500</span>)<br>
-        R: reset view | D: toggle debug info
+        R: reset view
+    </div>
+    
+    <!-- About button at bottom right -->
+    <div style="position: absolute; bottom: 10px; right: 10px;">
+        <button id="about-button-corner" style="background-color: rgba(0, 0, 0, 0.7); color: white; border: 1px solid #555; border-radius: 3px; padding: 5px 10px; cursor: pointer;">About</button>
     </div>
     
     <!-- About Modal -->
@@ -451,7 +438,6 @@ return z_new - cdiv(p, dp);">Newton's Method</span>
                 <ul>
                     <li><b>+/-</b>: Increase/decrease the maximum number of iterations</li>
                     <li><b>r</b>: Reset view</li>
-                    <li><b>d</b>: Toggle debug info</li>
                 </ul>
             </div>
         </div>

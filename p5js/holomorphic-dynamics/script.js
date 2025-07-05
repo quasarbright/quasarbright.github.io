@@ -45,9 +45,6 @@ let glCanvas;
 let overlayCanvas;
 let overlayCtx;
 
-// Debug info
-let debugInfo;
-
 // Shader source code
 let vertexShaderSource = '';
 let fragmentShaderSourceTemplate = '';
@@ -318,29 +315,52 @@ function loadShader(gl, type, source) {
 
 // Show error message
 function showError(message) {
-    debugInfo.style.display = 'block';
-    debugInfo.innerHTML = message;
-    debugInfo.style.color = 'red';
+    console.error(message);
+    
+    // Create a temporary error notification
+    const errorNotification = document.createElement('div');
+    errorNotification.style.position = 'absolute';
+    errorNotification.style.top = '50%';
+    errorNotification.style.left = '50%';
+    errorNotification.style.transform = 'translate(-50%, -50%)';
+    errorNotification.style.backgroundColor = 'rgba(200, 0, 0, 0.8)';
+    errorNotification.style.color = 'white';
+    errorNotification.style.padding = '15px';
+    errorNotification.style.borderRadius = '5px';
+    errorNotification.style.zIndex = '2000';
+    errorNotification.textContent = message;
+    
+    document.body.appendChild(errorNotification);
+    
+    // Remove after 5 seconds
+    setTimeout(() => {
+        document.body.removeChild(errorNotification);
+    }, 5000);
 }
 
 // Show info message
 function showInfo(message) {
-    // Only show info messages after initialization is complete
-    if (document.readyState === 'complete') {
-        debugInfo.style.display = 'block';
-        debugInfo.innerHTML = message;
-        debugInfo.style.color = 'white';
-        
-        // Hide after 3 seconds
-        setTimeout(() => {
-            if (debugInfo.innerHTML === message) {
-                debugInfo.style.display = 'none';
-            }
-        }, 3000);
-    } else {
-        // Just log to console during initialization
-        console.log("Info:", message);
-    }
+    console.log("Info:", message);
+    
+    // Update the info div at the bottom
+    const infoDiv = document.getElementById('info');
+    const originalText = infoDiv.innerHTML;
+    
+    // Add the message to the info div
+    const messageElement = document.createElement('div');
+    messageElement.style.color = '#4CAF50';
+    messageElement.style.fontWeight = 'bold';
+    messageElement.style.marginTop = '10px';
+    messageElement.textContent = message;
+    
+    infoDiv.appendChild(messageElement);
+    
+    // Remove the message after 3 seconds
+    setTimeout(() => {
+        if (infoDiv.contains(messageElement)) {
+            infoDiv.removeChild(messageElement);
+        }
+    }, 3000);
 }
 
 // Load shaders from file
@@ -501,11 +521,17 @@ function resizeCanvases() {
 // Set up about modal
 function setupAboutModal() {
     const aboutButton = document.getElementById('about-button');
+    const aboutButtonCorner = document.getElementById('about-button-corner');
     const modalOverlay = document.getElementById('modal-overlay');
     const closeModal = document.getElementById('close-modal');
     
-    // Show modal when About button is clicked
+    // Show modal when Help button is clicked
     aboutButton.addEventListener('click', () => {
+        modalOverlay.style.display = 'flex';
+    });
+    
+    // Show modal when About button (corner) is clicked
+    aboutButtonCorner.addEventListener('click', () => {
         modalOverlay.style.display = 'flex';
     });
     
@@ -531,10 +557,6 @@ function setupAboutModal() {
 
 // Initialize WebGL
 async function init() {
-    // Set up debug info
-    debugInfo = document.getElementById('debug');
-    debugInfo.style.display = 'none'; // Ensure it's hidden by default
-    
     // Get canvases
     glCanvas = document.getElementById('glCanvas');
     overlayCanvas = document.getElementById('overlayCanvas');
@@ -627,9 +649,6 @@ async function init() {
         
         // Start the animation loop
         animate();
-        
-        // Show debug info for troubleshooting
-        debugInfo.style.display = 'none';
         
     } catch (error) {
         console.error('Initialization error:', error);
@@ -1100,10 +1119,6 @@ function setupMouseEvents() {
                 // Reset view
                 resetView();
                 break;
-            case 'd':
-                // Toggle debug info
-                debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
-                break;
             case 'j':
                 if (zControlMode !== "pixel" || customParameterModes["c"] !== "dot") {
                     // Add 'c' parameter if it doesn't exist
@@ -1239,57 +1254,6 @@ function draw() {
         // Draw the parameter dots on the overlay canvas
         drawDots();
         
-        // Update debug info if visible
-        if (debugInfo.style.display !== 'none' && debugInfo.style.color !== 'red') {
-            let modeDescription = "Custom Mode";
-            
-            // Check for Mandelbrot or Julia set modes
-            if (customParameters["c"]) {
-                if (zControlMode === "dot" && customParameterModes["c"] === "pixel") {
-                    modeDescription = "Mandelbrot Set";
-                } else if (zControlMode === "pixel" && customParameterModes["c"] === "dot") {
-                    modeDescription = "Julia Set";
-                }
-            }
-            
-            // Format complex number for display
-            function formatComplex(value) {
-                const realPart = value[0].toFixed(4);
-                const imagPart = Math.abs(value[1]).toFixed(4);
-                const sign = value[1] >= 0 ? '+' : '-';
-                return `${realPart}${sign}${imagPart}i`;
-            }
-            
-            // Format center as complex number
-            const centerComplex = formatComplex(center);
-            
-            let customParamsDebug = '';
-            Object.keys(customParameters).forEach(name => {
-                const param = customParameters[name];
-                const mode = customParameterModes[name] || 'dot';
-                
-                if (mode === 'pixel') {
-                    customParamsDebug += `${name}: (pixel position) [${mode}]<br>`;
-                } else {
-                    const valueDisplay = formatComplex(param);
-                    customParamsDebug += `${name}: ${valueDisplay} [${mode}]<br>`;
-                }
-            });
-            
-            // Format initialZ as complex number
-            const initialZDisplay = zControlMode === 'pixel' ? '(pixel position)' : formatComplex(initialZ);
-            
-            debugInfo.innerHTML = `Debug info:<br>
-                Mode: ${modeDescription}<br>
-                Resolution: ${glCanvas.width}x${glCanvas.height}<br>
-                Center: ${centerComplex}<br>
-                Zoom: ${zoom.toFixed(2)}<br>
-                Max Iterations: ${maxIterations}<br>
-                Initial Z: ${initialZDisplay} [${zControlMode}]<br>
-                ${customParamsDebug}
-                Current Function: ${currentFunctionGLSL}`;
-        }
-        
     } catch (error) {
         console.error('Draw error:', error);
         showError('Draw error: ' + error.message);
@@ -1298,12 +1262,6 @@ function draw() {
 
 // Initialize the application when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Ensure debug panel is hidden on load
-    const debugPanel = document.getElementById('debug');
-    if (debugPanel) {
-        debugPanel.style.display = 'none';
-    }
-    
     // Initialize the application
     init().catch(error => {
         console.error('Application error:', error);

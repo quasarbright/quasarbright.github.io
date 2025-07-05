@@ -1,6 +1,6 @@
-# Complex Function Visualization
+# Complex Dynamics
 
-A WebGL-based visualization of complex functions using vanilla JavaScript. Allows you to directly enter GLSL code to visualize arbitrary complex functions in the complex plane.
+A WebGL-based visualization of complex dynamics using vanilla JavaScript. Allows you to directly enter GLSL code to visualize arbitrary complex functions and their iterative behavior in the complex plane.
 
 ## Features
 
@@ -71,7 +71,6 @@ Then open your browser and navigate to the URL shown in the terminal.
 - **Mouse wheel**: Zoom in/out
 - **+/-**: Increase/decrease maximum iterations
 - **R**: Reset view
-- **D**: Toggle debug info
 - **Function input**: Enter GLSL code and click "Apply Function"
 
 ## Example Functions
