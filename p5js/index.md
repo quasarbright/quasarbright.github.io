@@ -241,6 +241,12 @@ A bunch of random walkers animated with a trail. Each little walker randomly dec
 
 [![screenshot of random walk](https://quasarbright.github.io/p5js/screenshots/random-walk.png)](https://quasarbright.github.io/p5js/random-walk)
 
+## [Voronoi](./voronoi)
+
+An animated voronoi diagram where the centers move around and bounce off the walls. Also includes alternative distance functions.
+
+[![voronoi](./screenshots/voronoi.png)](./voronoi)
+
 ## [Raindrops](https://quasarbright.github.io/p5js/raindrops)
 
 Inspired by watching raindrops drip down a car window and collide with each other. Raindrops move down, but their horizontal movement is random. When two drops collide, they combine and the survivor is randomly chosen, with bigger drops being more likely to survive. But small drops still have a chance of winning!

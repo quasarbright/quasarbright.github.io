@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voronoi Diagram Visualizer</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" integrity="sha384-GvrOXuhMATgEsSwCs4smul74iXGOixntILdUW9XmUC6+HX0sLNAK3q71HotJqlAn" crossorigin="anonymous">
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div id="controls">
+        <div class="control-group">
+            <label for="pointCount">Points:</label>
+            <button id="decreasePoints">-</button>
+            <span id="pointCountDisplay">10</span>
+            <button id="increasePoints">+</button>
+        </div>
+        
+        <div class="control-group">
+            <label for="distanceMetric">Distance:</label>
+            <select id="distanceMetric">
+                <option value="0">Euclidean</option>
+                <option value="1">Manhattan</option>
+                <option value="2">Chebyshev</option>
+                <option value="3">Minkowski (p=3)</option>
+                <option value="4">Circular</option>
+                <option value="5">Weighted Euclidean</option>
+                <option value="6">Newton's Method</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <button id="pausePlay">Pause</button>
+        </div>
+        
+        <div class="control-group">
+            <label>
+                <input type="checkbox" id="showColors" checked>
+                Colors
+            </label>
+        </div>
+        
+        <div class="control-group">
+            <label>
+                <input type="checkbox" id="showGradient">
+                Gradient
+            </label>
+        </div>
+        
+        <div class="control-group">
+            <label>
+                <input type="checkbox" id="showEdges">
+                Edges
+            </label>
+        </div>
+        
+        <div class="control-group">
+            <label>
+                <input type="checkbox" id="showDots" checked>
+                Dots
+            </label>
+        </div>
+    </div>
+    
+    <!-- About Button - Floating Panel -->
+    <div id="aboutPanel">
+        <button id="aboutButton">About</button>
+    </div>
+    
+    <!-- About Modal -->
+    <div id="aboutModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Voronoi Diagram Visualizer</h2>
+            
+            <h3>What is a Voronoi Diagram?</h3>
+            <p>A Voronoi diagram is a partition of a plane into regions based on distance to a specific set of points (called seeds or sites). For each seed point, there is a corresponding region consisting of all points that are closer to that seed than to any other seed.</p>
+            
+            <h3>Mathematical Definition</h3>
+            <p>Given a set of points <span class="math-inline">P = \{p_1, p_2, \ldots, p_n\}</span> in the plane, the Voronoi cell for point <span class="math-inline">p_i</span> is:</p>
+            <div class="math-block">V(p_i) = \{x \in \mathbb{R}^2 : d(x, p_i) \leq d(x, p_j) \text{ for all } j \neq i\}</div>
+            <p>where <span class="math-inline">d(x, y)</span> is the distance function between points <span class="math-inline">x</span> and <span class="math-inline">y</span>.</p>
+            
+            <h3>Distance Metrics</h3>
+
+            <p>There are other ways of measuring distance. We can select these other distance metrics and see how it affects the diagram.</p>
+            
+            <div class="metric">
+                <h4>Euclidean Distance</h4>
+                <div class="math-block">d(p, q) = \sqrt{(p_1 - q_1)^2 + (p_2 - q_2)^2}</div>
+                <p>The standard geometric distance</p>
+            </div>
+            
+            <div class="metric">
+                <h4>Manhattan Distance (L₁ Norm)</h4>
+                <div class="math-block">d(p, q) = |p_1 - q_1| + |p_2 - q_2|</div>
+                <p>Also called "taxicab distance" or "city block distance", representing movement restricted to grid lines.</p>
+            </div>
+            
+            <div class="metric">
+                <h4>Chebyshev Distance (L∞ Norm)</h4>
+                <div class="math-block">d(p, q) = \max(|p_1 - q_1|, |p_2 - q_2|)</div>
+                <p>Like Manhattan Distance, but takes the maximum of the two absolute differences. Also known as "chessboard distance" since it is the number of moves a king takes to go between two squares on a chessboard.</p>
+            </div>
+            
+            <div class="metric">
+                <h4>Minkowski Distance (p=3)</h4>
+                <div class="math-block">d(p, q) = \left(|p_1 - q_1|^3 + |p_2 - q_2|^3\right)^{1/3}</div>
+                <p>A generalization of Euclidean and Manhattan distances.</p>
+            </div>
+            
+            <div class="metric">
+                <h4>Circular Distance (Artistic)</h4>
+                <div class="math-block">d(p, q) = \|p - q\| \cdot [1 + 0.3 \cdot \sin(6\theta)]</div>
+                <p>where <span class="math-inline">\theta = \text{atan2}(q_2 - p_2, q_1 - p_1)</span></p>
+                <p>A creative distance that adds sinusoidal modulation based on angle, creating flower-like patterns.</p>
+            </div>
+            
+            <div class="metric">
+                <h4>Weighted Euclidean Distance</h4>
+                <div class="math-block">d(p, q) = \|p - q\|^2 \cdot w(p) \cdot b(p, q)</div>
+                <p>where:</p>
+                <ul>
+                    <li><span class="math-inline">w(p) = 0.3 + 200|v(p)| + 0.7[0.5 + 0.5\sin(10p_1)\cos(10p_2)]</span></li>
+                    <li><span class="math-inline">b(p, q) = 1 + 0.4 \cdot (\hat{v}(p) \cdot \frac{q - p}{\|q - p\|})</span></li>
+                    <li><span class="math-inline">v(p)</span> is the velocity of point <span class="math-inline">p</span></li>
+                </ul>
+                <p>Creates asymmetric cells influenced by point velocity and position, with directional bias.</p>
+            </div>
+            
+            <div class="metric">
+                <h4>Newton's Method Distance</h4>
+                <div class="math-block">P(z) = \prod_{i} (z - p_i)</div>
+                <div class="math-block">z_{n+1} = z_n - \frac{P(z_n)}{P'(z_n)}</div>
+                <p>Treats each point as the root of a polynomial and uses Newton's method to find the nearest root from each pixel. Not really a distance metric, but still cool.</p>
+            </div>
+            
+            <h3>Interactive Features</h3>
+            <ul>
+                <li><strong>Points:</strong> Adjust the number of seed points (1-50)</li>
+                <li><strong>Distance Metrics:</strong> Switch between different distance functions</li>
+                <li><strong>Gradient:</strong> Enable smooth color blending between regions</li>
+                <li><strong>Edges:</strong> Highlight cell boundaries in white</li>
+                <li><strong>Dots:</strong> Show/hide seed points as white circles</li>
+                <li><strong>Pause/Play:</strong> Control the animation</li>
+            </ul>
+            
+            <h3>Implementation</h3>
+            <p>This visualization is implemented using WebGL fragment shaders for real-time computation. Each pixel calculates its distance to all seed points using the selected metric. There are more efficient ways to implement voronoi diagrams, but since we have a GPU which can do something quickly for every pixel, we don't need to get fancy. This naive implementation also lends itself to generalizations like choosing different distance functions.</p>
+        </div>
+    </div>
+    
+    <!-- KaTeX JavaScript -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" integrity="sha384-cpW21h6RZv/phavutF+AuVYrr+dA8xD9zs6FwLpaCct6O9ctzYFfFr4dgmgccOTx" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"></script>
+    <script src="script.js"></script>
+    
+    <script>
+        // Render math when modal is opened
+        function renderMathInModal() {
+            const mathBlocks = document.querySelectorAll('.math-block');
+            const mathInlines = document.querySelectorAll('.math-inline');
+            
+            mathBlocks.forEach(block => {
+                katex.render(block.textContent, block, {
+                    throwOnError: false,
+                    displayMode: true
+                });
+            });
+            
+            mathInlines.forEach(inline => {
+                katex.render(inline.textContent, inline, {
+                    throwOnError: false,
+                    displayMode: false
+                });
+            });
+        }
+        
+        // Render math when page loads
+        document.addEventListener('DOMContentLoaded', renderMathInModal);
+    </script>
+</body>
+</html> 

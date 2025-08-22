@@ -1,0 +1,332 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+#canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    background: black;
+}
+
+#controls {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 15px;
+    color: white;
+    font-family: 'Arial', sans-serif;
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.control-group:last-child {
+    margin-bottom: 0;
+}
+
+.control-group label {
+    font-size: 14px;
+    font-weight: bold;
+    min-width: 50px;
+}
+
+.control-group button {
+    background: #333;
+    border: 1px solid #555;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.control-group button:hover {
+    background: #555;
+}
+
+.control-group button:active {
+    background: #666;
+}
+
+#pointCountDisplay {
+    font-size: 14px;
+    font-weight: bold;
+    min-width: 25px;
+    text-align: center;
+}
+
+#distanceMetric {
+    background: #333;
+    border: 1px solid #555;
+    color: white;
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    min-width: 120px;
+}
+
+#distanceMetric:focus {
+    outline: none;
+    border-color: #777;
+}
+
+#distanceMetric option {
+    background: #333;
+    color: white;
+}
+
+.control-group label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.control-group input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #666;
+}
+
+#pausePlay {
+    background: #444;
+    border: 1px solid #666;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+#pausePlay:hover {
+    background: #555;
+}
+
+#pausePlay:active {
+    background: #666;
+}
+
+input[type="range"] {
+    width: 80px;
+    height: 4px;
+    background: #444;
+    outline: none;
+    border-radius: 2px;
+    appearance: none;
+    margin: 0 5px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #666;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #666;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+#gradientValue {
+    font-size: 12px;
+    color: #ccc;
+    min-width: 25px;
+    text-align: center;
+}
+
+#aboutPanel {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+#aboutButton {
+    background: rgba(68, 68, 68, 0.9);
+    border: 1px solid #666;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+#aboutButton:hover {
+    background: rgba(85, 85, 85, 0.9);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+#aboutButton:active {
+    background: rgba(102, 102, 102, 0.9);
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background-color: #1a1a1a;
+    margin: 5% auto;
+    padding: 30px;
+    border: 1px solid #444;
+    border-radius: 12px;
+    width: 80%;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+    color: white;
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.close:hover,
+.close:focus {
+    color: white;
+}
+
+.modal-content h2 {
+    color: #fff;
+    margin-top: 0;
+    border-bottom: 2px solid #444;
+    padding-bottom: 10px;
+}
+
+.modal-content h3 {
+    color: #ddd;
+    margin-top: 25px;
+    margin-bottom: 15px;
+}
+
+.modal-content h4 {
+    color: #ccc;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.modal-content p {
+    margin: 10px 0;
+    color: #bbb;
+}
+
+.modal-content .math-block {
+    background: #2a2a2a;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 3px solid #666;
+    margin: 20px 0;
+    text-align: center;
+    overflow-x: auto;
+}
+
+.modal-content .math-inline {
+    background: #2a2a2a;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin: 0 2px;
+}
+
+/* KaTeX styling adjustments for dark theme */
+.modal-content .katex {
+    color: #fff !important;
+}
+
+.modal-content .katex .base {
+    color: #fff !important;
+}
+
+.modal-content .katex .mord, 
+.modal-content .katex .mop, 
+.modal-content .katex .mbin, 
+.modal-content .katex .mrel, 
+.modal-content .katex .mopen, 
+.modal-content .katex .mclose, 
+.modal-content .katex .mpunct {
+    color: #fff !important;
+}
+
+.modal-content .metric {
+    background: #222;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 8px;
+    border-left: 4px solid #555;
+}
+
+.modal-content ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.modal-content li {
+    margin: 5px 0;
+    color: #bbb;
+}
+
+.modal-content em {
+    font-style: italic;
+    color: #ddd;
+}
+
+.modal-content strong {
+    color: #fff;
+    font-weight: bold;
+} 
