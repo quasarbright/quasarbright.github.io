@@ -10,7 +10,9 @@
     "serve": "npx http-server dist -p 8080 -o",
     "start": "npm run build && npm run serve",
     "clean": "rm -rf dist",
-    "rebuild": "npm run clean && npm run build"
+    "rebuild": "npm run clean && npm run build",
+    "dev": "npm run build && concurrently \"nodemon --watch projects.yaml --watch projects.json --exec npm run build\" \"browser-sync start --server dist --port 8080 --files 'dist/**/*' --no-notify\"",
+    "watch": "nodemon --watch projects.yaml --watch projects.json --exec npm run build"
   },
   "keywords": [
     "static-site-generator",
@@ -25,7 +27,6 @@
   "dependencies": {
     "js-yaml": "^4.1.0"
   },
-  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/project-display"
@@ -33,5 +34,10 @@
   "homepage": "https://quasarbright.github.io/p5js/project-display/",
   "engines": {
     "node": ">=14.0.0"
+  },
+  "devDependencies": {
+    "browser-sync": "^3.0.4",
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.10"
   }
 }

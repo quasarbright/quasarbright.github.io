@@ -1,17 +1,10 @@
-- [ ] when going back to "all" tags, the url query string parameter doesn't update. it's also different behavior from when you just load up the page. When you initially load with a clean url, featured is first. but when you toggle tags on and off, you don't get featured first. featured results that meet the tags/filters should always be first, regardless of sorting.
-- [ ] update go to project vs show modal ui/ux
-  - [ ] instead of chevron, should be a little info icon
-- [ ] add source code field
-  - [ ] populate it everywhere
-  - [x] display on card
-- [ ] build system with caching?
-- [ ] figure out something better to do than default image. like maybe just don't show a thumbnail at all
 - [ ] add a dynamic background. maybe adapt some visual web projects and randomly select one to be the background on page load. should keep it muted colors so it's not distracting. maybe don't do shaders either in case their computer sucks
   - [ ] random walkers
   - [ ] voronoi
   - [ ] boids, but they avoid the mouse?
   - [ ] majority automaton, but black and white?
   - [ ] genetic steering
+- [ ] build system with caching?
 - [ ] make it a proper npm package that generates assets in the same format as something like react so it's re-usable
   - [ ] move this whole thing into its own repo
   - [ ] make another repo that uses it as a SSG, and do something like react-github-pages or what you do for your racket blog, or tbh just commit dist
@@ -20,3 +13,10 @@
 - [ ] admin site?
 - [x] more convenient build + run script
 - [x] generalize to all projects, not just web. add other projects. blog?
+- [x] update go to project vs show modal ui/ux
+  - [x] instead of chevron, should be a little info icon
+- [x] when going back to "all" tags, the url query string parameter doesn't update. it's also different behavior from when you just load up the page. When you initially load with a clean url, featured is first. but when you toggle tags on and off, you don't get featured first. featured results that meet the tags/filters should always be first, regardless of sorting.
+- [x] figure out something better to do than default image. like maybe just don't show a thumbnail at all
+- [x] add source code field
+  - [x] populate it everywhere
+  - [x] display on card

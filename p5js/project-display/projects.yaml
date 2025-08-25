@@ -14,6 +14,7 @@ projects:
       - AI
       - web
     pageLink: https://quasarbright.github.io/minesweeper
+    sourceLink: https://github.com/quasarbright/minesweeper
     featured: true
   - id: dinner-debt
     title: Dinner Debt
@@ -24,6 +25,7 @@ projects:
       - web
     pageLink: https://quasarbright.github.io/dinner-debt
     thumbnailLink: https://quasarbright.github.io/dinner-debt/logo512.png
+    sourceLink: https://github.com/quasarbright/dinner-debt
     featured: true
   - id: julia-image
     title: Image to Julia Set
@@ -38,6 +40,7 @@ projects:
       - web
     pageLink: ./julia-image
     thumbnailLink: ./screenshots/julia-image.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/julia-image
     featured: true
   - id: seam-carving
     title: Seam Carving
@@ -50,6 +53,7 @@ projects:
       - web
     pageLink: ./seam-carving
     thumbnailLink: ../images/energy-broomstick.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/seam-carving
   - id: fractal-curve-editor
     title: Fractal Curve Editor
     description: Create a fractal curve from a seed pattern of line segments by replacing each segment with a scaled copy of the whole seed. This was vibe-coded.
@@ -60,6 +64,7 @@ projects:
       - web
     pageLink: ./fractal-curve-editor/
     thumbnailLink: ./screenshots/fractal-curve-editor.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/fractal-curve-editor
   - id: complex-dynamics
     title: General Complex Dynamics Visualizer
     description: A general, interactive visualizer for complex dynamics, featuring the mandelbrot set, julia sets, newton's fractal, and more. This was vibe-coded.
@@ -72,6 +77,7 @@ projects:
       - web
     pageLink: ./complex-dynamics/
     thumbnailLink: ./screenshots/complex-dynamics.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/complex-dynamics
     featured: true
   - id: mandelbrot-shader
     title: Mandelbrot Set
@@ -83,6 +89,7 @@ projects:
       - web
     pageLink: https://quasarbright.github.io/p5js/mandelbrotShaderRenormalized/
     thumbnailLink: https://quasarbright.github.io/p5js/mandelbrotShaderRenormalized/screenshot.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/mandelbrotShaderRenormalized
   - id: julia-shader
     title: Julia Set
     description: This shader uses the same coloring method as the Mandelbrot set shader, but you can select the c-value used to generate the julia set by clicking/dragging the mouse on the screen.
@@ -94,6 +101,7 @@ projects:
       - web
     pageLink: https://quasarbright.github.io/p5js/juliaShader/
     thumbnailLink: https://quasarbright.github.io/p5js/juliaShader/screenshot.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/juliaShader
   - id: magnet-shader
     title: Magnet Pendulum
     description: The fractal is generated from simulating a magnetic pendulum swinging over a table with three magnets on it. Each pixel is colored based on which magnet it ends up at and darkened based on how long it took to stop at a magnet.
@@ -105,6 +113,7 @@ projects:
       - web
     pageLink: https://quasarbright.github.io/p5js/magnetShader/
     thumbnailLink: https://quasarbright.github.io/p5js/magnetShader/screenshot.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/magnetShader
   - id: majority-automaton-gpu
     title: Majority Cellular Automaton
     description: A multi-state cellular automaton where the next value is determined by majority vote of the neighbors. This project was originally implemented by me (without AI), and it ran on the CPU, but I vibe-coded a GPU port using cline.
@@ -116,6 +125,7 @@ projects:
       - web
     pageLink: https://quasarbright.github.io/p5js/majority-automaton-gpu
     thumbnailLink: https://quasarbright.github.io/p5js/screenshots/majority.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/majority-automaton-gpu
   - id: newton-fractal
     title: Newton's Fractal
     description: This visualizes newton's fractal, which is a root-finding algorithm. Inspired by 3blue1brown's great video on this fractal.
@@ -127,6 +137,7 @@ projects:
       - web
     pageLink: ./newton-fractal
     thumbnailLink: ./screenshots/newton.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/newton-fractal
   - id: spring-wave
     title: Double Slit Interference
     description: A physics-simulation of waves powered by balls connected with springs, demonstrating diffraction and double-slit interference.
@@ -136,6 +147,7 @@ projects:
       - web
     pageLink: https://quasarbright.github.io/spring-wave/dist/index.html
     thumbnailLink: ./screenshots/spring-wave.png
+    sourceLink: https://github.com/quasarbright/spring-wave
   - id: 3-point-perspective
     title: 3 Point Perspective
     description: 3 point perspective is a drawing technique to draw realistic-looking objects in 3D. You can click and drag the 3 white perspective points and one of the vertices of the cube.
@@ -143,6 +155,7 @@ projects:
     tags:
       - web
     pageLink: https://quasarbright.github.io/p5js/3PointPerspective
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/3PointPerspective
   - id: complex-grid-transformation
     title: Complex Function Grid Transformation
     description: This is an interactive visualization of functions on complex numbers. It shows how points along grid lines get transformed by the complex function. This was completely vibe-coded using ChatGPT.
@@ -152,6 +165,7 @@ projects:
       - web
     pageLink: https://quasarbright.github.io/p5js/complex-function-grid-visualizer
     thumbnailLink: ./screenshots/complex-grid-transformation.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/complex-function-grid-visualizer
   - id: braille-dithering
     title: Braille Dithering
     description: Convert images to braille characters for text-based image display.
@@ -160,6 +174,7 @@ projects:
       - upload-image
       - web
     pageLink: https://quasarbright.github.io/p5js/braille
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/braille
   - id: moon-dithering
     title: Moon Dithering
     description: Similar to braille dithering, but uses moon phase emojis.
@@ -168,6 +183,7 @@ projects:
       - upload-image
       - web
     pageLink: https://quasarbright.github.io/p5js/moon-dithering
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/moon-dithering
   - id: gpu-gol
     title: Image → Conway's Game of Life on the GPU
     description: A GPU-powered version for higher performance. This was vibe-coded using cline.
@@ -179,6 +195,7 @@ projects:
       - vibe-coded
       - web
     pageLink: https://quasarbright.github.io/p5js/gpu-gol
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/gpu-gol
   - id: sand2
     title: Sand
     description: Add sand, water, stone, acid, fire, and more to the screen and watch them interact. This is a cellular automaton where each "grain" interacts with its neighbors depending on what material it is.
@@ -189,6 +206,7 @@ projects:
       - web
     pageLink: https://quasarbright.github.io/p5js/sand2
     thumbnailLink: https://quasarbright.github.io/p5js/sand2/screenshot.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/sand2
   - id: boids
     title: Boids
     description: A simulation of bird flocking behavior. The boids try to stay near the center of the flock, avoid getting too close to other boids, and try to head in the same direction and speed as nearby boids.
@@ -198,6 +216,7 @@ projects:
       - web
     pageLink: https://quasarbright.github.io/p5js/boids
     thumbnailLink: https://quasarbright.github.io/p5js/boids/screenshot.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/boids
   - id: random-walk
     title: 2D Random Walkers
     description: A bunch of random walkers animated with a trail. Each little walker randomly decides to move up, down, left, or right.
@@ -207,6 +226,7 @@ projects:
       - web
     pageLink: https://quasarbright.github.io/p5js/random-walk
     thumbnailLink: https://quasarbright.github.io/p5js/screenshots/random-walk.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/random-walk
   - id: voronoi
     title: Voronoi
     description: An animated voronoi diagram where the centers move around and bounce off the walls. Also includes alternative distance functions.
@@ -217,6 +237,7 @@ projects:
       - web
     pageLink: ./voronoi
     thumbnailLink: ./screenshots/voronoi.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/voronoi
   - id: raindrops
     title: Raindrops
     description: Inspired by watching raindrops drip down a car window and collide with each other. Raindrops move down, but their horizontal movement is random. When two drops collide, they combine and the survivor is randomly chosen.
@@ -225,6 +246,7 @@ projects:
       - web
     pageLink: https://quasarbright.github.io/p5js/raindrops
     thumbnailLink: https://quasarbright.github.io/p5js/screenshots/raindrops.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/raindrops
   - id: wave-equation
     title: Wave Equation
     description: A numerical approximation of the wave equation, visualized as a heat map. It's like a simulation of the surface of a pond, starting off flat with a few splashes. An accumulating numerical error ends up producing an interesting pattern
@@ -235,6 +257,7 @@ projects:
       - web
     pageLink: https://quasarbright.github.io/p5js/wave-equation
     thumbnailLink: https://quasarbright.github.io/p5js/wave-equation/screenshot.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/wave-equation
   - id: rps-automaton
     title: Rock Paper Scissors Cellular Automaton
     description: A cellular automaton based on rock paper scissors where if a neighboring cell beats this cell, this cell becomes the winner.
@@ -244,6 +267,7 @@ projects:
       - web
     pageLink: https://quasarbright.github.io/p5js/rock-paper-scissors-automaton
     thumbnailLink: https://quasarbright.github.io/p5js/screenshots/rps.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/rock-paper-scissors-automaton
   - id: conway
     title: Conway's Game of Life
     description: This is John Conway's game of life, a cellular automaton where cells live or die depending on the state of their neighbors. Click on the cells to toggle their life state and hit start to see what happens.
@@ -253,6 +277,7 @@ projects:
       - conway
       - web
     pageLink: https://quasarbright.github.io/p5js/conway
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/conway
   - id: unbounded-conway
     title: Unbounded Conway's Game of Life
     description: Conway's game of life, but the size of the world is unlimited. Rather than storing a grid of cells, we store the positions of living cells and update those cells and their neighbors to compute the next generation.
@@ -263,6 +288,7 @@ projects:
       - web
     pageLink: https://quasarbright.github.io/p5js/unbounded-conway
     thumbnailLink: https://quasarbright.github.io/p5js/screenshots/unbounded-conway.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/unbounded-conway
   - id: genetic-steering
     title: Genetic Steering
     description: These creatures need to eat green food and avoid red poison to survive. They starve if they don't eat enough, and have a random chance of reproducing with some mutation at every moment.
@@ -272,6 +298,7 @@ projects:
       - web
     pageLink: https://editor.p5js.org/mdelmonaco/present/HJpO5IJ7Z
     thumbnailLink: https://quasarbright.github.io/p5js/screenshots/genetic-steering.png
+    sourceLink: https://editor.p5js.org/mdelmonaco/sketches/HJpO5IJ7Z
   - id: smart-rockets
     title: Smart Rockets
     description: There are two competing populations of rockets, each using genetics and evolution to try to learn to reach the target by applying a series of forces to themselves.
@@ -280,6 +307,7 @@ projects:
       - AI
       - web
     pageLink: https://editor.p5js.org/mdelmonaco/present/BkJquZ1Ae
+    sourceLink: https://editor.p5js.org/mdelmonaco/sketches/BkJquZ1Ae
     thumbnailLink: https://quasarbright.github.io/p5js/screenshots/smart-rockets.png
   - id: monty-hall
     title: Monty Hall Game
@@ -289,6 +317,7 @@ projects:
       - education
       - web
     pageLink: https://quasarbright.github.io/monty-hall-game
+    sourceLink: https://github.com/quasarbright/monty-hall-game
   - id: dragon-curve
     title: Dragon Curve
     description: This is the dragon curve. It's the fractal generated by folding a piece of paper in half over and over again.
@@ -298,6 +327,7 @@ projects:
       - web
     pageLink: https://quasarbright.github.io/p5js/dragon-curve/
     thumbnailLink: https://quasarbright.github.io/p5js/dragon-curve/screenshot.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/dragon-curve
   - id: ginchology
     title: Ginchology
     description: 'This randomly generates two ginchulates, which are a consonant sound, a vowel, and finally, an "nch". Ex: "dench". They just sound funny.'
@@ -306,6 +336,7 @@ projects:
       - funny
       - web
     pageLink: https://quasarbright.github.io/p5js/ginchology
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/ginchology
   - id: kana-word-generator
     title: Kana Word Generator
     description: This page randomly generates "Japanese-sounding" words using hiragana syllable rules.
@@ -313,6 +344,7 @@ projects:
     tags:
       - web
     pageLink: https://quasarbright.github.io/p5js/kanaWordGenerator
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/kanaWordGenerator
   - id: magnetic-pendulum
     title: Magnetic Pendulum
     description: This simulates three magnets on a table with a pendulum hanging a magnetic object above the center. Where the pendulum ends up is extremely sensitive to the initial dropping position.
@@ -322,6 +354,7 @@ projects:
       - web
     pageLink: https://quasarbright.github.io/p5js/magnetic%20pendulum
     thumbnailLink: https://quasarbright.github.io/images/magnet%20pendulum.PNG
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/magnetic%20pendulum
   - id: elastic-sphere-collision
     title: Elastic Sphere Collisions
     description: A bunch of balls (really circles) colliding with each other elastically, conserving kinetic energy and momentum like billiard balls.
@@ -330,6 +363,7 @@ projects:
       - physics
       - web
     pageLink: https://quasarbright.github.io/p5js/elastic-sphere-collision
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/elastic-sphere-collision
   - id: polygon-fractal
     title: Polygon Fractals
     description: Colorful polygon fractals. Click to iterate the fractal, press a key to switch between center mode and prism mode.
@@ -338,6 +372,7 @@ projects:
       - fractal
       - web
     pageLink: https://quasarbright.github.io/p5js/polygon%20fractal
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/polygon%20fractal
   - id: radiation
     title: Rainbow Radiation
     description: Colorful lines fly out of your mouse cursor. Move the mouse and click to make the lines fly out in a spiral.
@@ -345,6 +380,7 @@ projects:
     tags:
       - web
     pageLink: https://quasarbright.github.io/p5js/radiation
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/radiation
   - id: random-circles
     title: Random Circles with No Overlap
     description: Randomly placed circles that don't overlap with each other.
@@ -352,6 +388,7 @@ projects:
     tags:
       - web
     pageLink: https://quasarbright.github.io/p5js/random%20circles%20no%20overlap
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/random%20circles%20no%20overlap
   - id: random-squares
     title: Random Squares with No Overlap
     description: Randomly placed squares that don't overlap with each other.
@@ -359,6 +396,7 @@ projects:
     tags:
       - web
     pageLink: https://quasarbright.github.io/p5js/random%20squares%20no%20overlap
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/random%20squares%20no%20overlap
   - id: spanning-tree
     title: Minimum Spanning Tree
     description: This generates a minimum spanning tree of a random collection of points. You can add points to see how the MST changes.
@@ -367,6 +405,7 @@ projects:
       - algorithms
       - web
     pageLink: https://quasarbright.github.io/p5js/spanning%20tree
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/spanning%20tree
   - id: moving-spanning-tree
     title: Moving Minimum Spanning Tree
     description: This generates a minimum spanning tree of a random collection of points that bounce around. You can add points by clicking on the screen.
@@ -375,6 +414,7 @@ projects:
       - algorithms
       - web
     pageLink: https://quasarbright.github.io/p5js/moving-spanning-tree
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/moving-spanning-tree
   - id: display-graph
     title: Display Graph
     description: This allows you to display any graph and then edit the locations of vertices by clicking and dragging. Currently, it randomly generates a graph.
@@ -382,6 +422,7 @@ projects:
     tags:
       - web
     pageLink: https://quasarbright.github.io/p5js/display%20graph
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/display%20graph
   - id: travelling-salesman
     title: Travelling Salesman Problem
     description: This solves the travelling salesman problem for a random collection of points.
@@ -390,6 +431,7 @@ projects:
       - algorithms
       - web
     pageLink: https://quasarbright.github.io/p5js/travelling%20salesman
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/travelling%20salesman
   - id: sudoku
     title: Sudoku
     description: Sudoku, implemented using React.
@@ -398,6 +440,7 @@ projects:
       - game
       - web
     pageLink: https://quasarbright.github.io/sudoku/
+    sourceLink: https://github.com/quasarbright/sudoku
   - id: blog
     title: Blog
     description: A blog about programming languages and math.
@@ -407,6 +450,7 @@ projects:
       - programming-languages
       - web
     pageLink: ./blog
+    sourceLink: https://github.com/quasarbright/blog
     featured: true
   - id: subduce
     title: Subduce
