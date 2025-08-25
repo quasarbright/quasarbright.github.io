@@ -285,11 +285,13 @@ document.addEventListener('click', (e) => {
       } else if (project.pageLink.startsWith('/')) {
         resolvedUrl = project.pageLink;
       } else if (project.pageLink.startsWith('./')) {
-        resolvedUrl = baseUrl + 'p5js/' + project.pageLink.substring(2);
+        resolvedUrl = baseUrl + project.pageLink.substring(2);
       } else if (project.pageLink.startsWith('../')) {
-        resolvedUrl = baseUrl + project.pageLink.substring(3);
+        const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+        const parentUrl = cleanBaseUrl.substring(0, cleanBaseUrl.lastIndexOf('/') + 1);
+        resolvedUrl = parentUrl + project.pageLink.substring(3);
       } else {
-        resolvedUrl = baseUrl + 'p5js/' + project.pageLink;
+        resolvedUrl = baseUrl + project.pageLink;
       }
       
       // Open in new tab

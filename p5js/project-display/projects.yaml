@@ -38,8 +38,8 @@ projects:
       - vibe-coded
       - funny
       - web
-    pageLink: ./julia-image
-    thumbnailLink: ./screenshots/julia-image.png
+    pageLink: ./p5js/julia-image
+    thumbnailLink: ./p5js/screenshots/julia-image.png
     sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/julia-image
     featured: true
   - id: seam-carving
@@ -51,8 +51,8 @@ projects:
       - algorithms
       - funny
       - web
-    pageLink: ./seam-carving
-    thumbnailLink: ../images/energy-broomstick.png
+    pageLink: ./p5js/seam-carving
+    thumbnailLink: ./images/energy-broomstick.png
     sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/seam-carving
   - id: fractal-curve-editor
     title: Fractal Curve Editor
@@ -62,8 +62,8 @@ projects:
       - fractal
       - vibe-coded
       - web
-    pageLink: ./fractal-curve-editor/
-    thumbnailLink: ./screenshots/fractal-curve-editor.png
+    pageLink: ./p5js/fractal-curve-editor/
+    thumbnailLink: ./p5js/screenshots/fractal-curve-editor.png
     sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/fractal-curve-editor
   - id: complex-dynamics
     title: General Complex Dynamics Visualizer
@@ -75,8 +75,8 @@ projects:
       - vibe-coded
       - pretty
       - web
-    pageLink: ./complex-dynamics/
-    thumbnailLink: ./screenshots/complex-dynamics.png
+    pageLink: ./p5js/complex-dynamics/
+    thumbnailLink: ./p5js/screenshots/complex-dynamics.png
     sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/complex-dynamics
     featured: true
   - id: mandelbrot-shader
@@ -135,8 +135,8 @@ projects:
       - shader
       - vibe-coded
       - web
-    pageLink: ./newton-fractal
-    thumbnailLink: ./screenshots/newton.png
+    pageLink: ./p5js/newton-fractal
+    thumbnailLink: ./p5js/screenshots/newton.png
     sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/newton-fractal
   - id: spring-wave
     title: Double Slit Interference
@@ -146,7 +146,7 @@ projects:
       - physics
       - web
     pageLink: https://quasarbright.github.io/spring-wave/dist/index.html
-    thumbnailLink: ./screenshots/spring-wave.png
+    thumbnailLink: ./p5js/screenshots/spring-wave.png
     sourceLink: https://github.com/quasarbright/spring-wave
   - id: 3-point-perspective
     title: 3 Point Perspective
@@ -164,7 +164,7 @@ projects:
       - vibe-coded
       - web
     pageLink: https://quasarbright.github.io/p5js/complex-function-grid-visualizer
-    thumbnailLink: ./screenshots/complex-grid-transformation.png
+    thumbnailLink: ./p5js/screenshots/complex-grid-transformation.png
     sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/complex-function-grid-visualizer
   - id: braille-dithering
     title: Braille Dithering
@@ -235,8 +235,8 @@ projects:
       - shader
       - vibe-coded
       - web
-    pageLink: ./voronoi
-    thumbnailLink: ./screenshots/voronoi.png
+    pageLink: ./p5js/voronoi
+    thumbnailLink: ./p5js/screenshots/voronoi.png
     sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/voronoi
   - id: raindrops
     title: Raindrops
@@ -291,14 +291,15 @@ projects:
     sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/unbounded-conway
   - id: genetic-steering
     title: Genetic Steering
-    description: These creatures need to eat green food and avoid red poison to survive. They starve if they don't eat enough, and have a random chance of reproducing with some mutation at every moment.
+    description: Creatures evolve to seek food and avoid poison.
     creationDate: "2019-07-13"
     tags:
       - AI
+      - genetic-algorithm
       - web
-    pageLink: https://editor.p5js.org/mdelmonaco/present/HJpO5IJ7Z
-    thumbnailLink: https://quasarbright.github.io/p5js/screenshots/genetic-steering.png
-    sourceLink: https://editor.p5js.org/mdelmonaco/sketches/HJpO5IJ7Z
+    pageLink: ./p5js/genetic-steering
+    thumbnailLink: ./p5js/screenshots/genetic-steering.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/genetic-steering
   - id: smart-rockets
     title: Smart Rockets
     description: There are two competing populations of rockets, each using genetics and evolution to try to learn to reach the target by applying a series of forces to themselves.
@@ -306,6 +307,7 @@ projects:
     tags:
       - AI
       - web
+      - genetic-algorithm
     pageLink: https://editor.p5js.org/mdelmonaco/present/BkJquZ1Ae
     sourceLink: https://editor.p5js.org/mdelmonaco/sketches/BkJquZ1Ae
     thumbnailLink: https://quasarbright.github.io/p5js/screenshots/smart-rockets.png
@@ -449,7 +451,7 @@ projects:
       - blog
       - programming-languages
       - web
-    pageLink: ./blog
+    pageLink: https://quasarbright.github.io/blog
     sourceLink: https://github.com/quasarbright/blog
     featured: true
   - id: subduce
@@ -790,7 +792,7 @@ projects:
       - web
       - utility
       - vibe-coded
-    pageLink: ./project-display/dist
+    pageLink: ./p5js/project-display/dist
     sourceLink: https://github.com/quasarbright/p5js/project-display
   - id: uncropper
     title: UnCropper

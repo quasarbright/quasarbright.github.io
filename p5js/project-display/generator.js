@@ -81,18 +81,47 @@ function resolveThumbnailPath(thumbnailLink, baseUrl) {
     return thumbnailLink;
   }
   
-  // If it starts with './', it's relative to base URL + p5js/
+  // If it starts with './', it's relative to base URL
   if (thumbnailLink.startsWith('./')) {
-    return baseUrl + 'p5js/' + thumbnailLink.substring(2);
+    return baseUrl + thumbnailLink.substring(2);
   }
   
-  // If it starts with '../', it's relative to base URL (one level up from p5js/)
+  // If it starts with '../', it's relative to base URL parent
   if (thumbnailLink.startsWith('../')) {
-    return baseUrl + thumbnailLink.substring(3);
+    const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+    const parentUrl = cleanBaseUrl.substring(0, cleanBaseUrl.lastIndexOf('/') + 1);
+    return parentUrl + thumbnailLink.substring(3);
   }
   
-  // Otherwise, treat as relative to base URL + p5js/
-  return baseUrl + 'p5js/' + thumbnailLink;
+  // Otherwise, treat as relative to base URL
+  return baseUrl + thumbnailLink;
+}
+
+function resolvePageLink(pageLink, baseUrl) {
+  // If it's already a full URL, use it as-is
+  if (pageLink.startsWith('http://') || pageLink.startsWith('https://')) {
+    return pageLink;
+  }
+  
+  // If it starts with '/', it's an absolute path from domain root
+  if (pageLink.startsWith('/')) {
+    return pageLink;
+  }
+  
+  // If it starts with './', it's relative to base URL
+  if (pageLink.startsWith('./')) {
+    return baseUrl + pageLink.substring(2);
+  }
+  
+  // If it starts with '../', it's relative to base URL parent
+  if (pageLink.startsWith('../')) {
+    const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+    const parentUrl = cleanBaseUrl.substring(0, cleanBaseUrl.lastIndexOf('/') + 1);
+    return parentUrl + pageLink.substring(3);
+  }
+  
+  // Otherwise, treat as relative to base URL
+  return baseUrl + pageLink;
 }
 
 function generateProjectCard(project, config) {
@@ -104,11 +133,19 @@ function generateProjectCard(project, config) {
   const backgroundStyle = project.thumbnailLink ? 
     ` style="background-image: url('${resolveThumbnailPath(project.thumbnailLink, config.baseUrl)}');"` : '';
   
+  // Resolve the page link for the title hyperlink
+  const resolvedPageLink = resolvePageLink(project.pageLink, config.baseUrl);
+  
   return `
     <div class="project-card${featuredClass}" data-project-id="${project.id}"${backgroundStyle}>
       <div class="card-content">
         <div class="card-info">
-          <h3 class="project-title">${project.title}</h3>
+          <h3 class="project-title">
+            <a href="${resolvedPageLink}" target="_blank" rel="noopener noreferrer" class="title-link">
+              ${project.title}
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; margin-left: 6px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"></path><polyline points="15,3 21,3 21,9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            </a>
+          </h3>
           <p class="project-date">${formattedDate}</p>
           <p class="project-description">${project.description}</p>
         </div>
