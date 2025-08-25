@@ -34,6 +34,7 @@ class Boid {
     F.add(this.cohesion(neighbors))
     F.add(this.alignment(neighbors))
     F.add(this.avoidWalls().mult(50))
+    F.add(this.avoidMouse().mult(50))
     F.add(this.friction())
     return F.mult(.01)
   }
@@ -112,6 +113,21 @@ class Boid {
       return createVector(0,0)
     }
   }
+
+  avoidMouse() {
+    const mousePos = createVector(mouseX, mouseY)
+    const mouseToThis = p5.Vector.sub(this.position, mousePos)
+    const avoidanceRadius = 150
+    
+    if (mouseToThis.magSq() < avoidanceRadius * avoidanceRadius) {
+      // Stronger avoidance when closer to mouse
+      const force = mouseToThis.copy()
+      force.mult(1 / (mouseToThis.magSq() + 1)) // Add 1 to prevent division by zero
+      return force.mult(avoidanceRadius)
+    } else {
+      return createVector(0,0)
+    }
+  }
 }
 
 function randomPosition() {
@@ -125,19 +141,23 @@ function randomUnit() {
 }
 
 const boids = []
-const numBoids = 50
+const numBoids = 150
 
 function setup() {
   colorMode(HSB)
-  createCanvas(800, 800);
+  createCanvas(windowWidth, windowHeight);
   noStroke()
   for(let i = 0; i < numBoids; i++) {
     boids.push(new Boid())
   }
 }
 
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}
+
 function draw() {
-  background(20);
+  background(0);
   for(const boid of boids) {
     boid.update(boids)
     boid.draw()
