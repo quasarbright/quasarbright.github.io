@@ -609,7 +609,7 @@ projects:
   - id: dependent-types
     title: Dependent Types
     description: A dependently typed language supporting dependent products (functions), dependent sums (pairs), and booleans.
-    creationDate: "2023-09-21"
+    creationDate: "2025-05-04"
     tags:
       - programming-language
       - racket
@@ -745,5 +745,165 @@ projects:
     tags:
       - web
       - utility
+      - vibe-coded
     pageLink: ./project-display/dist
     sourceLink: https://github.com/quasarbright/p5js/project-display
+  - id: uncropper
+    title: UnCropper
+    description: A de-convolutional neural network that uncrops an image and generates the surrounding area. Trained on cropped images to guess the original.
+    creationDate: "2019-04-07"
+    tags:
+      - AI
+      - neural-network
+    pageLink: https://github.com/quasarbright/MachineLearning/tree/master/uncrop
+    sourceLink: https://github.com/quasarbright/MachineLearning/tree/master/uncrop
+    thumbnailLink: https://quasarbright.github.io/MachineLearning/uncrop/figures/25x25%20uncrop%20tanh%20mse%20guesses.png
+  - id: convolutional-autoencoder
+    title: Convolutional Autoencoder
+    description: Convolves an image to a small vector, then deconvolves it back. Can continuously morph between images by interpolating their compressed forms.
+    creationDate: "2019-04-07"
+    tags:
+      - AI
+      - neural-network
+    pageLink: https://github.com/quasarbright/MachineLearning/tree/master/conv_autoencoder
+    sourceLink: https://github.com/quasarbright/MachineLearning/tree/master/conv_autoencoder 
+    thumbnailLink: https://quasarbright.github.io/MachineLearning/conv_autoencoder/figures/car%20animal%20lerp.png
+  - id: cifar-gan
+    title: CIFAR GAN
+    description: Generative Adversarial Networks trained on CIFAR dataset. Two neural networks compete - one generates fake images, another determines if images are real or fake.
+    creationDate: "2019-05-05"
+    tags:
+      - AI
+      - neural-network
+    pageLink: https://github.com/quasarbright/MachineLearning/tree/master/CIFAR_GAN
+    sourceLink: https://github.com/quasarbright/MachineLearning/tree/master/CIFAR_GAN
+    thumbnailLink: https://quasarbright.github.io/MachineLearning/CIFAR_GAN/figures/35%20epochs%208x8.png
+  - id: anime-face-gan
+    title: Anime Face GAN
+    description: GAN trained to generate anime faces.
+    creationDate: "2019-05-07"
+    tags:
+      - AI
+      - neural-network
+    pageLink: https://github.com/quasarbright/MachineLearning/tree/master/anime_face_gan
+    sourceLink: https://github.com/quasarbright/MachineLearning/tree/master/anime_face_gan
+    thumbnailLink: https://quasarbright.github.io/MachineLearning/anime_face_gan/figures/50%20epochs%208x8.png
+  - id: snake-reinforce
+    title: Snake AI
+    description: Neural network that learns to play Snake through the REINFORCE algorithm. Rewards getting food, punishes dying. Built with my friend Maggie Von Nortwick.
+    creationDate: "2019-07-05"
+    tags:
+      - game
+      - AI
+      - neural-network
+    pageLink: https://www.youtube.com/shorts/LL62tmIUtGU
+    sourceLink: https://github.com/quasarbright/YLUJLO/tree/master/python/snake_ai
+  - id: tetris
+    title: Tetris
+    description: Guideline-compliant Tetris with an AI that plays better than me!
+    creationDate: "2020-06-26"
+    tags:
+      - AI
+      - game
+    pageLink: https://www.youtube.com/watch?v=NXq3ncGSBaE
+    sourceLink: https://github.com/quasarbright/TetrisAI
+    thumbnailLink: https://raw.githubusercontent.com/quasarbright/TetrisAI/refs/heads/master/screenshot.png
+  - id: g2048
+    title: 2048
+    description: An AI that plays 2048 almost perfectly.
+    creationDate: "2020-06-25"
+    tags:
+      - AI
+      - game
+    pageLink: https://www.youtube.com/watch?v=MKE-tNw-N78
+    sourceLink: https://github.com/quasarbright/2048
+  - id: jojo-snake
+    title: JoJo Snake
+    description: A snake game with a JoJo's Bizarre Adventure theme. I made this with my friend Ryan Mitchell.
+    creationDate: "2020-09-04"
+    tags:
+      - game
+      - web
+      - funny
+    pageLink: https://quasarbright.github.io/JoJoSnake/src/index.html
+    sourceLink: https://github.com/quasarbright/JoJoSnake
+    thumbnailLink: https://quasarbright.github.io/UnityProjects/screenshots/jojo-snake.png
+  - id: updown
+    title: UpDown
+    description: A puzzle game based on switching the direction of gravity. I made this with two other students for a game design class.
+    creationDate: "2019-12-02"
+    tags:
+      - game
+      - web
+      - unity
+    pageLink: https://quasarbright.github.io/UpDownPages/
+    featured: true
+  - id: anagrams
+    title: Anagrams
+    description: A word game where you have to find anagrams of a given word.
+    creationDate: "2019-05-11"
+    tags:
+      - game
+      - web
+      - unity
+    pageLink: https://quasarbright.github.io/UnityProjects/projects/Anagrams/build/webgl/index.html
+    sourceLink: https://github.com/quasarbright/UnityProjects/tree/master/projects/Anagrams
+    thumbnailLink: https://quasarbright.github.io/UnityProjects/projects/Anagrams/screenshots/anagramsScreenshot.PNG
+  - id: asteroids
+    title: Asteroids
+    description: A clone of the classic arcade game Asteroids. Use WASD to move/rotate, click to shoot.
+    creationDate: "2019-05-14"
+    tags:
+      - game
+      - web
+      - unity
+    pageLink: https://quasarbright.github.io/UnityProjects/projects/Asteroids/Build/webgl/index.html
+    sourceLink: https://github.com/quasarbright/UnityProjects/commits/master/projects/Asteroids
+    thumbnailLink: https://quasarbright.github.io/UnityProjects/projects/Asteroids/screenshots/asteroid%20screenshots.PNG
+  - id: brainfuck-compiler
+    title: Brainfuck Compiler
+    description: A compiler for the Brainfuck programming language. Compiles to x86 assembly.
+    creationDate: "2020-01-30"
+    tags:
+      - programming-language
+      - compiler
+      - esolang
+      - ocaml
+    pageLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/OCaml/BrainFuck
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/OCaml/BrainFuck
+  - id: parsing-lib
+    title: Haskell Parsing Library
+    description: A little parsing library written in Haskell.
+    creationDate: "2020-03-06"
+    tags:
+      - programming-language
+      - haskell
+    pageLink: https://github.com/quasarbright/quasarbright.github.io/commits/master/Haskell/ParseLib
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/commits/master/Haskell/ParseLib
+  - id: freer-effects
+    title: Freer Effects
+    description: A library for effect handling in Haskell based on the paper “Freer Monads, More Extensible Effects”
+    creationDate: "2021-06-24"
+    tags:
+      - programming-language
+      - haskell
+    pageLink: https://github.com/quasarbright/freer-effects
+    sourceLink: https://github.com/quasarbright/freer-effects
+  - id: solitaire
+    title: Command-Line Solitaire
+    description: A command-line solitaire game written in Haskell.
+    creationDate: "2021-07-26"
+    tags:
+      - haskell
+      - game
+    pageLink: https://github.com/quasarbright/solitaire
+    sourceLink: https://github.com/quasarbright/solitaire
+  - id: three-periods
+    title: Three Periods
+    description: Educational interactive math visualizations I made for my high school senior project.
+    creationDate: "2018-06-08"
+    tags:
+      - education
+      - web
+    pageLink: https://quasarbright.github.io/ThreePeriods/
+    sourceLink: https://github.com/quasarbright/ThreePeriods

@@ -22,7 +22,7 @@ A modern static site generator that creates beautiful, interactive galleries to 
 ### Installation
 
 ```bash
-git clone https://github.com/quasarbright/p5js/tree/master/project-display
+git clone https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/project-display
 cd project-display
 npm install
 ```
@@ -206,7 +206,7 @@ MIT License - see LICENSE file for details
 ## 🔗 Links
 
 - [Live Demo](https://quasarbright.github.io/p5js/project-display/)
-- [Source Code](https://github.com/quasarbright/p5js/tree/master/project-display)
+- [Source Code](https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/project-display)
 - [Author's Projects](https://quasarbright.github.io/)
 
 ---

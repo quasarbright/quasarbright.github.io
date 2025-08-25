@@ -2,12 +2,8 @@
 - [ ] update go to project vs show modal ui/ux
   - [ ] instead of chevron, should be a little info icon
 - [ ] add source code field
-  - [ ] populate in projects.json
-  - [ ] display on card
-- [ ] generalize to all projects, not just web. add other projects. blog?
-  - [ ] haskell
-  - [ ] AI
-  - [ ] game
+  - [ ] populate it everywhere
+  - [x] display on card
 - [ ] build system with caching?
 - [ ] figure out something better to do than default image. like maybe just don't show a thumbnail at all
 - [ ] add a dynamic background. maybe adapt some visual web projects and randomly select one to be the background on page load. should keep it muted colors so it's not distracting. maybe don't do shaders either in case their computer sucks
@@ -21,4 +17,6 @@
   - [ ] make another repo that uses it as a SSG, and do something like react-github-pages or what you do for your racket blog, or tbh just commit dist
   - [ ] update package.json and links to the homepage and projects.yaml entry for projection
 - [ ] update readme
+- [ ] admin site?
 - [x] more convenient build + run script
+- [x] generalize to all projects, not just web. add other projects. blog?

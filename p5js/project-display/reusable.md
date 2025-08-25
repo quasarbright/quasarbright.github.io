@@ -238,9 +238,7 @@ interface Project {
   
   // Metadata
   tags: string[];                // Categories/technologies
-  status: 'active' | 'archived' | 'wip';
   featured?: boolean;
-  difficulty?: 'beginner' | 'intermediate' | 'advanced';
   
   // Custom fields (theme-dependent)
   custom?: Record<string, any>;
