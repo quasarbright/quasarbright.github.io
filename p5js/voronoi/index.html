@@ -5,8 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voronoi Diagram Visualizer</title>
     <link rel="stylesheet" href="style.css">
-    <!-- KaTeX CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" integrity="sha384-GvrOXuhMATgEsSwCs4smul74iXGOixntILdUW9XmUC6+HX0sLNAK3q71HotJqlAn" crossorigin="anonymous">
+    <script>
+        // Check if background mode is enabled to conditionally load KaTeX
+        const headUrlParams = new URLSearchParams(window.location.search);
+        const headIsBackgroundMode = headUrlParams.has('background');
+        
+        if (!headIsBackgroundMode) {
+            // Only load KaTeX CSS in normal mode
+            const katexCSS = document.createElement('link');
+            katexCSS.rel = 'stylesheet';
+            katexCSS.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css';
+            katexCSS.integrity = 'sha384-GvrOXuhMATgEsSwCs4smul74iXGOixntILdUW9XmUC6+HX0sLNAK3q71HotJqlAn';
+            katexCSS.crossOrigin = 'anonymous';
+            document.head.appendChild(katexCSS);
+        }
+    </script>
 </head>
 <body>
     <canvas id="canvas"></canvas>
@@ -153,34 +166,60 @@
         </div>
     </div>
     
-    <!-- KaTeX JavaScript -->
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" integrity="sha384-cpW21h6RZv/phavutF+AuVYrr+dA8xD9zs6FwLpaCct6O9ctzYFfFr4dgmgccOTx" crossorigin="anonymous"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"></script>
     <script src="script.js"></script>
     
     <script>
-        // Render math when modal is opened
-        function renderMathInModal() {
-            const mathBlocks = document.querySelectorAll('.math-block');
-            const mathInlines = document.querySelectorAll('.math-inline');
-            
-            mathBlocks.forEach(block => {
-                katex.render(block.textContent, block, {
-                    throwOnError: false,
-                    displayMode: true
-                });
-            });
-            
-            mathInlines.forEach(inline => {
-                katex.render(inline.textContent, inline, {
-                    throwOnError: false,
-                    displayMode: false
-                });
-            });
-        }
+        // Only load KaTeX and math rendering in normal mode
+        const bodyUrlParams = new URLSearchParams(window.location.search);
+        const bodyIsBackgroundMode = bodyUrlParams.has('background');
         
-        // Render math when page loads
-        document.addEventListener('DOMContentLoaded', renderMathInModal);
+        if (!bodyIsBackgroundMode) {
+            // Load KaTeX JavaScript dynamically
+            const katexJS = document.createElement('script');
+            katexJS.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js';
+            katexJS.integrity = 'sha384-cpW21h6RZv/phavutF+AuVYrr+dA8xD9zs6FwLpaCct6O9ctzYFfFr4dgmgccOTx';
+            katexJS.crossOrigin = 'anonymous';
+            
+            const autoRenderJS = document.createElement('script');
+            autoRenderJS.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js';
+            autoRenderJS.integrity = 'sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05';
+            autoRenderJS.crossOrigin = 'anonymous';
+            
+            document.head.appendChild(katexJS);
+            
+            katexJS.onload = function() {
+                document.head.appendChild(autoRenderJS);
+                
+                autoRenderJS.onload = function() {
+                    // Render math when KaTeX is loaded
+                    function renderMathInModal() {
+                        const mathBlocks = document.querySelectorAll('.math-block');
+                        const mathInlines = document.querySelectorAll('.math-inline');
+                        
+                        mathBlocks.forEach(block => {
+                            katex.render(block.textContent, block, {
+                                throwOnError: false,
+                                displayMode: true
+                            });
+                        });
+                        
+                        mathInlines.forEach(inline => {
+                            katex.render(inline.textContent, inline, {
+                                throwOnError: false,
+                                displayMode: false
+                            });
+                        });
+                    }
+                    
+                    // Render math when page loads
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', renderMathInModal);
+                    } else {
+                        renderMathInModal();
+                    }
+                };
+            };
+        }
     </script>
 </body>
 </html> 

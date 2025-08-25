@@ -8,16 +8,20 @@ class VoronoiVisualizer {
             return;
         }
         
+        // Check for background mode from query parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const isBackgroundMode = urlParams.has('background');
+        
         this.program = null;
         this.points = [];
         this.velocities = [];
-        this.pointCount = 10;
+        this.pointCount = isBackgroundMode ? 20 : 10;
         this.distanceMetric = 0; // Default to Euclidean
         this.isPaused = false;
-        this.showColors = true;
+        this.showColors = isBackgroundMode ? false : true;
         this.showGradient = false;
-        this.showEdges = false;
-        this.showDots = true;
+        this.showEdges = true;
+        this.showDots = isBackgroundMode ? false : true;
         this.generateRandomPoints();
         
         this.init();
@@ -26,12 +30,18 @@ class VoronoiVisualizer {
     generateRandomPoints() {
         this.points = [];
         this.velocities = [];
+        
+        // Check if in background mode for slower movement
+        const urlParams = new URLSearchParams(window.location.search);
+        const isBackgroundMode = urlParams.has('background');
+        const velocityMultiplier = isBackgroundMode ? 0.3 : 1.0; // 30% speed in background mode
+        
         for (let i = 0; i < this.pointCount; i++) {
             this.points.push(Math.random(), Math.random());
-            // Random velocity between -0.002 and 0.002 for smooth movement
+            // Random velocity adjusted for background mode
             this.velocities.push(
-                (Math.random() - 0.5) * 0.004,
-                (Math.random() - 0.5) * 0.004
+                (Math.random() - 0.5) * 0.004 * velocityMultiplier,
+                (Math.random() - 0.5) * 0.004 * velocityMultiplier
             );
         }
     }
@@ -40,9 +50,15 @@ class VoronoiVisualizer {
         if (this.pointCount < 50) {
             this.pointCount++;
             this.points.push(Math.random(), Math.random());
+            
+            // Check if in background mode for slower movement
+            const urlParams = new URLSearchParams(window.location.search);
+            const isBackgroundMode = urlParams.has('background');
+            const velocityMultiplier = isBackgroundMode ? 0.3 : 1.0;
+            
             this.velocities.push(
-                (Math.random() - 0.5) * 0.004,
-                (Math.random() - 0.5) * 0.004
+                (Math.random() - 0.5) * 0.004 * velocityMultiplier,
+                (Math.random() - 0.5) * 0.004 * velocityMultiplier
             );
             this.updatePointCountDisplay();
         }
@@ -60,6 +76,16 @@ class VoronoiVisualizer {
     }
     
     updatePointCountDisplay() {
+        document.getElementById('pointCountDisplay').textContent = this.pointCount;
+    }
+    
+    updateUIFromState() {
+        // Update UI elements to match current state
+        document.getElementById('showColors').checked = this.showColors;
+        document.getElementById('showDots').checked = this.showDots;
+        document.getElementById('showEdges').checked = this.showEdges;
+        document.getElementById('showGradient').checked = this.showGradient;
+        document.getElementById('distanceMetric').value = this.distanceMetric.toString();
         document.getElementById('pointCountDisplay').textContent = this.pointCount;
     }
     
@@ -141,6 +167,17 @@ class VoronoiVisualizer {
         // Set up resize handler
         window.addEventListener('resize', () => this.resize());
         this.resize();
+        
+        // Check for background mode and hide UI if needed
+        const urlParams = new URLSearchParams(window.location.search);
+        const isBackgroundMode = urlParams.has('background');
+        if (isBackgroundMode) {
+            // Add background-mode class to body for CSS styling
+            document.body.classList.add('background-mode');
+        }
+        
+        // Update UI to reflect background mode defaults
+        this.updateUIFromState();
         
         // Start render loop
         this.render();
