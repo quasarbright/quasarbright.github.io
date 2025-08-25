@@ -1,14 +1,10 @@
-- [ ] add a dynamic background. maybe adapt some visual web projects and randomly select one to be the background on page load. should keep it muted colors so it's not distracting. maybe don't do shaders either in case their computer sucks
-  - [ ] random walkers
-  - [ ] voronoi
-  - [ ] boids, but they avoid the mouse?
-  - [ ] majority automaton, but black and white?
-  - [ ] genetic steering
 - [ ] build system with caching?
 - [ ] make it a proper npm package that generates assets in the same format as something like react so it's re-usable
   - [ ] move this whole thing into its own repo
   - [ ] make another repo that uses it as a SSG, and do something like react-github-pages or what you do for your racket blog, or tbh just commit dist
   - [ ] update package.json and links to the homepage and projects.yaml entry for projection
+- [ ] markdown in description
+- [ ] let dynamic background see mouse movements
 - [ ] update readme
 - [ ] admin site?
 - [x] more convenient build + run script
@@ -20,3 +16,9 @@
 - [x] add source code field
   - [x] populate it everywhere
   - [x] display on card
+- [x] add a dynamic background. maybe adapt some visual web projects and randomly select one to be the background on page load. should keep it muted colors so it's not distracting. maybe don't do shaders either in case their computer sucks
+  - [x] random walkers
+  - [x] voronoi
+  - [x] boids, but they avoid the mouse?
+  - [x] majority automaton, but black and white?
+  - [x] genetic steering

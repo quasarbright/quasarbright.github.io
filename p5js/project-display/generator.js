@@ -242,6 +242,10 @@ function generateHTML(projectsData) {
   const tagFilter = generateTagFilter(allTags);
   // const modal = generateModal(projects); // Modal currently not used
   
+  // Generate dynamic background iframe if configured
+  const dynamicBackgroundHTML = config.dynamicBackgrounds && config.dynamicBackgrounds.length > 0 ? 
+    `<iframe id="dynamic-background" src="" frameborder="0" tabindex="-1" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></iframe>` : '';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -255,6 +259,7 @@ function generateHTML(projectsData) {
   <!-- <link rel="stylesheet" href="styles/modal.css"> Modal styles not currently used -->
 </head>
 <body>
+  ${dynamicBackgroundHTML}
   <header class="site-header">
     <div class="container">
       <h1>${config.title}</h1>
@@ -295,6 +300,7 @@ function generateHTML(projectsData) {
   <script src="scripts/search.js"></script>
   <script src="scripts/filter.js"></script>
   <script src="scripts/modal.js"></script>
+  <script src="scripts/dynamic-background.js"></script>
 </body>
 </html>`;
 }
