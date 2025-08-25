@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Background Mode</title>
+</head>
+<body>
+    <h1>Background Mode Test</h1>
+    <div id="result"></div>
+    
+    <script>
+        // Check for background mode from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const isBackgroundMode = urlParams.has('background');
+        const numGroups = isBackgroundMode ? 2 : 4;
+        
+        document.getElementById('result').innerHTML = `
+            <p>URL: ${window.location.href}</p>
+            <p>isBackgroundMode: ${isBackgroundMode}</p>
+            <p>numGroups: ${numGroups}</p>
+        `;
+        
+        // Test state generation
+        console.log('Testing state generation with numGroups =', numGroups);
+        for (let i = 0; i < 10; i++) {
+            const state = Math.floor(Math.random() * numGroups);
+            const normalizedValue = state / (numGroups - 1);
+            console.log(`State ${state} -> normalized: ${normalizedValue}`);
+        }
+    </script>
+</body>
+</html> 
