@@ -22,6 +22,12 @@ class VoronoiVisualizer {
         this.showGradient = false;
         this.showEdges = true;
         this.showDots = isBackgroundMode ? false : true;
+        
+        // Mouse tracking
+        this.mouseX = 0.5;
+        this.mouseY = 0.5;
+        this.mousePointIndex = 0; // Index of the point that follows the mouse
+        
         this.generateRandomPoints();
         
         this.init();
@@ -168,6 +174,9 @@ class VoronoiVisualizer {
         window.addEventListener('resize', () => this.resize());
         this.resize();
         
+        // Set up mouse tracking
+        this.setupMouseTracking();
+        
         // Check for background mode and hide UI if needed
         const urlParams = new URLSearchParams(window.location.search);
         const isBackgroundMode = urlParams.has('background');
@@ -245,12 +254,31 @@ class VoronoiVisualizer {
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
     }
     
+    setupMouseTracking() {
+        this.canvas.addEventListener('mousemove', (e) => {
+            const rect = this.canvas.getBoundingClientRect();
+            this.mouseX = (e.clientX - rect.left) / rect.width;
+            this.mouseY = 1.0 - (e.clientY - rect.top) / rect.height; // Flip Y coordinate
+        });
+        
+        // Initialize mouse position to center
+        this.mouseX = 0.5;
+        this.mouseY = 0.5;
+    }
+    
     updatePoints() {
         for (let i = 0; i < this.pointCount; i++) {
             const xIndex = i * 2;
             const yIndex = i * 2 + 1;
             
-            // Update positions
+            // Make the first point follow the mouse
+            if (i === this.mousePointIndex) {
+                this.points[xIndex] = this.mouseX;
+                this.points[yIndex] = this.mouseY;
+                continue; // Skip normal movement for mouse-tracked point
+            }
+            
+            // Update positions for other points
             this.points[xIndex] += this.velocities[xIndex];
             this.points[yIndex] += this.velocities[yIndex];
             
