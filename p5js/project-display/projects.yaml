@@ -960,3 +960,12 @@ projects:
       - web
     pageLink: https://quasarbright.github.io/ThreePeriods/
     sourceLink: https://github.com/quasarbright/ThreePeriods
+  - id: 3d-mst
+    title: 3D Minimum Spanning Tree
+    description: dots bounce around in a box and you can see the minimum spanning tree connecting them
+    creationDate: "2025-10-14"
+    pageLink: https://quasarbright.github.io/p5js/moving-spanning-tree-3d
+    thumbnailLink: https://quasarbright.github.io/p5js/screenshots/3d-mst.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/moving-spanning-tree-3d
+    tags:
+      - web

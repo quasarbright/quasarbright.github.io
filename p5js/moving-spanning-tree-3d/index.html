@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bouncing Balls with MST</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #1a1a1a;
+        }
+        canvas {
+            display: block;
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        Click and drag to rotate the view<br>
+        Scroll to zoom
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Camera position - looking at front face from above and to the side
+        camera.position.set(8, 6, 25);
+        camera.lookAt(0, 0, 0);
+
+        // Orbit controls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        directionalLight.position.set(20, 20, 20);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+        directionalLight.shadow.camera.near = 0.5;
+        directionalLight.shadow.camera.far = 500;
+        directionalLight.shadow.camera.left = -30;
+        directionalLight.shadow.camera.right = 30;
+        directionalLight.shadow.camera.top = 30;
+        directionalLight.shadow.camera.bottom = -30;
+        scene.add(directionalLight);
+        
+        // Enable shadows
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        // Box boundaries
+        const boxSize = 20;
+        const boxGeometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
+        const boxMaterial = new THREE.MeshPhongMaterial({
+            color: 0x4488ff,
+            transparent: true,
+            opacity: 0.15,
+            side: THREE.DoubleSide,
+            depthWrite: false
+        });
+        const box = new THREE.Mesh(boxGeometry, boxMaterial);
+        scene.add(box);
+
+        // Box edges
+        const edgesGeometry = new THREE.EdgesGeometry(boxGeometry);
+        const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x4488ff, linewidth: 2 });
+        const boxEdges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
+        scene.add(boxEdges);
+
+        // Ball class
+        class Ball {
+            constructor() {
+                const geometry = new THREE.SphereGeometry(0.3, 32, 32);
+                const material = new THREE.MeshPhongMaterial({
+                    color: 0xffffff,
+                    shininess: 100
+                });
+                this.mesh = new THREE.Mesh(geometry, material);
+                this.mesh.castShadow = true;
+                this.mesh.receiveShadow = true;
+                
+                // Random position inside box
+                this.mesh.position.set(
+                    (Math.random() - 0.5) * (boxSize - 1),
+                    (Math.random() - 0.5) * (boxSize - 1),
+                    (Math.random() - 0.5) * (boxSize - 1)
+                );
+                
+                // Random velocity
+                this.velocity = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.1,
+                    (Math.random() - 0.5) * 0.1,
+                    (Math.random() - 0.5) * 0.1
+                );
+                
+                scene.add(this.mesh);
+            }
+
+            update() {
+                // Update position
+                this.mesh.position.add(this.velocity);
+                
+                // Bounce off walls
+                const halfBox = boxSize / 2;
+                if (Math.abs(this.mesh.position.x) > halfBox - 0.3) {
+                    this.velocity.x *= -1;
+                    this.mesh.position.x = Math.sign(this.mesh.position.x) * (halfBox - 0.3);
+                }
+                if (Math.abs(this.mesh.position.y) > halfBox - 0.3) {
+                    this.velocity.y *= -1;
+                    this.mesh.position.y = Math.sign(this.mesh.position.y) * (halfBox - 0.3);
+                }
+                if (Math.abs(this.mesh.position.z) > halfBox - 0.3) {
+                    this.velocity.z *= -1;
+                    this.mesh.position.z = Math.sign(this.mesh.position.z) * (halfBox - 0.3);
+                }
+            }
+        }
+
+        // Create balls
+        const numBalls = 30;
+        const balls = [];
+        for (let i = 0; i < numBalls; i++) {
+            balls.push(new Ball());
+        }
+
+        // MST line group
+        let mstLines = new THREE.Group();
+        scene.add(mstLines);
+
+        // Minimum Spanning Tree using Prim's algorithm
+        function calculateMST(positions) {
+            if (positions.length < 2) return [];
+            
+            const n = positions.length;
+            const visited = new Array(n).fill(false);
+            const edges = [];
+            
+            // Start with first node
+            visited[0] = true;
+            
+            for (let i = 0; i < n - 1; i++) {
+                let minDist = Infinity;
+                let minEdge = null;
+                
+                // Find minimum edge from visited to unvisited nodes
+                for (let j = 0; j < n; j++) {
+                    if (!visited[j]) continue;
+                    
+                    for (let k = 0; k < n; k++) {
+                        if (visited[k]) continue;
+                        
+                        const dist = positions[j].distanceTo(positions[k]);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            minEdge = { from: j, to: k };
+                        }
+                    }
+                }
+                
+                if (minEdge) {
+                    visited[minEdge.to] = true;
+                    edges.push(minEdge);
+                }
+            }
+            
+            return edges;
+        }
+
+        // Update MST visualization
+        function updateMST() {
+            // Clear previous lines
+            while (mstLines.children.length > 0) {
+                const child = mstLines.children[0];
+                child.geometry.dispose();
+                child.material.dispose();
+                mstLines.remove(child);
+            }
+            
+            // Get ball positions
+            const positions = balls.map(ball => ball.mesh.position.clone());
+            
+            // Calculate MST
+            const edges = calculateMST(positions);
+            
+            // Draw MST edges
+            edges.forEach(edge => {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    positions[edge.from],
+                    positions[edge.to]
+                ]);
+                const material = new THREE.LineBasicMaterial({
+                    color: 0xffffff,
+                    linewidth: 2,
+                    opacity: 0.8,
+                    transparent: true
+                });
+                const line = new THREE.Line(geometry, material);
+                mstLines.add(line);
+            });
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Update balls
+            balls.forEach(ball => ball.update());
+            
+            // Update MST
+            updateMST();
+            
+            // Update controls
+            controls.update();
+            
+            // Render
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Start animation
+        animate();
+    </script>
+</body>
+</html>
