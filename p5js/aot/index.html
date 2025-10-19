@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attack on Titan - ODM Gear Simulator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="ui-container">
+        <div id="crosshair"></div>
+        <div id="hud">
+            <div id="gas-container">
+                <div class="hud-label">GAS</div>
+                <div id="gas-bar-bg">
+                    <div id="gas-bar"></div>
+                </div>
+                <div id="gas-text">100%</div>
+            </div>
+            <div id="speed-container">
+                <div class="hud-label">SPEED</div>
+                <div id="speed-text">0 km/h</div>
+            </div>
+        </div>
+        <div id="instructions">
+            <h2>ODM GEAR CONTROLS</h2>
+            <p><strong>Mouse:</strong> Look around</p>
+            <p><strong>Left Click:</strong> Fire left grappling hook</p>
+            <p><strong>Right Click:</strong> Fire right grappling hook</p>
+            <p><strong>Space:</strong> Boost (while grappled)</p>
+            <p><strong>R:</strong> Detach hooks</p>
+            <p><strong>WASD:</strong> Air control</p>
+            <p><strong>Shift:</strong> Reel in</p>
+            <p class="start-hint">Click to start!</p>
+        </div>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    
+    <!-- Three.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Game scripts -->
+    <script src="city.js"></script>
+    <script src="player.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
+

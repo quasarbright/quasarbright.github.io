@@ -1,0 +1,188 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    overflow: hidden;
+    background: #000;
+}
+
+#gameCanvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+}
+
+#ui-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Crosshair */
+#crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    pointer-events: none;
+}
+
+#crosshair::before,
+#crosshair::after {
+    content: '';
+    position: absolute;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+#crosshair::before {
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    transform: translateY(-50%);
+}
+
+#crosshair::after {
+    left: 50%;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    transform: translateX(-50%);
+}
+
+/* HUD */
+#hud {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: white;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.hud-label {
+    font-size: 14px;
+    margin-bottom: 5px;
+    letter-spacing: 2px;
+}
+
+#gas-container {
+    margin-bottom: 20px;
+}
+
+#gas-bar-bg {
+    width: 200px;
+    height: 30px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+#gas-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+    transition: width 0.2s, background 0.3s;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+}
+
+#gas-bar.low {
+    background: linear-gradient(90deg, #f44336, #ff9800);
+}
+
+#gas-bar.empty {
+    background: #333;
+}
+
+#gas-text {
+    margin-top: 5px;
+    font-size: 16px;
+}
+
+#speed-text {
+    font-size: 20px;
+    color: #4CAF50;
+}
+
+/* Instructions overlay */
+#instructions {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 30px 40px;
+    border-radius: 10px;
+    border: 3px solid #4CAF50;
+    text-align: left;
+    pointer-events: all;
+    transition: opacity 0.3s;
+}
+
+#instructions.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#instructions h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #4CAF50;
+    letter-spacing: 3px;
+}
+
+#instructions p {
+    margin: 10px 0;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+#instructions strong {
+    color: #8BC34A;
+    display: inline-block;
+    min-width: 140px;
+}
+
+.start-hint {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 18px;
+    color: #4CAF50;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Grapple indicator */
+.grapple-indicator {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #4CAF50;
+    border-radius: 50%;
+    box-shadow: 0 0 20px #4CAF50;
+    pointer-events: none;
+    animation: grapple-pulse 0.5s ease-out;
+}
+
+@keyframes grapple-pulse {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.5); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
