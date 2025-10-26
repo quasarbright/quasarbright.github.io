@@ -749,7 +749,7 @@ projects:
     sourceLink: https://github.com/quasarbright/learn-racket/blob/master/list-monad.rkt
   - id: ocular-patdown
     title: Ocular Patdown
-    description: An optics library featuring a match-like DSL for deep immutable updates.
+    description: An optics library featuring a match-like DSL for deep immutable updates. I gave a talk about it at RacketCon 2025.
     creationDate: "2022-08-06"
     tags:
       - programming-languages
@@ -757,8 +757,9 @@ projects:
       - dsl
       - macros
       - optics
-    pageLink: https://github.com/quasarbright/ocular-patdown
+    pageLink: https://www.youtube.com/watch?v=rwafaIfdOf0&t=180s
     sourceLink: https://github.com/quasarbright/ocular-patdown
+    thumbnailLink: https://quasarbright.github.io/UnityProjects/screenshots/ocular-patdown.jpg
   - id: launder
     title: Launder
     description: A DSL/tool for tracking work hours and payment
@@ -967,5 +968,14 @@ projects:
     pageLink: https://quasarbright.github.io/p5js/moving-spanning-tree-3d
     thumbnailLink: https://quasarbright.github.io/p5js/screenshots/3d-mst.png
     sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/moving-spanning-tree-3d
+    tags:
+      - web
+  - id: honeycomb-mst
+    title: Honeycomb Minimum Spanning Tree
+    description: Growing honeycomb minimum spanning tree
+    creationDate: "2025-10-26"
+    pageLink: https://quasarbright.github.io/p5js/honeycomb-mst
+    thumbnailLink: https://quasarbright.github.io/p5js/screenshots/honeycomb-mst.png
+    sourceLink: https://github.com/quasarbright/quasarbright.github.io/tree/master/p5js/honeycomb-mst
     tags:
       - web
