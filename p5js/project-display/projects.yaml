@@ -803,6 +803,7 @@ projects:
       - vibe-coded
     pageLink: ./p5js/project-display/dist
     sourceLink: https://github.com/quasarbright/p5js/project-display
+    featured: true
   - id: uncropper
     title: UnCropper
     description: A de-convolutional neural network that uncrops an image and generates the surrounding area. Trained on cropped images to guess the original.
