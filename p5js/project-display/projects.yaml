@@ -760,7 +760,7 @@ projects:
       - optics
     pageLink: https://www.youtube.com/watch?v=rwafaIfdOf0&t=180s
     sourceLink: https://github.com/quasarbright/ocular-patdown
-    thumbnailLink: https://quasarbright.github.io/UnityProjects/screenshots/ocular-patdown.jpg
+    thumbnailLink: https://quasarbright.github.io/p5js/screenshots/ocular-patdown.jpg
   - id: launder
     title: Launder
     description: A DSL/tool for tracking work hours and payment
