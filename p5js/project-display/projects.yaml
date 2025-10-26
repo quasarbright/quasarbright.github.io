@@ -11,6 +11,7 @@ config:
     - https://quasarbright.github.io/p5js/majority-automaton-gpu?background
     - https://quasarbright.github.io/p5js/genetic-steering
     - https://quasarbright.github.io/p5js/fullscreen-gpu-gol
+    - https://quasarbright.github.io/p5js/honeycomb-mst
 projects:
   - id: minesweeper
     title: Minesweeper
