@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vector Field Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- MathLive CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/mathlive/dist/mathlive-static.css">
+</head>
+<body>
+    <!-- Main canvas for visualization -->
+    <canvas id="canvas"></canvas>
+    
+    <!-- Floating UI panels -->
+    <div id="ui-container">
+        <!-- Expression input panel -->
+        <div class="ui-panel" id="expression-panel">
+            <h3>Vector Field</h3>
+            <div class="expression-input">
+                <label>vx =</label>
+                <math-field id="vx-input">-y</math-field>
+            </div>
+            <div class="expression-input">
+                <label>vy =</label>
+                <math-field id="vy-input">x</math-field>
+            </div>
+            <button id="update-btn">Update</button>
+            <div id="error-message" class="error-message"></div>
+            
+            <h4>Presets</h4>
+            <div class="preset-buttons">
+                <button class="preset-btn" data-vx="-y" data-vy="x">Rotation</button>
+                <button class="preset-btn" data-vx="x" data-vy="y">Source</button>
+                <button class="preset-btn" data-vx="-x" data-vy="-y">Sink</button>
+                <button class="preset-btn" data-vx="y" data-vy="x">Saddle</button>
+                <button class="preset-btn" data-vx="sin(y)" data-vy="sin(x)">Wave</button>
+                <button class="preset-btn" data-vx="-y/(x^2+y^2)^0.5 - 0.3*x" data-vy="x/(x^2+y^2)^0.5 - 0.3*y">Vortex</button>
+                <button class="preset-btn" data-vx="x/(x^2+y^2)^1.5" data-vy="y/(x^2+y^2)^1.5">Dipole</button>
+                <button class="preset-btn" data-vx="sin(3*atan2(y,x))*sqrt(x^2+y^2)" data-vy="cos(3*atan2(y,x))*sqrt(x^2+y^2)">Spider Web</button>
+                <button class="preset-btn" data-vx="sin(x)*cos(y)" data-vy="cos(x)*sin(y)">Checkerboard</button>
+                <button class="preset-btn" data-vx="(3*x*y)/(x^2+y^2)^2" data-vy="(2*y^2-x^2)/(x^2+y^2)^2">Magnetic Dipole</button>
+                <button class="preset-btn" data-vx="y" data-vy="-sin(x)">Pendulum</button>
+                <button class="preset-btn" data-vx="-x/(x^2+y^2+0.1)^2" data-vy="-y/(x^2+y^2+0.1)^2">Gravity Well</button>
+            </div>
+        </div>
+        
+        <!-- Control panel -->
+        <div class="ui-panel" id="control-panel">
+            <h3>Controls</h3>
+            <div class="button-group">
+                <button id="pause-btn" title="Space">⏸ Pause</button>
+                <button id="spawn-grid-btn">⊞ Spawn Grid</button>
+                <button id="clear-btn" title="Escape">Clear</button>
+            </div>
+            <div class="keyboard-hints">
+                <small>Space: Pause/Resume • Esc: Clear • +/-: Zoom</small>
+            </div>
+            
+            <h4>Brush Settings</h4>
+            <div class="slider-group">
+                <label>
+                    Brush Size: <span id="thickness-value">5.0</span>
+                </label>
+                <input type="range" id="thickness-slider" min="1" max="20" step="0.5" value="5">
+            </div>
+            
+            <h4>Grid Settings</h4>
+            <div class="slider-group">
+                <label>
+                    Grid Density: <span id="grid-lines-value">20</span>
+                </label>
+                <input type="range" id="grid-lines-slider" min="10" max="100" step="5" value="20">
+            </div>
+        </div>
+    </div>
+    
+    <!-- MathLive library -->
+    <script src="https://unpkg.com/mathlive"></script>
+    
+    <!-- math.js library -->
+    <script src="https://unpkg.com/mathjs@11.11.0/lib/browser/math.js"></script>
+    
+    <!-- Main application -->
+    <script type="module" src="main.js"></script>
+</body>
+</html>

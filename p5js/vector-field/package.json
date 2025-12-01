@@ -1,0 +1,21 @@
+{
+  "name": "vector-field-visualizer",
+  "version": "1.0.0",
+  "description": "2D Vector Field Visualizer",
+  "type": "module",
+  "scripts": {
+    "dev": "npx http-server -p 8000",
+    "test": "vitest --run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "fast-check": "^3.15.0",
+    "happy-dom": "^20.0.11",
+    "http-server": "^14.1.1",
+    "jsdom": "^27.0.1",
+    "vitest": "^1.0.0"
+  },
+  "dependencies": {
+    "mathjs": "^15.1.0"
+  }
+}
