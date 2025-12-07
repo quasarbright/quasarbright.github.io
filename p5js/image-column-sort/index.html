@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Column Sorter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #1e293b;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            padding: 30px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            color: #f1f5f9;
+            font-size: 32px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #0f172a;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: #ffffff;
+            border: 1px solid #2563eb;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        button:hover:not(:disabled) {
+            background: #2563eb;
+            border-color: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        button:active:not(:disabled) {
+            background: #1d4ed8;
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #1e293b;
+            border-color: #334155;
+            color: #475569;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+
+
+        select, input[type="number"] {
+            padding: 10px;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            font-size: 14px;
+            background: #0f172a;
+            color: #e2e8f0;
+            transition: all 0.2s;
+        }
+
+        select:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #64748b;
+            background: #1e293b;
+        }
+
+        select:disabled, input[type="number"]:disabled {
+            background: #0a0f1a;
+            border-color: #1e293b;
+            color: #475569;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        input[type="file"] {
+            font-size: 14px;
+            padding: 8px;
+            border: 1px dashed #475569;
+            border-radius: 6px;
+            background: #0f172a;
+            color: #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        input[type="file"]:hover {
+            border-color: #64748b;
+            background: #1e293b;
+        }
+
+        input[type="file"]::file-selector-button {
+            background: #3b82f6;
+            color: #ffffff;
+            border: 1px solid #2563eb;
+            border-radius: 4px;
+            padding: 6px 12px;
+            margin-right: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        input[type="file"]::file-selector-button:hover {
+            background: #2563eb;
+        }
+
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            background: #0f172a;
+            min-height: 400px;
+            max-height: 600px;
+            align-items: center;
+            padding: 20px;
+        }
+
+        canvas {
+            display: block;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .algorithm-info {
+            margin-top: 15px;
+            padding: 16px;
+            background: #0f172a;
+            border-left: 4px solid #3b82f6;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #e2e8f0;
+            line-height: 1.6;
+            border: 1px solid #334155;
+        }
+
+        .algorithm-info strong {
+            color: #60a5fa;
+            font-size: 15px;
+        }
+
+        #algorithmCharacteristics {
+            color: #cbd5e1 !important;
+        }
+
+        #statsInfo {
+            background: #0f172a;
+            border-left: 4px solid #10b981;
+        }
+
+        #statsInfo strong {
+            color: #34d399;
+        }
+
+        .error-display {
+            margin-top: 15px;
+            padding: 14px;
+            background: #1e293b;
+            border-left: 4px solid #ef4444;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #fca5a5;
+            font-weight: 500;
+            line-height: 1.5;
+            border: 1px solid #334155;
+        }
+
+        .speed-value {
+            font-weight: 600;
+            color: #60a5fa;
+        }
+
+        /* Responsive design for smaller screens */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .subtitle {
+                font-size: 14px;
+            }
+
+            .controls {
+                grid-template-columns: 1fr;
+                padding: 15px;
+            }
+
+            .canvas-container {
+                min-height: 300px;
+                padding: 10px;
+            }
+        }
+
+        /* Accessibility improvements */
+        button:focus, select:focus, input:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+        /* Loading state animation */
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .loading {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* Icon button styles */
+        .icon-button {
+            min-width: 48px;
+            height: 48px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-radius: 6px;
+        }
+
+        .icon-button svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Column Sorter</h1>
+        <p class="subtitle">Visualize sorting algorithms by watching them restore scrambled images</p>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="imageUpload">Upload Image:</label>
+                <input type="file" id="imageUpload" accept="image/png,image/jpeg,image/gif" aria-label="Upload image file">
+            </div>
+
+            <div class="control-group">
+                <label for="generateBtn">Or Generate:</label>
+                <div style="display: flex; gap: 5px; align-items: center;">
+                    <input type="number" id="generateWidth" min="1" value="200" style="width: 80px;" aria-label="Generated image width">
+                    <button id="generateBtn" aria-label="Generate synthetic image">Generate</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="algorithmSelect">Algorithm:</label>
+                <select id="algorithmSelect" disabled aria-label="Select sorting algorithm">
+                    <option value="">Select Algorithm</option>
+                    <option value="bubble">Bubble Sort</option>
+                    <option value="cocktail">Cocktail Shaker Sort</option>
+                    <option value="comb">Comb Sort</option>
+                    <option value="gnome">Gnome Sort</option>
+                    <option value="oddeven">Odd-Even Sort</option>
+                    <option value="selection">Selection Sort</option>
+                    <option value="insertion">Insertion Sort</option>
+                    <option value="shell">Shell Sort</option>
+                    <option value="cycle">Cycle Sort</option>
+                    <option value="heap">Heap Sort</option>
+                    <option value="merge">Merge Sort</option>
+                    <option value="quick">Quick Sort</option>
+                    <option value="radix">Radix Sort</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="stepsPerSecond">Steps/sec:</label>
+                <input type="number" id="stepsPerSecond" min="1" max="10000" value="60" style="width: 100px;" aria-label="Steps per second">
+            </div>
+
+            <div class="control-group">
+                <label>Controls:</label>
+                <div class="control-buttons">
+                    <button id="scrambleBtn" class="icon-button" disabled aria-label="Scramble image columns">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/>
+                        </svg>
+                    </button>
+                    <button id="playPauseBtn" class="icon-button" disabled aria-label="Play or pause sorting visualization">
+                        <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                        <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="display: none;">
+                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                        </svg>
+                    </button>
+                    <button id="audioToggle" class="icon-button" aria-label="Toggle audio feedback">
+                        <svg id="audioOnIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                        </svg>
+                        <svg id="audioOffIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="display: none;">
+                            <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="errorDisplay" class="error-display" style="display: none;"></div>
+
+        <div id="algorithmInfo" class="algorithm-info" style="display: none;">
+            <strong>Algorithm:</strong> <span id="algorithmName"></span><br>
+            <span id="algorithmDescription"></span><br>
+            <div id="algorithmCharacteristics" style="margin-top: 8px; font-size: 13px; color: #4a5568;"></div>
+        </div>
+
+        <div id="statsInfo" class="algorithm-info" style="display: none;">
+            <strong>Width:</strong> <span id="imageWidth">0</span> | 
+            <strong>Comparisons:</strong> <span id="compareCount">0</span> | 
+            <strong>Swaps:</strong> <span id="swapCount">0</span>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="visualizationCanvas" aria-label="Sorting visualization canvas"></canvas>
+        </div>
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
