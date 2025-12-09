@@ -174,6 +174,27 @@ interface ApplicationController {
   resetSorting(): void;
   setSpeed(speed: number): void;
   toggleAudio(): void;
+  startEndlessMode(): void;
+  stopEndlessMode(): void;
+}
+```
+
+### EndlessModeController
+
+Manages the endless background mode with automatic algorithm rotation.
+
+```typescript
+interface AlgorithmConfig {
+  algorithm: SortingAlgorithm;
+  stepsPerSecond: number;  // Target speed for this algorithm
+}
+
+interface EndlessModeController {
+  initialize(algorithmConfigs: AlgorithmConfig[]): void;
+  start(): void;
+  stop(): void;
+  onSortComplete(): void;  // Called when current sort finishes
+  selectRandomAlgorithm(): AlgorithmConfig;
 }
 ```
 
@@ -225,6 +246,11 @@ interface ApplicationState {
   visualizationState: VisualizationState;
   audioEnabled: boolean;
   highlights: Highlight[];
+  endlessMode: {
+    enabled: boolean;
+    algorithmConfigs: AlgorithmConfig[];
+    currentConfig: AlgorithmConfig | null;
+  };
 }
 ```
 
@@ -284,6 +310,14 @@ interface ApplicationState {
 ### Property 13: Comparison consistency and correctness
 *For any* pair of columns, the comparison function should always return the same result based on their originalIndex values, and should satisfy the properties of a total order (reflexive, antisymmetric, transitive).
 **Validates: Requirements 9.1, 9.2**
+
+### Property 14: Endless mode speed configuration
+*For any* algorithm configuration in endless mode, the actual visualization speed should match the configured steps-per-second rate within a reasonable tolerance (±10%).
+**Validates: Requirements 10.4**
+
+### Property 15: Endless mode algorithm rotation
+*For any* completed sort in endless mode, the next algorithm selected should be different from the current algorithm, ensuring variety in the visualization.
+**Validates: Requirements 10.5**
 
 ## Error Handling
 
@@ -361,6 +395,62 @@ Property-based tests will verify universal properties across many randomly gener
 - Speed control during active sorting
 - Audio enable/disable during active sorting
 
+## Endless Background Mode
+
+The endless background mode provides an ambient visualization experience that runs continuously without user interaction.
+
+### Activation
+
+The mode is activated by adding `?background=true` to the URL query string. On page load, the application detects this parameter and:
+1. Enters fullscreen mode automatically
+2. Hides all UI controls
+3. Generates a 500px wide image (or uses a default pattern)
+4. Initializes the endless mode controller
+
+### Algorithm Speed Configuration
+
+Different algorithms have vastly different performance characteristics. To ensure each algorithm is interesting to watch, a dedicated configuration file (`endless-config.js`) will define:
+
+```typescript
+// endless-config.js
+export const ENDLESS_MODE_CONFIG = {
+  columnCount: 500,  // Number of columns for generated image
+  algorithms: [
+    { name: 'bubbleSort', stepsPerSecond: 60 },      // Slow, many operations
+    { name: 'insertionSort', stepsPerSecond: 80 },   // Medium speed
+    { name: 'selectionSort', stepsPerSecond: 40 },   // Fewer operations, slower
+    { name: 'quickSort', stepsPerSecond: 120 },      // Fast, efficient
+    { name: 'mergeSort', stepsPerSecond: 100 }       // Fast, many operations
+  ]
+};
+```
+
+This centralized configuration makes it easy to tune the endless mode experience without modifying core application logic.
+
+### Endless Loop Behavior
+
+1. **Initial Start**: Select random algorithm and its speed configuration
+2. **Execute Sort**: Run the algorithm at configured speed until completion
+3. **On Complete**: 
+   - Wait briefly (e.g., 1-2 seconds) to show the completed sorted image
+   - Rescramble the columns
+   - Select a different random algorithm (exclude current one)
+   - Start sorting again with new algorithm's speed
+4. **Repeat**: Continue indefinitely
+
+### Image Generation for Endless Mode
+
+For endless mode, the system will generate a procedural image with the width specified in `endless-config.js` (default 500px). The image can be:
+- A gradient (horizontal color gradient from one color to another)
+- A pattern (procedurally generated visual pattern)
+- A default embedded image
+
+The configurable column count provides flexibility to balance visual detail and performance based on the target display environment.
+
+### Fullscreen Scaling
+
+The canvas is scaled to fill the entire viewport while maintaining the aspect ratio of the generated image. This provides an immersive ambient display experience.
+
 ## Implementation Notes
 
 ### File Structure
@@ -375,6 +465,8 @@ js/
   visualizationEngine.js # Animation and step execution
   audioGenerator.js    # Web Audio API integration
   highlightManager.js  # Visual highlight management
+  endlessModeController.js # Endless background mode logic
+  endless-config.js    # Configuration for endless mode (algorithms, speeds, column count)
   app.js              # Main application controller
 tests/
   test.html           # Test runner HTML

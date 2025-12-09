@@ -260,5 +260,55 @@
     - Show algorithm characteristics
     - _Requirements: 3.4_
 
-- [ ] 13. Final checkpoint - Ensure all tests pass
+- [x] 13. Implement endless background mode
+  - [x] 13.1 Create endless-config.js with algorithm configurations
+    - Define ENDLESS_MODE_CONFIG object with columnCount and algorithms array
+    - Include algorithm names and their corresponding stepsPerSecond values
+    - Export configuration as ES6 module
+    - _Requirements: 10.3, 10.4_
+  
+  - [x] 13.2 Add image generation for endless mode
+    - Implement procedural image generation (gradient or pattern)
+    - Generate image with width from endless-config.js
+    - Create canvas-based image generation
+    - _Requirements: 10.2_
+  
+  - [x] 13.3 Create endlessModeController.js
+    - Implement initialization with algorithm configs
+    - Implement random algorithm selection (excluding current)
+    - Implement sort completion handler
+    - Implement automatic rescramble and restart logic
+    - Export as ES6 module
+    - _Requirements: 10.3, 10.5, 10.6_
+  
+  - [x] 13.4 Add URL parameter detection and fullscreen mode
+    - Detect ?background=true query parameter on page load
+    - Enter fullscreen mode automatically
+    - Hide UI controls in endless mode
+    - Scale canvas to fullscreen dimensions
+    - _Requirements: 10.1, 10.2, 10.7_
+  
+  - [x] 13.5 Integrate endless mode with visualization engine
+    - Connect sort completion callback to endless mode controller
+    - Apply algorithm-specific speed from configuration
+    - Implement continuous loop (sort → wait → rescramble → select new algorithm → repeat)
+    - _Requirements: 10.4, 10.5, 10.6_
+  
+  - [x] 13.6 Write property test for endless mode speed configuration
+    - **Property 14: Endless mode speed configuration**
+    - **Validates: Requirements 10.4**
+  
+  - [x] 13.7 Write property test for algorithm rotation
+    - **Property 15: Endless mode algorithm rotation**
+    - **Validates: Requirements 10.5**
+  
+  - [x] 13.8 Write unit tests for endless mode
+    - Test URL parameter detection
+    - Test fullscreen activation
+    - Test UI hiding
+    - Test image generation with configured column count
+    - Test algorithm selection excludes current algorithm
+    - _Requirements: 10.1, 10.2, 10.3, 10.5, 10.7_
+
+- [ ] 14. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.

@@ -299,9 +299,23 @@
             fill: currentColor;
             flex-shrink: 0;
         }
+
+        /* Endless mode algorithm name display */
+        #endlessAlgorithmName {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            color: #ef4444;
+            font-size: 24px;
+            font-weight: 700;
+            z-index: 1000;
+            display: none;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
+    <div id="endlessAlgorithmName"></div>
     <div class="container">
         <h1>Image Column Sorter</h1>
         <p class="subtitle">Visualize sorting algorithms by watching them restore scrambled images</p>

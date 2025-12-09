@@ -122,3 +122,17 @@ The Image Column Sorter is a web-based sorting algorithm visualizer that provide
 2. WHEN a sorting algorithm requests comparison THEN the System SHALL return a consistent ordering relationship for any pair of columns
 3. WHEN all columns are sorted THEN the System SHALL have arranged columns in ascending order of their original positions
 4. WHEN the sorting algorithm completes THEN the System SHALL have restored the exact original image
+
+### Requirement 10
+
+**User Story:** As a user, I want an endless background mode that continuously demonstrates sorting algorithms, so that I can use the visualization as an ambient display.
+
+#### Acceptance Criteria
+
+1. WHEN the URL contains the query parameter "background=true" THEN the System SHALL enter fullscreen endless mode automatically
+2. WHEN in endless mode THEN the System SHALL generate a 500-pixel wide image and scale the canvas to fullscreen dimensions
+3. WHEN endless mode starts THEN the System SHALL select a random sorting algorithm from a predefined list with algorithm-specific speed configurations
+4. WHEN endless mode starts THEN the System SHALL execute the selected algorithm at its configured steps-per-second rate
+5. WHEN a sorting algorithm completes in endless mode THEN the System SHALL rescramble the columns and select a different random algorithm with its corresponding speed
+6. WHEN in endless mode THEN the System SHALL continue the cycle of sort-rescramble-sort indefinitely without user interaction
+7. WHEN in endless mode THEN the System SHALL hide all UI controls to provide an unobstructed visualization experience

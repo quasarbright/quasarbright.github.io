@@ -467,6 +467,7 @@ export class VisualizationEngine {
     
     /**
      * Updates the statistics display in the UI.
+     * Shows stats unless hidden by endless mode.
      * 
      * @private
      */
@@ -482,7 +483,11 @@ export class VisualizationEngine {
         const swapCount = document.getElementById('swapCount');
         
         if (statsInfo && imageWidth && compareCount && swapCount) {
-            statsInfo.style.display = 'block';
+            // Only show stats if not hidden by endless mode
+            if (statsInfo.dataset.endlessHidden !== 'true') {
+                statsInfo.style.display = 'block';
+            }
+            
             imageWidth.textContent = this.columnOrder.length.toString();
             compareCount.textContent = this.compareCount.toString();
             swapCount.textContent = this.swapCount.toString();

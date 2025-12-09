@@ -291,3 +291,5 @@ export function generateSyntheticImage(width) {
         image.src = canvas.toDataURL();
     });
 }
+
+

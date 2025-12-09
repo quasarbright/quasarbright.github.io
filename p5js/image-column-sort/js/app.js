@@ -11,6 +11,8 @@ import { VisualizationEngine } from './visualizationEngine.js';
 import { AudioGenerator } from './audioGenerator.js';
 import { HighlightManager } from './highlightManager.js';
 import { createIdentityOrder, scrambleColumns, copyColumnOrder } from './types.js';
+import { EndlessModeController } from './endlessModeController.js';
+import { ENDLESS_MODE_CONFIG } from './endless-config.js';
 
 /**
  * ApplicationController class manages the entire application state and coordinates all modules.
@@ -45,13 +47,15 @@ class ApplicationController {
             scrambledOrder: [],
             selectedAlgorithm: null,
             sortingSteps: [],
-            audioEnabled: false
+            audioEnabled: false,
+            endlessMode: false
         };
 
         // Initialize modules
         this.highlightManager = new HighlightManager();
         this.audioGenerator = new AudioGenerator();
         this.visualizationEngine = null; // Will be created after image is loaded
+        this.endlessModeController = new EndlessModeController(this);
 
         // Available algorithms
         this.algorithms = {
@@ -70,13 +74,22 @@ class ApplicationController {
             'radix': RadixSort
         };
 
-
+        // Check for endless mode URL parameter
+        // Accepts ?background or ?background=true
+        const urlParams = new URLSearchParams(window.location.search);
+        const backgroundParam = urlParams.get('background');
+        const backgroundMode = backgroundParam !== null && backgroundParam !== 'false';
 
         // Initialize the application
         this._initialize();
         
-        // Auto-initialize with 200-column image, scrambled, merge sort selected
-        this._autoInitialize();
+        if (backgroundMode) {
+            // Start endless mode
+            this._initializeEndlessMode();
+        } else {
+            // Auto-initialize with 200-column image, scrambled, merge sort selected
+            this._autoInitialize();
+        }
     }
 
     /**
@@ -604,8 +617,158 @@ class ApplicationController {
     _onSortingComplete() {
         console.log('Sorting complete!');
 
+        // If in endless mode, trigger the next cycle
+        if (this.state.endlessMode && this.endlessModeController.isEndlessModeActive()) {
+            this.endlessModeController.onSortComplete();
+        }
+
         // Update UI state
         this._updateUIState();
+    }
+    
+    /**
+     * Initializes endless background mode.
+     * @private
+     */
+    async _initializeEndlessMode() {
+        try {
+            console.log('Initializing endless mode...');
+            
+            // Set endless mode flag
+            this.state.endlessMode = true;
+            
+            // Hide UI controls
+            this._hideUIControls();
+            
+            // Enter fullscreen mode
+            await this._enterFullscreen();
+            
+            // Generate square image with configured column count (same as regular generate)
+            const image = await generateSyntheticImage(ENDLESS_MODE_CONFIG.columnCount);
+            await this.loadImageFromElement(image);
+            
+            // Scale canvas to fill entire screen
+            this._scaleCanvasToFullscreen();
+            
+            // Scramble the image
+            this.scrambleColumns();
+            
+            // Initialize endless mode controller with algorithm configs
+            this.endlessModeController.initialize(ENDLESS_MODE_CONFIG.algorithms);
+            
+            // Keep audio disabled in endless mode
+            // (audio is disabled by default, so no action needed)
+            
+            // Start endless mode
+            this.endlessModeController.start();
+            
+            console.log('Endless mode initialized successfully');
+        } catch (error) {
+            console.error('Failed to initialize endless mode:', error);
+            this._showError(`Failed to start endless mode: ${error.message}`);
+        }
+    }
+    
+    /**
+     * Hides UI controls for endless mode.
+     * @private
+     */
+    _hideUIControls() {
+        const controls = document.querySelector('.controls');
+        const subtitle = document.querySelector('.subtitle');
+        const title = document.querySelector('h1');
+        
+        if (controls) {
+            controls.style.display = 'none';
+        }
+        if (subtitle) {
+            subtitle.style.display = 'none';
+        }
+        if (title) {
+            title.style.display = 'none';
+        }
+        
+        // Hide algorithm info and stats
+        if (this.algorithmInfo) {
+            this.algorithmInfo.style.display = 'none';
+        }
+        const statsInfo = document.getElementById('statsInfo');
+        if (statsInfo) {
+            statsInfo.style.display = 'none';
+            // Mark as hidden by endless mode so visualization engine won't show it
+            statsInfo.dataset.endlessHidden = 'true';
+        }
+        
+        // Make container take full screen
+        const container = document.querySelector('.container');
+        if (container) {
+            container.style.padding = '0';
+            container.style.margin = '0';
+            container.style.maxWidth = '100%';
+            container.style.height = '100vh';
+            container.style.borderRadius = '0';
+            container.style.background = '#0f172a';
+        }
+        
+        // Make canvas container take full space
+        const canvasContainer = document.querySelector('.canvas-container');
+        if (canvasContainer) {
+            canvasContainer.style.minHeight = '100vh';
+            canvasContainer.style.maxHeight = '100vh';
+            canvasContainer.style.border = 'none';
+            canvasContainer.style.borderRadius = '0';
+            canvasContainer.style.padding = '0';
+            canvasContainer.style.margin = '0';
+        }
+        
+        // Make body take full screen
+        document.body.style.padding = '0';
+        document.body.style.margin = '0';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    /**
+     * Enters fullscreen mode.
+     * @private
+     * @returns {Promise<void>}
+     */
+    async _enterFullscreen() {
+        try {
+            const elem = document.documentElement;
+            
+            if (elem.requestFullscreen) {
+                await elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                await elem.webkitRequestFullscreen();
+            } else if (elem.mozRequestFullScreen) {
+                await elem.mozRequestFullScreen();
+            } else if (elem.msRequestFullscreen) {
+                await elem.msRequestFullscreen();
+            } else {
+                console.warn('Fullscreen API not supported');
+            }
+        } catch (error) {
+            console.warn('Could not enter fullscreen:', error);
+            // Continue anyway - fullscreen is nice to have but not required
+        }
+    }
+    
+    /**
+     * Scales canvas to fullscreen dimensions.
+     * Stretches to fill entire screen in endless mode.
+     * @private
+     */
+    _scaleCanvasToFullscreen() {
+        if (!this.state.sourceImage) {
+            return;
+        }
+        
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        
+        // Fill entire screen (allow stretching)
+        this.canvas.style.width = `${viewportWidth}px`;
+        this.canvas.style.height = `${viewportHeight}px`;
     }
 
     /**
