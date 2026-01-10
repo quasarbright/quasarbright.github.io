@@ -10,6 +10,6 @@
   "author": "mdelmonaco",
   "license": "MIT",
   "dependencies": {
-    "electron": "^2.0.5"
+    "electron": "^10.0.0"
   }
 }
