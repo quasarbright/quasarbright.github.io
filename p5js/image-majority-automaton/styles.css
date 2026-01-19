@@ -1,0 +1,357 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Header */
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h1 {
+    color: #ffffff;
+    font-size: 2rem;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.subtitle {
+    color: #b0b0b0;
+    font-size: 1rem;
+}
+
+/* Controls Section */
+.controls {
+    background-color: #252525;
+    border: 1px solid #3a3a3a;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.control-group {
+    margin-bottom: 15px;
+}
+
+.control-group:last-child {
+    margin-bottom: 0;
+}
+
+/* Labels */
+label {
+    display: block;
+    color: #e0e0e0;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+/* File Upload */
+.file-upload-label {
+    display: inline-block;
+    cursor: pointer;
+}
+
+.upload-text {
+    display: inline-block;
+    background-color: #3a3a3a;
+    color: #e0e0e0;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: 2px solid #4a4a4a;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.upload-text:hover {
+    background-color: #4a4a4a;
+    border-color: #5a5a5a;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+/* Slider */
+input[type="range"] {
+    width: 100%;
+    height: 6px;
+    background: #3a3a3a;
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: #5a9fd4;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    background: #6bb0e5;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: #5a9fd4;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s ease;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+    background: #6bb0e5;
+}
+
+input[type="range"]:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+input[type="range"]:disabled::-webkit-slider-thumb {
+    cursor: not-allowed;
+    background: #4a4a4a;
+}
+
+input[type="range"]:disabled::-moz-range-thumb {
+    cursor: not-allowed;
+    background: #4a4a4a;
+}
+
+#paletteValue {
+    color: #5a9fd4;
+    font-weight: 600;
+}
+
+/* Buttons */
+.button-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+button {
+    background-color: #3a3a3a;
+    color: #e0e0e0;
+    border: 2px solid #4a4a4a;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+    background-color: #4a4a4a;
+    border-color: #5a5a5a;
+}
+
+button:active:not(:disabled) {
+    background-color: #2a2a2a;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Icon Buttons */
+.icon-btn {
+    padding: 10px;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+.automaton-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+#playPauseBtn:not(:disabled) {
+    background-color: #4caf50;
+    border-color: #4caf50;
+    color: #ffffff;
+}
+
+#playPauseBtn:hover:not(:disabled) {
+    background-color: #5cbf60;
+    border-color: #5cbf60;
+}
+
+#stepBtn:not(:disabled) {
+    background-color: #5a9fd4;
+    border-color: #5a9fd4;
+    color: #ffffff;
+}
+
+#stepBtn:hover:not(:disabled) {
+    background-color: #6bb0e5;
+    border-color: #6bb0e5;
+}
+
+#resetBtn:not(:disabled) {
+    background-color: #f44336;
+    border-color: #f44336;
+    color: #ffffff;
+}
+
+#resetBtn:hover:not(:disabled) {
+    background-color: #e57373;
+    border-color: #e57373;
+}
+
+/* Dither Buttons */
+#ditherOrderedBtn:not(:disabled),
+#ditherNearestBtn:not(:disabled) {
+    background-color: #5a9fd4;
+    border-color: #5a9fd4;
+    color: #ffffff;
+}
+
+#ditherOrderedBtn:hover:not(:disabled),
+#ditherNearestBtn:hover:not(:disabled) {
+    background-color: #6bb0e5;
+    border-color: #6bb0e5;
+}
+
+/* Canvas Container */
+.canvas-container {
+    background-color: #252525;
+    border: 1px solid #3a3a3a;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    position: relative;
+}
+
+#mainCanvas {
+    max-width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
+.canvas-placeholder {
+    position: absolute;
+    color: #6a6a6a;
+    font-size: 1.1rem;
+    pointer-events: none;
+}
+
+.canvas-container:has(canvas[width]) .canvas-placeholder {
+    display: none;
+}
+
+/* Error and Warning Messages */
+.error-message,
+.warning-message {
+    border-radius: 6px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    font-weight: 500;
+    display: none;
+}
+
+.error-message {
+    background-color: #d32f2f;
+    color: #ffffff;
+    border: 2px solid #b71c1c;
+}
+
+.warning-message {
+    background-color: #f57c00;
+    color: #ffffff;
+    border: 2px solid #e65100;
+}
+
+.error-message:not(:empty),
+.warning-message:not(:empty) {
+    display: block;
+}
+
+/* Accessibility - Ensure sufficient contrast */
+@media (prefers-contrast: high) {
+    body {
+        background-color: #000000;
+        color: #ffffff;
+    }
+    
+    .controls,
+    .canvas-container {
+        background-color: #1a1a1a;
+        border-color: #ffffff;
+    }
+    
+    button,
+    .upload-text {
+        border-width: 3px;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .subtitle {
+        font-size: 0.9rem;
+    }
+    
+    .controls {
+        padding: 15px;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    button {
+        width: 100%;
+    }
+}

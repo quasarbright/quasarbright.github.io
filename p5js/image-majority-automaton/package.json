@@ -1,0 +1,16 @@
+{
+  "name": "image-majority-automaton",
+  "version": "1.0.0",
+  "description": "GPU-accelerated image dithering with majority automaton cellular automaton",
+  "scripts": {
+    "dev": "npx live-server --port=3000 --open=index.html"
+  },
+  "keywords": [
+    "webgl",
+    "dithering",
+    "cellular-automaton",
+    "image-processing"
+  ],
+  "author": "",
+  "license": "MIT"
+}
