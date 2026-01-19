@@ -351,7 +351,16 @@ button:disabled {
         flex-direction: column;
     }
     
+    .button-group.automaton-controls {
+        flex-direction: row;
+        justify-content: center;
+    }
+    
     button {
         width: 100%;
+    }
+    
+    .icon-btn {
+        width: 44px;
     }
 }
