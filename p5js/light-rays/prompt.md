@@ -92,7 +92,7 @@ parabolic mirror preset scene should have beam going right into the parabola so 
 
 when connected siblings get too far apart, trace the lines formed by the rays, treat the intersection as the center of a circle, and insert a new sibling in the middle of the arc formed by the heads and that center point.
 
-- [ ] refraction
+- [x] refraction
 
 directed curves/line segments with an "inside" and "outside" and a refractive index of its inside.
 

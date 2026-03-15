@@ -58,6 +58,8 @@ function makeCircularScene(): World {
     height: h,
   };
   addPulseAt(world, { x: w / 2, y: h / 2 });
+  const r = Math.min(w, h) * 0.3;
+  addPulseAt(world, { x: w / 2 - r + 5, y: h / 2 });
   return world;
 }
 
