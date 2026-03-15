@@ -6,6 +6,7 @@ import type { World } from "./types";
 import { stepWorld, addPulseAt, addSpotlightAt } from "./world";
 import { render } from "./render";
 import { LineMirror, CircularMirror, ParabolicMirror } from "./optics";
+import { makeRay } from "./ray";
 
 const BOX_MARGIN = 100;
 
@@ -83,10 +84,70 @@ function makeParabolicScene(): World {
   return world;
 }
 
+/**
+ * Builds a debug scene with three isolated sibling pairs to visualise insertion:
+ * diverging, parallel, and converging rays, each pair spaced far apart.
+ */
+function makeInsertionDebugScene(): World {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const cx = w / 2;
+  const speed = 80;
+  const spread = 200; // half-gap between siblings at start
+
+  // Row 1 (top): diverging — rays fan outward
+  const divA = makeRay({ x: cx - spread, y: h * 0.25 }, { x: -speed, y: speed });
+  const divB = makeRay({ x: cx + spread, y: h * 0.25 }, { x:  speed, y: speed });
+  divA.rightSibling = divB;
+  divB.leftSibling = divA;
+
+  // Row 2 (middle): parallel — rays travel straight down, side by side
+  const parA = makeRay({ x: cx - spread, y: h * 0.5 }, { x: 0, y: speed });
+  const parB = makeRay({ x: cx + spread, y: h * 0.5 }, { x: 0, y: speed });
+  parA.rightSibling = parB;
+  parB.leftSibling = parA;
+
+  // Row 3 (bottom): converging — rays angle toward each other
+  const conA = makeRay({ x: cx - spread, y: h * 0.75 }, { x:  speed, y: speed });
+  const conB = makeRay({ x: cx + spread, y: h * 0.75 }, { x: -speed, y: speed });
+  conA.rightSibling = conB;
+  conB.leftSibling = conA;
+
+  return {
+    rays: [divA, divB, parA, parB, conA, conB],
+    optics: [],
+    width: w,
+    height: h,
+  };
+}
+
+/**
+ * Builds a debug scene with a single converging sibling pair, far apart,
+ * to isolate and visualise insertion for the converging case.
+ */
+function makeConvergingDebugScene(): World {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const cx = w / 2;
+  const cy = h / 2;
+  const speed = 80;
+  const spread = 300;
+
+  // Two rays angling toward each other from left and right
+  const a = makeRay({ x: cx - spread, y: cy }, { x:  speed, y: speed });
+  const b = makeRay({ x: cx + spread, y: cy }, { x: -speed, y: speed });
+  a.rightSibling = b;
+  b.leftSibling = a;
+
+  return { rays: [a, b], optics: [], width: w, height: h };
+}
+
 const SCENES: Record<string, () => World> = {
   box: makeBoxScene,
   circular: makeCircularScene,
   parabolic: makeParabolicScene,
+  insertionDebug: makeInsertionDebugScene,
+  convergingDebug: makeConvergingDebugScene,
 };
 
 // ---------------------------------------------------------------------------

@@ -4,7 +4,7 @@
  */
 
 import type { World, Ray, Vector } from "./types";
-import { add, scale, sub, mag, normalize } from "./vector";
+import { add, scale, sub, dot, mag, normalize } from "./vector";
 import { haveOpticsDiverged, unlinkLeft, makeCircularPulse, makeSpotlight, makeRay, areSiblingsConnected, haveSameOptics } from "./ray";
 import { RAYS_PER_PULSE, LIGHT_SPEED, SPOTLIGHT_COUNT, SPOTLIGHT_SPACING, MAX_SIBLING_DISTANCE, MAX_RAYS, INSERTION_ENABLED } from "./constants";
 
@@ -130,7 +130,8 @@ function insertBetween(a: Ray, b: Ray, optics: World["optics"]): Ray | null {
     const mid = normalize(add(toA, toB));
     const r = (mag(sub(a.position, center)) + mag(sub(b.position, center))) / 2;
     newPosition = add(center, scale(mid, r));
-    newVelocity = scale(mid, speed);
+    // If mid points opposite to a's velocity, the intersection is ahead (converging) — flip it
+    newVelocity = scale(dot(mid, a.velocity) >= 0 ? mid : scale(mid, -1), speed);
   } else {
     // Parallel rays: linear midpoint, same velocity
     newPosition = scale(add(a.position, b.position), 0.5);
