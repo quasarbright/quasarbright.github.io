@@ -7,7 +7,7 @@ function makeWalkers() {
 
 class Walker {
   constructor() {
-    this.position = createVector(width / 2, height / 2)
+    this.position = createVector(Math.random() * width, Math.random() * height)
     this.previousPosition = this.position.copy()
     this.hue = Math.random() * 256
   }
