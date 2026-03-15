@@ -1,0 +1,69 @@
+/**
+ * Ray creation and sibling relationship utilities.
+ */
+
+import type { Ray, Vector } from "./types";
+
+/**
+ * Creates a ray with the given position and velocity and no siblings or optics.
+ */
+export function makeRay(position: Vector, velocity: Vector): Ray {
+  return { position, velocity, leftSibling: null, rightSibling: null, optics: [] };
+}
+
+/**
+ * Creates a circular pulse of rays centered at `center` with the given speed
+ * and `count` rays evenly distributed around the full circle.
+ * The rays form a closed sibling loop (first and last are siblings).
+ * Returns the array of rays (also added to no world — caller handles that).
+ */
+export function makeCircularPulse(center: Vector, speed: number, count: number): Ray[] {
+  const rays: Ray[] = [];
+  for (let i = 0; i < count; i++) {
+    const angle = (2 * Math.PI * i) / count;
+    const velocity: Vector = { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed };
+    rays.push(makeRay({ ...center }, velocity));
+  }
+  // Link into a closed loop
+  for (let i = 0; i < count; i++) {
+    const ray = rays[i]!;
+    ray.leftSibling = rays[(i - 1 + count) % count]!;
+    ray.rightSibling = rays[(i + 1) % count]!;
+  }
+  return rays;
+}
+
+/**
+ * Returns true if two rays are currently connected siblings —
+ * i.e. they are mutual siblings and their optics lists match by reference equality.
+ */
+export function areSiblingsConnected(a: Ray, b: Ray): boolean {
+  if (a.rightSibling !== b && a.leftSibling !== b) return false;
+  if (a.optics.length !== b.optics.length) return false;
+  for (let i = 0; i < a.optics.length; i++) {
+    if (a.optics[i] !== b.optics[i]) return false;
+  }
+  return true;
+}
+
+/**
+ * Unlinks a ray from its left sibling (sets both pointers to null).
+ * No-op if leftSibling is null.
+ */
+export function unlinkLeft(ray: Ray): void {
+  if (ray.leftSibling === null) return;
+  ray.leftSibling.rightSibling = null;
+  ray.leftSibling = null;
+}
+
+/**
+ * Returns true if the optics lists of two rays have diverged and can never reconverge.
+ * This is the case when any element at the same index differs by reference.
+ */
+export function haveOpticsDiverged(a: Ray, b: Ray): boolean {
+  const len = Math.min(a.optics.length, b.optics.length);
+  for (let i = 0; i < len; i++) {
+    if (a.optics[i] !== b.optics[i]) return true;
+  }
+  return false;
+}
