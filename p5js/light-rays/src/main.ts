@@ -167,7 +167,12 @@ let world: World = makeBoxScene();
 
 function loadScene(): void {
   const factory = SCENES[sceneSelect.value];
-  if (factory) world = factory();
+  if (factory) {
+    world = factory();
+    // Clear any trails left by the previous scene
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
 }
 
 sceneSelect.addEventListener("change", loadScene);

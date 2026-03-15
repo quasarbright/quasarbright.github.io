@@ -6,13 +6,15 @@ import type { World, Ray } from "./types";
 import { LineMirror, LineSegmentMirror, CircularMirror, ParabolicMirror } from "./optics";
 import { add, scale, mag, sub } from "./vector";
 import { areSiblingsConnected } from "./ray";
-import { RAY_DOT_RADIUS, RAY_COLOR, MIRROR_COLOR, MIRROR_EXTENT, DRAW_DOTS, MAX_SIBLING_DISTANCE } from "./constants";
+import { RAY_DOT_RADIUS, RAY_COLOR, MIRROR_COLOR, MIRROR_EXTENT, DRAW_DOTS, MAX_SIBLING_DISTANCE, TRAIL_OPACITY } from "./constants";
 
 /**
  * Clears the canvas and draws all optics, rays, and sibling connectors for the given world.
  */
 export function render(ctx: CanvasRenderingContext2D, world: World): void {
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  // Semitransparent black overlay fades previous frames, creating light trails
+  ctx.fillStyle = `rgba(0, 0, 0, ${TRAIL_OPACITY})`;
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   drawOptics(ctx, world);
   drawConnectors(ctx, world);
   if (DRAW_DOTS) drawRayHeads(ctx, world);

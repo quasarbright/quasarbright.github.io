@@ -48,10 +48,11 @@ export const MIRROR_EXTENT = 5000;
 /** When false, adaptive sibling insertion is skipped entirely. */
 export const INSERTION_ENABLED = true;
 
-/** When false, ray-head dots are not drawn — only sibling connectors are shown. */
-export const DRAW_DOTS = true;
+/** Opacity of the background fade overlay each frame (0 = full trails, 1 = no trails). */
+export const TRAIL_OPACITY = 0.05;
 
-/** When true, each ray's position is nudged toward the arc midpoint of its connected siblings each tick. */
+/** When false, ray-head dots are not drawn — only sibling connectors are shown. */
+export const DRAW_DOTS = false;
 export const SMOOTHING_ENABLED = true;
 
 /** Fraction of the way to move toward the arc midpoint each tick (0 = off, 1 = snap). */
