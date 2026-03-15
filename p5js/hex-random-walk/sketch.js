@@ -4,7 +4,7 @@
 // visiting only hex corners — never hex centers.
 
 const NUM_WALKERS = 100
-const HEX_SIZE = 14 // edge length in pixels (distance between adjacent vertices)
+const HEX_SIZE = 12 // edge length in pixels (distance between adjacent vertices)
 
 // -- Data Definitions --
 
