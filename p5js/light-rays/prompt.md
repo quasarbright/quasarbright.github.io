@@ -68,7 +68,7 @@ Draw mirrors in white
 
 unit test reflection collision, reflection action, checking whether siblings are connected, etc.
 
-- [ ] interactivity
+- [x] interactivity
 
 click to spawn a circular light pulse at the mouse cursor
 
