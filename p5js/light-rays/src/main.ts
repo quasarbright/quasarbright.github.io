@@ -59,27 +59,36 @@ function makeCircularScene(): World {
   return world;
 }
 
-/** Builds a scene with a parabolic mirror and a spotlight aimed into it. */
+/**
+ * Builds a scene with a horizontal parabolic mirror (opens upward, vertex at screen center)
+ * and two spotlights — one from the left, one from the right — aimed horizontally into it.
+ * Both beams reflect toward the shared focus above the vertex.
+ */
 function makeParabolicScene(): World {
   const w = window.innerWidth;
   const h = window.innerHeight;
-  const focalLength = 120;
-  const focus = { x: w / 2, y: h - focalLength - 20 };
+  const focalLength = 150;
+  // Vertex at screen center; focus is focalLength above it (y decreases upward in screen coords)
+  // Vertex at screen center; focus is focalLength to the right — parabola opens rightward
+  const vertex = { x: w / 2, y: h / 2 };
+  const focus = { x: vertex.x + focalLength, y: vertex.y };
   const world: World = {
     rays: [],
     optics: [
       new ParabolicMirror(
         focus,
-        { x: 0, y: -1 },           // opens upward (axis points up toward focus)
+        { x: 1, y: 0 },   // axis points right (toward focus); parabola opens rightward
         focalLength,
-        Math.max(window.innerWidth, window.innerHeight) // halfWidth: extends well past screen edges
+        Math.max(w, h)     // halfWidth: extends well past screen edges
       ),
     ],
     width: w,
     height: h,
   };
-  // Spotlight aimed straight down into the parabola from the top
-  addSpotlightAt(world, { x: w / 2, y: h * 0.1 }, { x: 0, y: 1 });
+  // Spotlight from the left, aimed right
+  addSpotlightAt(world, { x: 0, y: h / 2 }, { x: 1, y: 0 });
+  // Spotlight from the right, aimed left
+  addSpotlightAt(world, { x: w, y: h / 2 }, { x: -1, y: 0 });
   addPulseAt(world, focus);
   return world;
 }
