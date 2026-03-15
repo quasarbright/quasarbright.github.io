@@ -96,9 +96,11 @@ when connected siblings get too far apart, trace the lines formed by the rays, t
 
 directed curves/line segments with an "inside" and "outside" and a refractive index of its inside.
 
-glass block implemented as 4 line segments with consistent "inside" region and refractive index.
+glass block implemented as 4 line segments with consistent "inside" region and refractive index (a composite).
 
 when going outside in vs inside out, change velocity/angle in opposite ways.
+
+handle total internal reflection
 
 draw surface as light blue
 

@@ -101,8 +101,76 @@ function segmentsIntersect(p1: Vector, p2: Vector, p3: Vector, p4: Vector): bool
 }
 
 // ---------------------------------------------------------------------------
-// CircularMirror
+// LineSegmentRefractor
 // ---------------------------------------------------------------------------
+
+/**
+ * A finite line segment refractor (e.g. a glass surface) defined by two endpoints
+ * and a refractive index for the "inside" medium.
+ * The outside medium is assumed to have refractive index 1.0 (air).
+ * The normal points from inside to outside (outward).
+ * Rays crossing the segment are refracted via Snell's law; total internal reflection
+ * is handled when the critical angle is exceeded.
+ */
+export class LineSegmentRefractor implements Optic {
+  readonly a: Vector;
+  readonly b: Vector;
+  /** Unit normal pointing from inside to outside (outward). */
+  readonly normal: Vector;
+  /** Refractive index of the inside medium (outside = 1.0). */
+  readonly refractiveIndex: number;
+
+  constructor(a: Vector, b: Vector, normal: Vector, refractiveIndex: number) {
+    this.a = a;
+    this.b = b;
+    this.normal = normalize(normal);
+    this.refractiveIndex = refractiveIndex;
+  }
+
+  /**
+   * Returns true when the ray segment [oldPosition, newPosition] crosses this surface.
+   */
+  isCollision(oldPosition: Vector, newPosition: Vector): boolean {
+    return segmentsIntersect(oldPosition, newPosition, this.a, this.b);
+  }
+
+  /**
+   * Refracts the ray's velocity using Snell's law.
+   * Moves the ray to newPosition (it passes through the surface).
+   * Falls back to reflection on total internal reflection.
+   */
+  interact(ray: Ray, newPosition: Vector): void {
+    const speed = mag(ray.velocity);
+    const d = normalize(ray.velocity);
+    // A ray going outside→in moves against the outward normal (dot < 0)
+    const goingIn = dot(d, this.normal) < 0;
+    const n1 = goingIn ? 1.0 : this.refractiveIndex;
+    const n2 = goingIn ? this.refractiveIndex : 1.0;
+    // n points toward the incident side (outward normal when going in, inward when going out)
+    const n = goingIn ? this.normal : scale(this.normal, -1);
+
+    const cosI = -dot(d, n); // cosine of angle of incidence (positive when ray hits front)
+    const sinI2 = 1 - cosI * cosI;
+    const sinT2 = (n1 / n2) * (n1 / n2) * sinI2;
+
+    if (sinT2 > 1) {
+      // Total internal reflection — reflect instead of transmit
+      ray.velocity = reflect(ray.velocity, this.normal);
+      // Position stays (same as mirror behaviour)
+      return;
+    }
+
+    const cosT = Math.sqrt(1 - sinT2);
+    // Snell's law vector form: d' = (n1/n2)*d + (n1/n2*cosI - cosT)*n
+    const refracted = normalize(
+      add(scale(d, n1 / n2), scale(n, (n1 / n2) * cosI - cosT))
+    );
+    ray.velocity = scale(refracted, speed * n1 / n2);
+    ray.position = newPosition;
+  }
+}
+
+
 
 /**
  * A circular mirror defined by a center and radius.

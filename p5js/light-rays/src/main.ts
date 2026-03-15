@@ -5,7 +5,7 @@
 import type { World } from "./types";
 import { stepWorld, addPulseAt, addSpotlightAt } from "./world";
 import { render } from "./render";
-import { LineMirror, CircularMirror, ParabolicMirror, CompositeOptic } from "./optics";
+import { LineMirror, CircularMirror, ParabolicMirror, CompositeOptic, LineSegmentRefractor } from "./optics";
 import { makeRay } from "./ray";
 
 const BOX_MARGIN = 100;
@@ -153,10 +153,39 @@ function makeConvergingDebugScene(): World {
   return { rays: [a, b], optics: [], width: w, height: h };
 }
 
+/**
+ * Builds a scene with a rectangular glass block in the center and a spotlight
+ * aimed through it from the left, demonstrating refraction and total internal reflection.
+ */
+function makeGlassBlockScene(): World {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const cx = w / 2;
+  const cy = h / 2;
+  const hw = 120; // half-width of block
+  const hh = 200; // half-height of block
+  const n = 1.5;  // glass refractive index
+
+  // Four sides of the block as a CompositeOptic.
+  // Normals point outward from the block interior.
+  const block = new CompositeOptic([
+    new LineSegmentRefractor({ x: cx - hw, y: cy - hh }, { x: cx - hw, y: cy + hh }, { x: -1, y: 0 }, n), // left side,  normal left
+    new LineSegmentRefractor({ x: cx + hw, y: cy - hh }, { x: cx + hw, y: cy + hh }, { x:  1, y: 0 }, n), // right side, normal right
+    new LineSegmentRefractor({ x: cx - hw, y: cy - hh }, { x: cx + hw, y: cy - hh }, { x: 0, y: -1 }, n), // top side,   normal up
+    new LineSegmentRefractor({ x: cx - hw, y: cy + hh }, { x: cx + hw, y: cy + hh }, { x: 0, y:  1 }, n), // bottom side,normal down
+  ]);
+
+  const world: World = { rays: [], optics: [block], width: w, height: h };
+  // Spotlight from the upper-left aimed at a downward-right angle into the block
+  addSpotlightAt(world, { x: 0, y: cy - 200 }, { x: 1, y: 0.4 });
+  return world;
+}
+
 const SCENES: Record<string, () => World> = {
   box: makeBoxScene,
   circular: makeCircularScene,
   parabolic: makeParabolicScene,
+  glassBlock: makeGlassBlockScene,
   insertionDebug: makeInsertionDebugScene,
   convergingDebug: makeConvergingDebugScene,
 };

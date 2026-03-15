@@ -3,10 +3,10 @@
  */
 
 import type { World, Ray, Optic } from "./types";
-import { LineMirror, LineSegmentMirror, CircularMirror, ParabolicMirror, CompositeOptic } from "./optics";
+import { LineMirror, LineSegmentMirror, LineSegmentRefractor, CircularMirror, ParabolicMirror, CompositeOptic } from "./optics";
 import { add, scale, mag, sub } from "./vector";
 import { areSiblingsConnected } from "./ray";
-import { RAY_DOT_RADIUS, RAY_COLOR, MIRROR_COLOR, MIRROR_EXTENT, DRAW_DOTS, MAX_SIBLING_DISTANCE, TRAIL_OPACITY } from "./constants";
+import { RAY_DOT_RADIUS, RAY_COLOR, MIRROR_COLOR, REFRACTOR_COLOR, MIRROR_EXTENT, DRAW_DOTS, MAX_SIBLING_DISTANCE, TRAIL_OPACITY } from "./constants";
 
 /**
  * Clears the canvas and draws all optics, rays, and sibling connectors for the given world.
@@ -22,7 +22,6 @@ export function render(ctx: CanvasRenderingContext2D, world: World): void {
 
 /** Draws all optics in the world. */
 function drawOptics(ctx: CanvasRenderingContext2D, world: World): void {
-  ctx.strokeStyle = MIRROR_COLOR;
   ctx.lineWidth = 1;
   for (const optic of world.optics) {
     if (optic instanceof CompositeOptic) {
@@ -36,12 +35,19 @@ function drawOptics(ctx: CanvasRenderingContext2D, world: World): void {
 /** Draws a single optic (non-composite). */
 function drawOptic(ctx: CanvasRenderingContext2D, optic: Optic): void {
   if (optic instanceof LineMirror) {
+    ctx.strokeStyle = MIRROR_COLOR;
     drawLineMirror(ctx, optic);
   } else if (optic instanceof LineSegmentMirror) {
+    ctx.strokeStyle = MIRROR_COLOR;
     drawLineSegmentMirror(ctx, optic);
+  } else if (optic instanceof LineSegmentRefractor) {
+    ctx.strokeStyle = REFRACTOR_COLOR;
+    drawLineSegmentRefractor(ctx, optic);
   } else if (optic instanceof CircularMirror) {
+    ctx.strokeStyle = MIRROR_COLOR;
     drawCircularMirror(ctx, optic);
   } else if (optic instanceof ParabolicMirror) {
+    ctx.strokeStyle = MIRROR_COLOR;
     drawParabolicMirror(ctx, optic);
   }
 }
@@ -61,6 +67,14 @@ function drawLineSegmentMirror(ctx: CanvasRenderingContext2D, mirror: LineSegmen
   ctx.beginPath();
   ctx.moveTo(mirror.a.x, mirror.a.y);
   ctx.lineTo(mirror.b.x, mirror.b.y);
+  ctx.stroke();
+}
+
+/** Draws a line segment refractor between its two endpoints. */
+function drawLineSegmentRefractor(ctx: CanvasRenderingContext2D, refractor: LineSegmentRefractor): void {
+  ctx.beginPath();
+  ctx.moveTo(refractor.a.x, refractor.a.y);
+  ctx.lineTo(refractor.b.x, refractor.b.y);
   ctx.stroke();
 }
 

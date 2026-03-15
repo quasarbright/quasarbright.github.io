@@ -98,7 +98,10 @@ function smoothPositions(world: World): void {
     if (!haveSameOptics(ray.optics, left.optics)) continue;
     if (!haveSameOptics(ray.optics, right.optics)) continue;
     const midpoint = scale(add(left.position, right.position), 0.5);
-    ray.position = add(ray.position, scale(sub(midpoint, ray.position), SMOOTHING_FACTOR));
+    const nudged = add(ray.position, scale(sub(midpoint, ray.position), SMOOTHING_FACTOR));
+    // Skip nudge if it would cross any optic
+    const crossesOptic = world.optics.some((o) => o.isCollision(ray.position, nudged));
+    if (!crossesOptic) ray.position = nudged;
   }
 }
 
@@ -139,7 +142,12 @@ function insertBetween(a: Ray, b: Ray, optics: World["optics"]): Ray | null {
 
   let newPosition: Vector;
   let newVelocity: Vector;
-  const speed = mag(a.velocity);
+  const speedA = mag(a.velocity);
+  const speedB = mag(b.velocity);
+  if (Math.abs(speedA - speedB) > 1e-6) {
+    console.warn(`insertBetween: sibling speed mismatch (${speedA.toFixed(2)} vs ${speedB.toFixed(2)})`);
+  }
+  const speed = speedA;
 
   if (center !== null) {
     // Arc midpoint: normalize both head vectors from center, average, re-normalize

@@ -35,8 +35,11 @@ export const RAY_DOT_RADIUS = 2;
 /** Colour used for ray heads and sibling connectors. */
 export const RAY_COLOR = "#FFD700";
 
-/** Colour used for drawing optics (mirrors). */
+/** Color used for drawing optics (mirrors). */
 export const MIRROR_COLOR = "#FFFFFF";
+
+/** Color used for drawing refractive surfaces (glass). */
+export const REFRACTOR_COLOR = "rgba(100, 200, 255, 0.8)";
 
 /** Half-length used when drawing "infinite" line mirrors, in pixels. */
 export const MIRROR_EXTENT = 5000;
