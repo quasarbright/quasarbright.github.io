@@ -34,6 +34,45 @@ export function makeCircularPulse(center: Vector, speed: number, count: number):
 }
 
 /**
+ * Creates a spotlight: a beam of `count` parallel rays all traveling in `direction`
+ * (which will be normalized and scaled to `speed`), arranged side by side perpendicular
+ * to the direction, centered at `center`, with `spacing` pixels between adjacent rays.
+ * The rays form an open linear sibling chain (ends have null outer siblings).
+ */
+export function makeSpotlight(
+  center: Vector,
+  direction: Vector,
+  speed: number,
+  count: number,
+  spacing: number
+): Ray[] {
+  const dirMag = Math.sqrt(direction.x * direction.x + direction.y * direction.y);
+  const velocity: Vector = {
+    x: (direction.x / dirMag) * speed,
+    y: (direction.y / dirMag) * speed,
+  };
+  // Perpendicular to direction (rotate 90°)
+  const perp: Vector = { x: -velocity.y / speed, y: velocity.x / speed };
+
+  const rays: Ray[] = [];
+  const halfSpan = ((count - 1) / 2) * spacing;
+  for (let i = 0; i < count; i++) {
+    const offset = i * spacing - halfSpan;
+    const position: Vector = {
+      x: center.x + perp.x * offset,
+      y: center.y + perp.y * offset,
+    };
+    rays.push(makeRay(position, { ...velocity }));
+  }
+  // Link into an open chain
+  for (let i = 0; i < count; i++) {
+    rays[i]!.leftSibling = i > 0 ? rays[i - 1]! : null;
+    rays[i]!.rightSibling = i < count - 1 ? rays[i + 1]! : null;
+  }
+  return rays;
+}
+
+/**
  * Returns true if two rays are currently connected siblings —
  * i.e. they are mutual siblings and their optics lists match by reference equality.
  */

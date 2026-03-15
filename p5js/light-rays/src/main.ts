@@ -3,7 +3,7 @@
  */
 
 import type { World } from "./types";
-import { stepWorld, addPulseAt } from "./world";
+import { stepWorld, addPulseAt, addSpotlightAt } from "./world";
 import { render } from "./render";
 import { LineMirror, CircularMirror, ParabolicMirror } from "./optics";
 
@@ -54,7 +54,7 @@ function makeCircularScene(): World {
   return world;
 }
 
-/** Builds a scene with a parabolic mirror. */
+/** Builds a scene with a parabolic mirror and a spotlight aimed into it. */
 function makeParabolicScene(): World {
   const w = window.innerWidth;
   const h = window.innerHeight;
@@ -63,14 +63,15 @@ function makeParabolicScene(): World {
     rays: [],
     optics: [
       new ParabolicMirror(
-        { x: w / 2, y: h / 2 },   // focus at center
+        { x: w / 2, y: h - focalLength - 20 },  // focus near bottom, vertex at ~h-20
         { x: 0, y: -1 },           // opens upward (axis points up toward focus)
         focalLength,
         Math.max(window.innerWidth, window.innerHeight) // halfWidth: extends well past screen edges
       ),
     ],
   };
-  addPulseAt(world, { x: w / 2, y: h * 0.15 });
+  // Spotlight aimed straight down into the parabola from the top
+  addSpotlightAt(world, { x: w / 2, y: h * 0.1 }, { x: 0, y: 1 });
   return world;
 }
 

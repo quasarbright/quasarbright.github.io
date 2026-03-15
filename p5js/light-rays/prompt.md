@@ -74,7 +74,7 @@ click to spawn a circular light pulse at the mouse cursor
 
 have a helper `addPulseAt(world, position)` and test that, don't test actual input handling.
 
-- [ ] more types of mirrors
+- [x] more types of mirrors
 
 parabolic mirrors, circular mirrors, line segment mirrors
 

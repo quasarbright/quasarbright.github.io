@@ -4,10 +4,12 @@
 
 import type { World, Vector } from "./types";
 import { add, scale } from "./vector";
-import { haveOpticsDiverged, unlinkLeft, makeCircularPulse } from "./ray";
+import { haveOpticsDiverged, unlinkLeft, makeCircularPulse, makeSpotlight } from "./ray";
 
 const RAYS_PER_PULSE = 120;
 const LIGHT_SPEED = 150; // pixels per second
+const SPOTLIGHT_COUNT = 120;
+const SPOTLIGHT_SPACING = 6; // pixels between rays
 
 /**
  * Advances the simulation by dt seconds.
@@ -25,6 +27,16 @@ export function stepWorld(world: World, dt: number): void {
  */
 export function addPulseAt(world: World, position: Vector): void {
   const newRays = makeCircularPulse(position, LIGHT_SPEED, RAYS_PER_PULSE);
+  for (const ray of newRays) {
+    world.rays.push(ray);
+  }
+}
+
+/**
+ * Adds a spotlight beam at the given position, aimed in the given direction.
+ */
+export function addSpotlightAt(world: World, position: Vector, direction: Vector): void {
+  const newRays = makeSpotlight(position, direction, LIGHT_SPEED, SPOTLIGHT_COUNT, SPOTLIGHT_SPACING);
   for (const ray of newRays) {
     world.rays.push(ray);
   }
