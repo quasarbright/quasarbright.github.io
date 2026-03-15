@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Light Ray Simulator</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { background: black; overflow: hidden; }
+      canvas { display: block; }
+      #controls {
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        z-index: 10;
+      }
+      #scene {
+        background: #222;
+        color: #fff;
+        border: 1px solid #555;
+        padding: 4px 8px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-Dvcm16tW.js"></script>
+  </head>
+  <body>
+    <div id="controls">
+      <select id="scene">
+        <option value="box">Box</option>
+        <option value="circular">Circular Mirror</option>
+        <option value="parabolic">Parabolic Mirror</option>
+        <option value="glassBlock">Glass Block</option>
+        <option value="sphericalAberration">Spherical Aberration (Biconvex)</option>
+        <option value="biconvexHyperbolic">Biconvex Hyperbolic Lens</option>
+        <!-- <option value="insertionDebug">Insertion Debug</option>
+        <option value="convergingDebug">Converging Debug</option> -->
+      </select>
+    </div>
+    <canvas id="canvas"></canvas>
+  </body>
+</html>

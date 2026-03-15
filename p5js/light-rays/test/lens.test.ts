@@ -80,11 +80,11 @@ describe("makeBiconvexLens", () => {
     });
 
     // The top ray (dy = -50) should be deflected downward (vy > 0 in screen coords)
-    expect(exitVelocities[0].y).toBeGreaterThan(0);
+    expect(exitVelocities![0]!.y).toBeGreaterThan(0);
     // The bottom ray (dy = +50) should be deflected upward (vy < 0)
-    expect(exitVelocities[2].y).toBeLessThan(0);
+    expect(exitVelocities![2]!.y).toBeLessThan(0);
     // The center ray should pass straight through (vy ≈ 0)
-    expect(exitVelocities[1].y).toBeCloseTo(0, 3);
+    expect(exitVelocities![1]!.y).toBeCloseTo(0, 3);
   });
 
   it("rays above and below center bend toward the optical axis after the lens", () => {
