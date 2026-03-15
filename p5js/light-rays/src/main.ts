@@ -71,9 +71,9 @@ function makeParabolicScene(): World {
   const h = window.innerHeight;
   const focalLength = 150;
   // Vertex at screen center; focus is focalLength above it (y decreases upward in screen coords)
-  // Vertex at screen center; focus is focalLength to the right — parabola opens rightward
-  const vertex = { x: w / 2, y: h / 2 };
-  const focus = { x: vertex.x + focalLength, y: vertex.y };
+  // Focus at screen center; vertex is focalLength to the left — parabola opens rightward
+  const focus = { x: w / 2, y: h / 2 };
+  const vertex = { x: focus.x - focalLength, y: focus.y };
   const world: World = {
     rays: [],
     optics: [
