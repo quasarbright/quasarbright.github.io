@@ -5,7 +5,7 @@
 import type { World } from "./types";
 import { stepWorld, addPulseAt, addSpotlightAt } from "./world";
 import { render } from "./render";
-import { LineMirror, CircularMirror, ParabolicMirror, CompositeOptic, LineSegmentRefractor } from "./optics";
+import { LineMirror, CircularMirror, ParabolicMirror, CompositeOptic, LineSegmentRefractor, makeBiconvexLens, makeBiconvexHyperbolicLens } from "./optics";
 import { makeRay } from "./ray";
 
 const BOX_MARGIN = 100;
@@ -181,11 +181,49 @@ function makeGlassBlockScene(): World {
   return world;
 }
 
+/**
+ * Builds a scene with a biconvex (spherical) lens to demonstrate spherical aberration.
+ * Parallel rays from the left do not converge to a single point.
+ */
+function makeSphericalAberrationScene(): World {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const lens = makeBiconvexLens(
+    { x: w / 2, y: h / 2 },
+    120,   // aperture half-height
+    300,   // curvature radius
+    1.5    // glass refractive index
+  );
+  const world: World = { rays: [], optics: [lens], width: w, height: h };
+  addSpotlightAt(world, { x: 0, y: h / 2 }, { x: 1, y: 0 });
+  return world;
+}
+
+/**
+ * Builds a scene with a biconvex hyperbolic lens — aberration-free.
+ * Each surface has conic constant K = -n², eliminating spherical aberration.
+ */
+function makeBiconvexHyperbolicScene(): World {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const lens = makeBiconvexHyperbolicLens(
+    { x: w / 2, y: h / 2 },
+    120,   // aperture half-height
+    300,   // vertex radius of curvature — focal length ≈ R / (n - 1) = 600
+    1.5    // glass refractive index
+  );
+  const world: World = { rays: [], optics: [lens], width: w, height: h };
+  addSpotlightAt(world, { x: 0, y: h / 2 }, { x: 1, y: 0 });
+  return world;
+}
+
 const SCENES: Record<string, () => World> = {
   box: makeBoxScene,
   circular: makeCircularScene,
   parabolic: makeParabolicScene,
   glassBlock: makeGlassBlockScene,
+  sphericalAberration: makeSphericalAberrationScene,
+  biconvexHyperbolic: makeBiconvexHyperbolicScene,
   insertionDebug: makeInsertionDebugScene,
   convergingDebug: makeConvergingDebugScene,
 };

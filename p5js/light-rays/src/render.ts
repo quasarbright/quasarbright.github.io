@@ -3,7 +3,8 @@
  */
 
 import type { World, Ray, Optic } from "./types";
-import { LineMirror, LineSegmentMirror, LineSegmentRefractor, CircularMirror, ParabolicMirror, CompositeOptic } from "./optics";
+import { LineMirror, LineSegmentMirror, LineSegmentRefractor, CircularArcRefractor, HyperbolicSurfaceRefractor, CircularMirror, ParabolicMirror, CompositeOptic } from "./optics";
+
 import { add, scale, mag, sub } from "./vector";
 import { areSiblingsConnected } from "./ray";
 import { RAY_DOT_RADIUS, RAY_COLOR, MIRROR_COLOR, REFRACTOR_COLOR, MIRROR_EXTENT, DRAW_DOTS, MAX_SIBLING_DISTANCE, TRAIL_OPACITY } from "./constants";
@@ -43,6 +44,12 @@ function drawOptic(ctx: CanvasRenderingContext2D, optic: Optic): void {
   } else if (optic instanceof LineSegmentRefractor) {
     ctx.strokeStyle = REFRACTOR_COLOR;
     drawLineSegmentRefractor(ctx, optic);
+  } else if (optic instanceof HyperbolicSurfaceRefractor) {
+    ctx.strokeStyle = REFRACTOR_COLOR;
+    drawHyperbolicSurfaceRefractor(ctx, optic);
+  } else if (optic instanceof CircularArcRefractor) {
+    ctx.strokeStyle = REFRACTOR_COLOR;
+    drawCircularArcRefractor(ctx, optic);
   } else if (optic instanceof CircularMirror) {
     ctx.strokeStyle = MIRROR_COLOR;
     drawCircularMirror(ctx, optic);
@@ -75,6 +82,34 @@ function drawLineSegmentRefractor(ctx: CanvasRenderingContext2D, refractor: Line
   ctx.beginPath();
   ctx.moveTo(refractor.a.x, refractor.a.y);
   ctx.lineTo(refractor.b.x, refractor.b.y);
+  ctx.stroke();
+}
+
+/** Draws a hyperbolic surface refractor as a polyline approximation within its aperture. */
+function drawHyperbolicSurfaceRefractor(ctx: CanvasRenderingContext2D, surf: HyperbolicSurfaceRefractor): void {
+  const segments = 64;
+  const n = surf.refractiveIndex;
+  const R = surf.R;
+  const s = surf.facing;
+  const k = n * n - 1;
+  ctx.beginPath();
+  for (let i = 0; i <= segments; i++) {
+    const r = surf.aperture * (i / segments * 2 - 1);
+    // sag from (n²-1)x² + 2Rx - r² = 0 → x = (-R + sqrt(R²+(n²-1)r²))/(n²-1)
+    const sag = (-R + Math.sqrt(R * R + k * r * r)) / k;
+    // facing=+1: opens right → x = vertex.x + sag; facing=-1: opens left → x = vertex.x - sag
+    const wx = surf.vertex.x + surf.facing * sag;
+    const wy = surf.vertex.y + r;
+    if (i === 0) ctx.moveTo(wx, wy);
+    else ctx.lineTo(wx, wy);
+  }
+  ctx.stroke();
+}
+
+/** Draws a circular arc refractor as an arc using canvas arc API. */
+function drawCircularArcRefractor(ctx: CanvasRenderingContext2D, arc: CircularArcRefractor): void {
+  ctx.beginPath();
+  ctx.arc(arc.center.x, arc.center.y, arc.radius, arc.startAngle, arc.endAngle);
   ctx.stroke();
 }
 
