@@ -4,9 +4,9 @@
 
 import type { World, Ray } from "./types";
 import { LineMirror, LineSegmentMirror, CircularMirror, ParabolicMirror } from "./optics";
-import { add, scale } from "./vector";
+import { add, scale, mag, sub } from "./vector";
 import { areSiblingsConnected } from "./ray";
-import { RAY_DOT_RADIUS, RAY_COLOR, MIRROR_COLOR, MIRROR_EXTENT, DRAW_DOTS } from "./constants";
+import { RAY_DOT_RADIUS, RAY_COLOR, MIRROR_COLOR, MIRROR_EXTENT, DRAW_DOTS, MAX_SIBLING_DISTANCE } from "./constants";
 
 /**
  * Clears the canvas and draws all optics, rays, and sibling connectors for the given world.
@@ -85,7 +85,7 @@ function drawConnectors(ctx: CanvasRenderingContext2D, world: World): void {
   ctx.beginPath();
   for (const ray of world.rays) {
     const right = ray.rightSibling;
-    if (right !== null && areSiblingsConnected(ray, right)) {
+    if (right !== null && areSiblingsConnected(ray, right, mag(sub(ray.position, right.position)), MAX_SIBLING_DISTANCE)) {
       ctx.moveTo(ray.position.x, ray.position.y);
       ctx.lineTo(right.position.x, right.position.y);
     }

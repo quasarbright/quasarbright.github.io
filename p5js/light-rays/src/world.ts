@@ -97,9 +97,10 @@ function insertSiblings(world: World): void {
     if (world.rays.length >= MAX_RAYS) break;
     const right = ray.rightSibling;
     if (right === null) continue;
-    if (!areSiblingsConnected(ray, right)) continue;
+    const dist = mag(sub(ray.position, right.position));
+    if (!areSiblingsConnected(ray, right, dist, MAX_SIBLING_DISTANCE)) continue;
     if (!haveSameOptics(ray.optics, right.optics)) continue;
-    if (mag(sub(ray.position, right.position)) <= MAX_SIBLING_DISTANCE) continue;
+    if (dist <= MAX_SIBLING_DISTANCE) continue;
     const inserted = insertBetween(ray, right, world.optics);
     if (inserted !== null) {
       world.rays.push(inserted);

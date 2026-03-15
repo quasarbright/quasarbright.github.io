@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { makeRay, makeCircularPulse, areSiblingsConnected, haveOpticsDiverged, unlinkLeft } from "../src/ray";
 import { mag } from "../src/vector";
+import { MAX_SIBLING_DISTANCE } from "../src/constants";
 
 describe("makeCircularPulse", () => {
   it("creates the correct number of rays", () => {
@@ -44,13 +45,13 @@ describe("makeCircularPulse", () => {
 describe("areSiblingsConnected", () => {
   it("returns true for fresh siblings with no optics", () => {
     const rays = makeCircularPulse({ x: 0, y: 0 }, 1, 2);
-    expect(areSiblingsConnected(rays[0]!, rays[1]!)).toBe(true);
+    expect(areSiblingsConnected(rays[0]!, rays[1]!, 0, MAX_SIBLING_DISTANCE)).toBe(true);
   });
 
   it("returns false when not siblings", () => {
     const a = makeRay({ x: 0, y: 0 }, { x: 1, y: 0 });
     const b = makeRay({ x: 0, y: 0 }, { x: 0, y: 1 });
-    expect(areSiblingsConnected(a, b)).toBe(false);
+    expect(areSiblingsConnected(a, b, 0, MAX_SIBLING_DISTANCE)).toBe(false);
   });
 
   it("returns false when optics lists differ by more than one insertion", () => {
@@ -60,7 +61,7 @@ describe("areSiblingsConnected", () => {
     // Two different optics — substitution, edit distance 2
     rays[0]!.optics.push(o1);
     rays[1]!.optics.push(o2);
-    expect(areSiblingsConnected(rays[0]!, rays[1]!)).toBe(false);
+    expect(areSiblingsConnected(rays[0]!, rays[1]!, 0, MAX_SIBLING_DISTANCE)).toBe(false);
   });
 
   it("returns true when both have the same optic", () => {
@@ -68,7 +69,7 @@ describe("areSiblingsConnected", () => {
     const fakeOptic = { isCollision: () => false, interact: () => {} };
     rays[0]!.optics.push(fakeOptic);
     rays[1]!.optics.push(fakeOptic);
-    expect(areSiblingsConnected(rays[0]!, rays[1]!)).toBe(true);
+    expect(areSiblingsConnected(rays[0]!, rays[1]!, 0, MAX_SIBLING_DISTANCE)).toBe(true);
   });
 });
 

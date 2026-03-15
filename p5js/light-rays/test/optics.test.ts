@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { LineMirror } from "../src/optics";
 import { makeRay, areSiblingsConnected } from "../src/ray";
 import { mag } from "../src/vector";
+import { MAX_SIBLING_DISTANCE } from "../src/constants";
 
 describe("LineMirror", () => {
   // Horizontal mirror at y=100, normal pointing up
@@ -79,7 +80,7 @@ describe("LineMirror", () => {
       r1.optics.push(mirror2);
 
       // They now have different optics lists (substitution) → not connected
-      expect(areSiblingsConnected(r0, r1)).toBe(false);
+      expect(areSiblingsConnected(r0, r1, 10, MAX_SIBLING_DISTANCE)).toBe(false);
     });
 
     it("siblings reconnect when both have reflected off the same mirror", () => {
@@ -92,7 +93,7 @@ describe("LineMirror", () => {
       r0.optics.push(mirror2);
       r1.optics.push(mirror2);
 
-      expect(areSiblingsConnected(r0, r1)).toBe(true);
+      expect(areSiblingsConnected(r0, r1, 10, MAX_SIBLING_DISTANCE)).toBe(true);
     });
   });
 });

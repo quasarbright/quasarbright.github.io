@@ -3,6 +3,7 @@ import { stepWorld } from "../src/world";
 import { makeRay, areSiblingsConnected, isOpticPrefix } from "../src/ray";
 import { mag, sub } from "../src/vector";
 import { LineMirror } from "../src/optics";
+import { MAX_SIBLING_DISTANCE } from "../src/constants";
 import type { World, Ray, Optic } from "../src/types";
 
 /** Links two rays as right/left siblings with matching optics. */
@@ -104,8 +105,8 @@ describe("adaptive ray insertion", () => {
 
     const inserted = world.rays.find((r) => r !== a && r !== b);
     expect(inserted).toBeDefined();
-    expect(areSiblingsConnected(a, inserted!)).toBe(true);
-    expect(areSiblingsConnected(inserted!, b)).toBe(true);
+    expect(areSiblingsConnected(a, inserted!, mag(sub(a.position, inserted!.position)), MAX_SIBLING_DISTANCE)).toBe(true);
+    expect(areSiblingsConnected(inserted!, b, mag(sub(inserted!.position, b.position)), MAX_SIBLING_DISTANCE)).toBe(true);
   });
 
   it("inserted ray has the correct speed", () => {
@@ -164,15 +165,26 @@ describe("isOpticPrefix", () => {
 });
 
 describe("areSiblingsConnected with prefix check", () => {
-  it("connected when one sibling has one extra optic at the end (suffix)", () => {
+  it("connected when one sibling has one extra optic at the end and they are close", () => {
     const o: Optic = { isCollision: () => false, interact: () => {} };
     const a = makeRay({ x: 0, y: 0 }, { x: 1, y: 0 });
     const b = makeRay({ x: 1, y: 0 }, { x: 1, y: 0 });
     a.rightSibling = b;
     b.leftSibling = a;
     a.optics.push(o);
-    // b has no optics yet — a's list is a prefix extension of b's
-    expect(areSiblingsConnected(a, b)).toBe(true);
+    // distance = 1, well within threshold
+    expect(areSiblingsConnected(a, b, 1, MAX_SIBLING_DISTANCE)).toBe(true);
+  });
+
+  it("not connected when prefix-different and far apart", () => {
+    const o: Optic = { isCollision: () => false, interact: () => {} };
+    const a = makeRay({ x: 0, y: 0 }, { x: 1, y: 0 });
+    const b = makeRay({ x: 1000, y: 0 }, { x: 1, y: 0 });
+    a.rightSibling = b;
+    b.leftSibling = a;
+    a.optics.push(o);
+    // distance = 1000, past threshold
+    expect(areSiblingsConnected(a, b, 1000, MAX_SIBLING_DISTANCE)).toBe(false);
   });
 
   it("not connected when optics differ by substitution", () => {
@@ -184,7 +196,7 @@ describe("areSiblingsConnected with prefix check", () => {
     b.leftSibling = a;
     a.optics.push(o1);
     b.optics.push(o2);
-    expect(areSiblingsConnected(a, b)).toBe(false);
+    expect(areSiblingsConnected(a, b, 1, MAX_SIBLING_DISTANCE)).toBe(false);
   });
 
   it("not connected when extra optic is at the start (different prefix)", () => {
@@ -194,10 +206,9 @@ describe("areSiblingsConnected with prefix check", () => {
     const b = makeRay({ x: 1, y: 0 }, { x: 1, y: 0 });
     a.rightSibling = b;
     b.leftSibling = a;
-    // b has [o1, o2], a has [o2] — o2 ≠ o1 at index 0, not a prefix
     a.optics.push(o2);
     b.optics.push(o1, o2);
-    expect(areSiblingsConnected(a, b)).toBe(false);
+    expect(areSiblingsConnected(a, b, 1, MAX_SIBLING_DISTANCE)).toBe(false);
   });
 });
 
