@@ -74,9 +74,10 @@ export function makeSpotlight(
 
 /**
  * Returns true if two rays are currently connected siblings.
- * Requires mutual sibling pointers. If the rays have identical optics lists, any
- * distance is allowed. If one list is a strict prefix of the other (one ray hasn't
- * hit the next optic yet), they are only connected when within `maxDistance`.
+ * Requires mutual sibling pointers. Rays are connected if:
+ * - their optics lists are identical (any distance), or
+ * - one list is a strict prefix of the other (one ray hasn't hit the next optic yet)
+ *   and they are within maxDistance.
  */
 export function areSiblingsConnected(a: Ray, b: Ray, distance: number, maxDistance: number): boolean {
   if (a.rightSibling !== b && a.leftSibling !== b) return false;
@@ -98,6 +99,7 @@ export function isOpticPrefix(a: Optic[], b: Optic[]): boolean {
   return true;
 }
 
+
 /**
  * Returns true if two optics lists are identical (same length, same elements by reference).
  */
@@ -117,16 +119,4 @@ export function unlinkLeft(ray: Ray): void {
   if (ray.leftSibling === null) return;
   ray.leftSibling.rightSibling = null;
   ray.leftSibling = null;
-}
-
-/**
- * Returns true if the optics lists of two rays have diverged and can never reconverge.
- * This is the case when any element at the same index differs by reference.
- */
-export function haveOpticsDiverged(a: Ray, b: Ray): boolean {
-  const len = Math.min(a.optics.length, b.optics.length);
-  for (let i = 0; i < len; i++) {
-    if (a.optics[i] !== b.optics[i]) return true;
-  }
-  return false;
 }

@@ -51,23 +51,6 @@ describe("stepWorld", () => {
     }
   });
 
-  it("unlinks siblings when optics diverge", () => {
-    const world = makeWorld();
-    const r0 = world.rays[0]!;
-    const r7 = world.rays[7]!; // r0's left sibling in 8-ray loop
-    expect(r0.leftSibling).toBe(r7);
-
-    // Give r0 a different optic than r7
-    const o1 = { isCollision: () => false, interact: () => {} };
-    const o2 = { isCollision: () => false, interact: () => {} };
-    r0.optics.push(o1);
-    r7.optics.push(o2);
-
-    stepWorld(world, 0.016);
-    expect(r0.leftSibling).toBeNull();
-    expect(r7.rightSibling).toBeNull();
-  });
-
   it("does not unlink siblings with matching optics", () => {
     const world = makeWorld();
     const r0 = world.rays[0]!;

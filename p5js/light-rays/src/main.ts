@@ -5,7 +5,7 @@
 import type { World } from "./types";
 import { stepWorld, addPulseAt, addSpotlightAt } from "./world";
 import { render } from "./render";
-import { LineMirror, CircularMirror, ParabolicMirror } from "./optics";
+import { LineMirror, CircularMirror, ParabolicMirror, CompositeOptic } from "./optics";
 import { makeRay } from "./ray";
 
 const BOX_MARGIN = 100;
@@ -33,10 +33,12 @@ function makeBoxScene(): World {
   const world: World = {
     rays: [],
     optics: [
-      new LineMirror({ x: m, y: 0 },     { x: 1,  y: 0  }),
-      new LineMirror({ x: w - m, y: 0 }, { x: -1, y: 0  }),
-      new LineMirror({ x: 0, y: m },     { x: 0,  y: 1  }),
-      new LineMirror({ x: 0, y: h - m }, { x: 0,  y: -1 }),
+      new CompositeOptic([
+        new LineMirror({ x: m, y: 0 },     { x: 1,  y: 0  }),
+        new LineMirror({ x: w - m, y: 0 }, { x: -1, y: 0  }),
+        new LineMirror({ x: 0, y: m },     { x: 0,  y: 1  }),
+        new LineMirror({ x: 0, y: h - m }, { x: 0,  y: -1 }),
+      ]),
     ],
     width: w,
     height: h,

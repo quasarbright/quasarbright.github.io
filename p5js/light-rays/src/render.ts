@@ -2,8 +2,8 @@
  * Rendering: draws the world state onto a canvas each frame.
  */
 
-import type { World, Ray } from "./types";
-import { LineMirror, LineSegmentMirror, CircularMirror, ParabolicMirror } from "./optics";
+import type { World, Ray, Optic } from "./types";
+import { LineMirror, LineSegmentMirror, CircularMirror, ParabolicMirror, CompositeOptic } from "./optics";
 import { add, scale, mag, sub } from "./vector";
 import { areSiblingsConnected } from "./ray";
 import { RAY_DOT_RADIUS, RAY_COLOR, MIRROR_COLOR, MIRROR_EXTENT, DRAW_DOTS, MAX_SIBLING_DISTANCE, TRAIL_OPACITY } from "./constants";
@@ -25,15 +25,24 @@ function drawOptics(ctx: CanvasRenderingContext2D, world: World): void {
   ctx.strokeStyle = MIRROR_COLOR;
   ctx.lineWidth = 1;
   for (const optic of world.optics) {
-    if (optic instanceof LineMirror) {
-      drawLineMirror(ctx, optic);
-    } else if (optic instanceof LineSegmentMirror) {
-      drawLineSegmentMirror(ctx, optic);
-    } else if (optic instanceof CircularMirror) {
-      drawCircularMirror(ctx, optic);
-    } else if (optic instanceof ParabolicMirror) {
-      drawParabolicMirror(ctx, optic);
+    if (optic instanceof CompositeOptic) {
+      for (const child of optic.children) drawOptic(ctx, child);
+    } else {
+      drawOptic(ctx, optic);
     }
+  }
+}
+
+/** Draws a single optic (non-composite). */
+function drawOptic(ctx: CanvasRenderingContext2D, optic: Optic): void {
+  if (optic instanceof LineMirror) {
+    drawLineMirror(ctx, optic);
+  } else if (optic instanceof LineSegmentMirror) {
+    drawLineSegmentMirror(ctx, optic);
+  } else if (optic instanceof CircularMirror) {
+    drawCircularMirror(ctx, optic);
+  } else if (optic instanceof ParabolicMirror) {
+    drawParabolicMirror(ctx, optic);
   }
 }
 

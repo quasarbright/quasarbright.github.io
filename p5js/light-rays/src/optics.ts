@@ -165,8 +165,34 @@ function circleRayIntersection(
 }
 
 // ---------------------------------------------------------------------------
-// ParabolicMirror
+// CompositeOptic
 // ---------------------------------------------------------------------------
+
+/**
+ * A group of optics treated as a single logical optic.
+ * On collision, the first child that reports a hit handles the interaction.
+ * Useful for scenes like a box where all walls should share one entry in a ray's optics list.
+ */
+export class CompositeOptic implements Optic {
+  readonly children: Optic[];
+
+  constructor(children: Optic[]) {
+    this.children = children;
+  }
+
+  /** Returns true if any child reports a collision. */
+  isCollision(oldPosition: Vector, newPosition: Vector): boolean {
+    return this.children.some((c) => c.isCollision(oldPosition, newPosition));
+  }
+
+  /** Delegates to the first child that reports a collision. */
+  interact(ray: Ray, newPosition: Vector): void {
+    const hit = this.children.find((c) => c.isCollision(ray.position, newPosition));
+    hit?.interact(ray, newPosition);
+  }
+}
+
+
 
 /**
  * A parabolic mirror defined by its focus, axis direction (unit vector pointing

@@ -5,7 +5,7 @@
 
 import type { World, Ray, Vector } from "./types";
 import { add, scale, sub, dot, mag, normalize } from "./vector";
-import { haveOpticsDiverged, unlinkLeft, makeCircularPulse, makeSpotlight, makeRay, areSiblingsConnected, haveSameOptics } from "./ray";
+import { makeCircularPulse, makeSpotlight, makeRay, areSiblingsConnected, haveSameOptics } from "./ray";
 import { RAYS_PER_PULSE, LIGHT_SPEED, SPOTLIGHT_COUNT, SPOTLIGHT_SPACING, MAX_SIBLING_DISTANCE, MAX_RAYS, INSERTION_ENABLED, SMOOTHING_ENABLED, SMOOTHING_FACTOR } from "./constants";
 
 /**
@@ -45,7 +45,7 @@ export function addSpotlightAt(world: World, position: Vector, direction: Vector
   }
 }
 
-/** Advances a single ray by dt and handles collision + sibling unlinking. */
+/** Advances a single ray by dt and handles collision. */
 function stepRay(world: World, ray: Ray, dt: number): void {
   const newPosition = add(ray.position, scale(ray.velocity, dt));
 
@@ -58,11 +58,6 @@ function stepRay(world: World, ray: Ray, dt: number): void {
   } else {
     collidingOptic.interact(ray, newPosition);
     ray.optics.push(collidingOptic);
-  }
-
-  // Unlink left sibling if optics lists have diverged
-  if (ray.leftSibling !== null && haveOpticsDiverged(ray, ray.leftSibling)) {
-    unlinkLeft(ray);
   }
 }
 

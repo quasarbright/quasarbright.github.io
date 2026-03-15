@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { makeRay, makeCircularPulse, areSiblingsConnected, haveOpticsDiverged, unlinkLeft } from "../src/ray";
+import { makeRay, makeCircularPulse, areSiblingsConnected, unlinkLeft } from "../src/ray";
 import { mag } from "../src/vector";
 import { MAX_SIBLING_DISTANCE } from "../src/constants";
 
@@ -70,32 +70,6 @@ describe("areSiblingsConnected", () => {
     rays[0]!.optics.push(fakeOptic);
     rays[1]!.optics.push(fakeOptic);
     expect(areSiblingsConnected(rays[0]!, rays[1]!, 0, MAX_SIBLING_DISTANCE)).toBe(true);
-  });
-});
-
-describe("haveOpticsDiverged", () => {
-  it("returns false when both lists are empty", () => {
-    const a = makeRay({ x: 0, y: 0 }, { x: 1, y: 0 });
-    const b = makeRay({ x: 0, y: 0 }, { x: 0, y: 1 });
-    expect(haveOpticsDiverged(a, b)).toBe(false);
-  });
-
-  it("returns false when one list is a prefix of the other", () => {
-    const a = makeRay({ x: 0, y: 0 }, { x: 1, y: 0 });
-    const b = makeRay({ x: 0, y: 0 }, { x: 0, y: 1 });
-    const optic = { isCollision: () => false, interact: () => {} };
-    a.optics.push(optic);
-    expect(haveOpticsDiverged(a, b)).toBe(false);
-  });
-
-  it("returns true when elements differ at same index", () => {
-    const a = makeRay({ x: 0, y: 0 }, { x: 1, y: 0 });
-    const b = makeRay({ x: 0, y: 0 }, { x: 0, y: 1 });
-    const o1 = { isCollision: () => false, interact: () => {} };
-    const o2 = { isCollision: () => false, interact: () => {} };
-    a.optics.push(o1);
-    b.optics.push(o2);
-    expect(haveOpticsDiverged(a, b)).toBe(true);
   });
 });
 
