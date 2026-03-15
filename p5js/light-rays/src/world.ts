@@ -6,20 +6,22 @@
 import type { World, Ray, Vector } from "./types";
 import { add, scale, sub, dot, mag, normalize } from "./vector";
 import { haveOpticsDiverged, unlinkLeft, makeCircularPulse, makeSpotlight, makeRay, areSiblingsConnected, haveSameOptics } from "./ray";
-import { RAYS_PER_PULSE, LIGHT_SPEED, SPOTLIGHT_COUNT, SPOTLIGHT_SPACING, MAX_SIBLING_DISTANCE, MAX_RAYS, INSERTION_ENABLED } from "./constants";
+import { RAYS_PER_PULSE, LIGHT_SPEED, SPOTLIGHT_COUNT, SPOTLIGHT_SPACING, MAX_SIBLING_DISTANCE, MAX_RAYS, INSERTION_ENABLED, SMOOTHING_ENABLED, SMOOTHING_FACTOR } from "./constants";
 
 /**
  * Advances the simulation by dt seconds.
  * For each ray: computes newPosition, checks for collisions (first optic wins),
  * updates position or delegates to optic, then checks left sibling for divergence.
- * After stepping all rays, culls off-screen rays, then inserts new rays between
- * connected siblings that are too far apart (up to MAX_RAYS total).
+ * After stepping all rays, culls off-screen rays, optionally smooths positions,
+ * then inserts new rays between connected siblings that are too far apart (up to MAX_RAYS total).
+ * The `smooth` option overrides SMOOTHING_ENABLED when provided.
  */
-export function stepWorld(world: World, dt: number): void {
+export function stepWorld(world: World, dt: number, smooth: boolean = SMOOTHING_ENABLED): void {
   for (const ray of world.rays) {
     stepRay(world, ray, dt);
   }
   cullOffScreen(world);
+  if (smooth) smoothPositions(world);
   if (INSERTION_ENABLED) insertSiblings(world);
 }
 
@@ -82,6 +84,27 @@ function cullOffScreen(world: World): void {
     }
     return false;
   });
+}
+
+/**
+ * Nudges each ray's position toward the arc midpoint of its two connected siblings,
+ * damping out numerical jitter in the wavefront.
+ * Only moves rays that have two connected siblings with identical optics lists.
+ */
+function smoothPositions(world: World): void {
+  for (const ray of world.rays) {
+    const left = ray.leftSibling;
+    const right = ray.rightSibling;
+    if (left === null || right === null) continue;
+    const distL = mag(sub(ray.position, left.position));
+    const distR = mag(sub(ray.position, right.position));
+    if (!areSiblingsConnected(ray, left, distL, MAX_SIBLING_DISTANCE)) continue;
+    if (!areSiblingsConnected(ray, right, distR, MAX_SIBLING_DISTANCE)) continue;
+    if (!haveSameOptics(ray.optics, left.optics)) continue;
+    if (!haveSameOptics(ray.optics, right.optics)) continue;
+    const midpoint = scale(add(left.position, right.position), 0.5);
+    ray.position = add(ray.position, scale(sub(midpoint, ray.position), SMOOTHING_FACTOR));
+  }
 }
 
 /**

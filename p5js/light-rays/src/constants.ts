@@ -50,3 +50,9 @@ export const INSERTION_ENABLED = true;
 
 /** When false, ray-head dots are not drawn — only sibling connectors are shown. */
 export const DRAW_DOTS = true;
+
+/** When true, each ray's position is nudged toward the arc midpoint of its connected siblings each tick. */
+export const SMOOTHING_ENABLED = true;
+
+/** Fraction of the way to move toward the arc midpoint each tick (0 = off, 1 = snap). */
+export const SMOOTHING_FACTOR = 0.05;
