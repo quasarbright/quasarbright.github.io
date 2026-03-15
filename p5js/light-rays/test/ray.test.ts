@@ -53,10 +53,13 @@ describe("areSiblingsConnected", () => {
     expect(areSiblingsConnected(a, b)).toBe(false);
   });
 
-  it("returns false when optics lists differ", () => {
+  it("returns false when optics lists differ by more than one insertion", () => {
     const rays = makeCircularPulse({ x: 0, y: 0 }, 1, 2);
-    const fakeOptic = { isCollision: () => false, interact: () => {} };
-    rays[0]!.optics.push(fakeOptic);
+    const o1 = { isCollision: () => false, interact: () => {} };
+    const o2 = { isCollision: () => false, interact: () => {} };
+    // Two different optics — substitution, edit distance 2
+    rays[0]!.optics.push(o1);
+    rays[1]!.optics.push(o2);
     expect(areSiblingsConnected(rays[0]!, rays[1]!)).toBe(false);
   });
 

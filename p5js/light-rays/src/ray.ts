@@ -2,7 +2,7 @@
  * Ray creation and sibling relationship utilities.
  */
 
-import type { Ray, Vector } from "./types";
+import type { Ray, Optic, Vector } from "./types";
 
 /**
  * Creates a ray with the given position and velocity and no siblings or optics.
@@ -74,13 +74,24 @@ export function makeSpotlight(
 
 /**
  * Returns true if two rays are currently connected siblings —
- * i.e. they are mutual siblings and their optics lists match by reference equality.
+ * i.e. they are mutual siblings and one optics list is a prefix of the other
+ * (the shorter ray just hasn't hit the next optic yet).
  */
 export function areSiblingsConnected(a: Ray, b: Ray): boolean {
   if (a.rightSibling !== b && a.leftSibling !== b) return false;
-  if (a.optics.length !== b.optics.length) return false;
-  for (let i = 0; i < a.optics.length; i++) {
-    if (a.optics[i] !== b.optics[i]) return false;
+  return isOpticPrefix(a.optics, b.optics);
+}
+
+/**
+ * Returns true if one optics list is a prefix of the other (or they are equal),
+ * using reference equality on elements.
+ * e.g. [o1, o2] and [o1, o2, o3] → true; [o2] and [o1, o2] → false.
+ */
+export function isOpticPrefix(a: Optic[], b: Optic[]): boolean {
+  const shorter = a.length <= b.length ? a : b;
+  const longer = a.length <= b.length ? b : a;
+  for (let i = 0; i < shorter.length; i++) {
+    if (shorter[i] !== longer[i]) return false;
   }
   return true;
 }

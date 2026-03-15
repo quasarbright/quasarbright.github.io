@@ -66,17 +66,19 @@ describe("LineMirror", () => {
   });
 
   describe("sibling connectivity after reflection", () => {
-    it("siblings become disconnected when one reflects and the other doesn't", () => {
-      const mirror2 = new LineMirror({ x: 0, y: 100 }, { x: 0, y: 1 });
+    it("siblings become disconnected when one reflects and the other reflects off a different mirror", () => {
+      const mirror1 = new LineMirror({ x: 0, y: 100 }, { x: 0, y: 1 });
+      const mirror2 = new LineMirror({ x: 0, y: 200 }, { x: 0, y: 1 });
       const r0 = makeRay({ x: 0, y: 90 }, { x: 0, y: 100 });
       const r1 = makeRay({ x: 10, y: 90 }, { x: 0, y: 100 });
       r0.rightSibling = r1;
       r1.leftSibling = r0;
 
-      // r0 hits the mirror, r1 doesn't
-      r0.optics.push(mirror2);
+      // r0 hits mirror1, r1 hits mirror2 — substitution, edit distance 2
+      r0.optics.push(mirror1);
+      r1.optics.push(mirror2);
 
-      // They now have different optics lists → not connected
+      // They now have different optics lists (substitution) → not connected
       expect(areSiblingsConnected(r0, r1)).toBe(false);
     });
 

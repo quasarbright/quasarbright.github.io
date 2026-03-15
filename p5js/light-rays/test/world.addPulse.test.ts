@@ -4,7 +4,7 @@ import { mag } from "../src/vector";
 import type { World } from "../src/types";
 
 function emptyWorld(): World {
-  return { rays: [], optics: [] };
+  return { rays: [], optics: [], width: 800, height: 600 };
 }
 
 describe("addPulseAt", () => {

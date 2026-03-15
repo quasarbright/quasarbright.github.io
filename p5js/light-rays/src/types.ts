@@ -43,9 +43,13 @@ export interface Optic {
 }
 
 /**
- * The simulation world. Holds all rays and optics.
+ * The simulation world. Holds all rays, optics, and canvas dimensions for culling.
  */
 export type World = {
   rays: Ray[];
   optics: Optic[];
+  /** Canvas width in pixels — rays outside [0, width] x [0, height] are culled. */
+  width: number;
+  /** Canvas height in pixels. */
+  height: number;
 };

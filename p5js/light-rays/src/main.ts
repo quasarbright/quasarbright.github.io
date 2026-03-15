@@ -37,6 +37,8 @@ function makeBoxScene(): World {
       new LineMirror({ x: 0, y: m },     { x: 0,  y: 1  }),
       new LineMirror({ x: 0, y: h - m }, { x: 0,  y: -1 }),
     ],
+    width: w,
+    height: h,
   };
   addPulseAt(world, { x: w / 2, y: h / 2 });
   return world;
@@ -49,6 +51,8 @@ function makeCircularScene(): World {
   const world: World = {
     rays: [],
     optics: [new CircularMirror({ x: w / 2, y: h / 2 }, Math.min(w, h) * 0.3)],
+    width: w,
+    height: h,
   };
   addPulseAt(world, { x: w / 2, y: h / 2 });
   return world;
@@ -69,6 +73,8 @@ function makeParabolicScene(): World {
         Math.max(window.innerWidth, window.innerHeight) // halfWidth: extends well past screen edges
       ),
     ],
+    width: w,
+    height: h,
   };
   // Spotlight aimed straight down into the parabola from the top
   addSpotlightAt(world, { x: w / 2, y: h * 0.1 }, { x: 0, y: 1 });

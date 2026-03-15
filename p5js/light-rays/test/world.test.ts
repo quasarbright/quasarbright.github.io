@@ -8,6 +8,8 @@ function makeWorld(): World {
   return {
     rays: makeCircularPulse({ x: 100, y: 100 }, 100, 8),
     optics: [],
+    width: 800,
+    height: 600,
   };
 }
 

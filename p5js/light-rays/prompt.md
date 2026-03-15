@@ -82,7 +82,7 @@ have some preset scenes and add a dropdown. one scene for the box, one scene for
 
 test new mirror types, that their collision and reflection logic works properly.
 
-- [ ] more light sources
+- [x] more light sources
 
 add support for spotlight light sources (beam of parallel rays) instead of just a circular pulse.
 
