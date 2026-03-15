@@ -44,7 +44,7 @@ have unit testing for this as we go. Test what you implement at each phase befor
 
 - [x] Getting on the same page wrt design
 
-- [ ] Get set up
+- [x] Get set up
 
 Create all data definitions.
 
