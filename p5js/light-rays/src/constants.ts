@@ -49,4 +49,4 @@ export const MIRROR_EXTENT = 5000;
 export const INSERTION_ENABLED = true;
 
 /** When false, ray-head dots are not drawn — only sibling connectors are shown. */
-export const DRAW_DOTS = false;
+export const DRAW_DOTS = true;

@@ -63,11 +63,12 @@ function makeParabolicScene(): World {
   const w = window.innerWidth;
   const h = window.innerHeight;
   const focalLength = 120;
+  const focus = { x: w / 2, y: h - focalLength - 20 };
   const world: World = {
     rays: [],
     optics: [
       new ParabolicMirror(
-        { x: w / 2, y: h - focalLength - 20 },  // focus near bottom, vertex at ~h-20
+        focus,
         { x: 0, y: -1 },           // opens upward (axis points up toward focus)
         focalLength,
         Math.max(window.innerWidth, window.innerHeight) // halfWidth: extends well past screen edges
@@ -78,6 +79,7 @@ function makeParabolicScene(): World {
   };
   // Spotlight aimed straight down into the parabola from the top
   addSpotlightAt(world, { x: w / 2, y: h * 0.1 }, { x: 0, y: 1 });
+  addPulseAt(world, focus);
   return world;
 }
 
