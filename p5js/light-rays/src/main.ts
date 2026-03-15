@@ -4,12 +4,10 @@
 
 import type { World } from "./types";
 import { makeCircularPulse } from "./ray";
-import { stepWorld } from "./world";
+import { stepWorld, addPulseAt } from "./world";
 import { render } from "./render";
 import { LineMirror } from "./optics";
 
-const RAYS_PER_PULSE = 120;
-const LIGHT_SPEED = 150; // pixels per second
 const BOX_MARGIN = 100;
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -35,13 +33,15 @@ function makeBoxMirrors(): LineMirror[] {
 }
 
 const world: World = {
-  rays: makeCircularPulse(
-    { x: window.innerWidth / 2, y: window.innerHeight / 2 },
-    LIGHT_SPEED,
-    RAYS_PER_PULSE
-  ),
+  rays: [],
   optics: makeBoxMirrors(),
 };
+
+addPulseAt(world, { x: window.innerWidth / 2, y: window.innerHeight / 2 });
+
+canvas.addEventListener("click", (e) => {
+  addPulseAt(world, { x: e.clientX, y: e.clientY });
+});
 
 let lastTime: number | null = null;
 

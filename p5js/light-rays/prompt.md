@@ -60,7 +60,7 @@ draw dots for ray heads and line segments for connectors between connected sibli
 
 unit test basic circular pulse propagation, making sure position advances parallel to velocity, etc.
 
-- [ ] Line mirrors
+- [x] Line mirrors
 
 Add support for (infinite) line mirrors. Create a box of line mirrors and let's see reflections inside the box
 
