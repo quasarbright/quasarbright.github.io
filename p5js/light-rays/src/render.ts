@@ -4,13 +4,9 @@
 
 import type { World, Ray } from "./types";
 import { LineMirror, LineSegmentMirror, CircularMirror, ParabolicMirror } from "./optics";
-import { add, scale, sub, normalize } from "./vector";
+import { add, scale } from "./vector";
 import { areSiblingsConnected } from "./ray";
-
-const RAY_DOT_RADIUS = 2;
-const RAY_COLOR = "#FFD700"; // yellow
-const MIRROR_COLOR = "#FFFFFF";
-const MIRROR_EXTENT = 5000; // half-length for drawing "infinite" lines
+import { RAY_DOT_RADIUS, RAY_COLOR, MIRROR_COLOR, MIRROR_EXTENT, DRAW_DOTS } from "./constants";
 
 /**
  * Clears the canvas and draws all optics, rays, and sibling connectors for the given world.
@@ -19,7 +15,7 @@ export function render(ctx: CanvasRenderingContext2D, world: World): void {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   drawOptics(ctx, world);
   drawConnectors(ctx, world);
-  drawRayHeads(ctx, world);
+  if (DRAW_DOTS) drawRayHeads(ctx, world);
 }
 
 /** Draws all optics in the world. */

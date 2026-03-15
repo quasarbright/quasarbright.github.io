@@ -4,17 +4,9 @@
  */
 
 import type { World, Ray, Vector } from "./types";
-import { add, scale, sub, dot, mag, normalize } from "./vector";
+import { add, scale, sub, mag, normalize } from "./vector";
 import { haveOpticsDiverged, unlinkLeft, makeCircularPulse, makeSpotlight, makeRay, areSiblingsConnected, haveSameOptics } from "./ray";
-
-const RAYS_PER_PULSE = 120;
-const LIGHT_SPEED = 150; // pixels per second
-const SPOTLIGHT_COUNT = 120;
-const SPOTLIGHT_SPACING = 6; // pixels between rays
-/** Max distance between connected sibling heads before inserting a new ray. */
-const MAX_SIBLING_DISTANCE = 10;
-/** Maximum number of rays allowed in the world at once. */
-const MAX_RAYS = 20000;
+import { RAYS_PER_PULSE, LIGHT_SPEED, SPOTLIGHT_COUNT, SPOTLIGHT_SPACING, MAX_SIBLING_DISTANCE, MAX_RAYS, INSERTION_ENABLED } from "./constants";
 
 /**
  * Advances the simulation by dt seconds.
@@ -28,7 +20,7 @@ export function stepWorld(world: World, dt: number): void {
     stepRay(world, ray, dt);
   }
   cullOffScreen(world);
-  insertSiblings(world);
+  if (INSERTION_ENABLED) insertSiblings(world);
 }
 
 /**

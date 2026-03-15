@@ -88,7 +88,7 @@ add support for spotlight light sources (beam of parallel rays) instead of just 
 
 parabolic mirror preset scene should have beam going right into the parabola so we can see the beams converge on the focus.
 
-- [ ] advanced interpolation/insertion
+- [x] advanced interpolation/insertion
 
 when connected siblings get too far apart, trace the lines formed by the rays, treat the intersection as the center of a circle, and insert a new sibling in the middle of the arc formed by the heads and that center point.
 
