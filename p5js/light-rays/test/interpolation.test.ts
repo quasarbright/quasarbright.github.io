@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { stepWorld } from "../src/world";
 import { makeRay, areSiblingsConnected, isOpticPrefix } from "../src/ray";
 import { mag, sub } from "../src/vector";
+import { LineMirror } from "../src/optics";
 import type { World, Ray, Optic } from "../src/types";
 
 /** Links two rays as right/left siblings with matching optics. */
@@ -197,5 +198,25 @@ describe("areSiblingsConnected with prefix check", () => {
     a.optics.push(o2);
     b.optics.push(o1, o2);
     expect(areSiblingsConnected(a, b)).toBe(false);
+  });
+});
+
+describe("insertion collision guard", () => {
+  it("does not insert a ray when the midpoint crosses an optic", () => {
+    // Vertical mirror at x=5000. Ray a is to the left, ray b is well to the right.
+    // Both travel upward (same direction), so they're "connected" siblings.
+    // Their linear midpoint (x=5100) is on the right side of the mirror — insertion must be aborted.
+    const mirror = new LineMirror({ x: 5000, y: 0 }, { x: 1, y: 0 });
+    const a = makeRay({ x: 4800, y: 5000 }, { x: 0, y: -100 });
+    const b = makeRay({ x: 5400, y: 5000 }, { x: 0, y: -100 });
+    a.rightSibling = b;
+    b.leftSibling = a;
+    const world: World = { rays: [a, b], optics: [mirror], width: 10000, height: 10000 };
+
+    // One step — siblings are 600px apart (>> MAX_SIBLING_DISTANCE), would normally insert
+    stepWorld(world, 0.001);
+
+    // No ray should have been inserted because the midpoint (x=5100) crosses the mirror (x=5000)
+    expect(world.rays.length).toBe(2);
   });
 });

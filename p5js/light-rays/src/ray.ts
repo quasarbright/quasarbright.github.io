@@ -97,6 +97,17 @@ export function isOpticPrefix(a: Optic[], b: Optic[]): boolean {
 }
 
 /**
+ * Returns true if two optics lists are identical (same length, same elements by reference).
+ */
+export function haveSameOptics(a: Optic[], b: Optic[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
+/**
  * Unlinks a ray from its left sibling (sets both pointers to null).
  * No-op if leftSibling is null.
  */

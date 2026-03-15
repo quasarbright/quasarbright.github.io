@@ -5,7 +5,7 @@
 
 import type { World, Ray, Vector } from "./types";
 import { add, scale, sub, dot, mag, normalize } from "./vector";
-import { haveOpticsDiverged, unlinkLeft, makeCircularPulse, makeSpotlight, makeRay, areSiblingsConnected } from "./ray";
+import { haveOpticsDiverged, unlinkLeft, makeCircularPulse, makeSpotlight, makeRay, areSiblingsConnected, haveSameOptics } from "./ray";
 
 const RAYS_PER_PULSE = 120;
 const LIGHT_SPEED = 150; // pixels per second
@@ -106,8 +106,9 @@ function insertSiblings(world: World): void {
     const right = ray.rightSibling;
     if (right === null) continue;
     if (!areSiblingsConnected(ray, right)) continue;
+    if (!haveSameOptics(ray.optics, right.optics)) continue;
     if (mag(sub(ray.position, right.position)) <= MAX_SIBLING_DISTANCE) continue;
-    const inserted = insertBetween(ray, right);
+    const inserted = insertBetween(ray, right, world.optics);
     if (inserted !== null) {
       world.rays.push(inserted);
     }
@@ -119,9 +120,10 @@ function insertSiblings(world: World): void {
  * Finds the intersection of the two ray lines as the virtual center, then
  * places the new ray at the midpoint of the arc between a and b on that circle.
  * Falls back to linear midpoint if rays are parallel.
- * Returns the new ray, already linked between a and b.
+ * Returns null (without linking) if the midpoint crosses any optic — which would
+ * place the inserted ray on the wrong side of a mirror.
  */
-function insertBetween(a: Ray, b: Ray): Ray | null {
+function insertBetween(a: Ray, b: Ray, optics: World["optics"]): Ray | null {
   const center = rayLineIntersection(a.position, a.velocity, b.position, b.velocity);
 
   let newPosition: Vector;
@@ -140,6 +142,12 @@ function insertBetween(a: Ray, b: Ray): Ray | null {
     // Parallel rays: linear midpoint, same velocity
     newPosition = scale(add(a.position, b.position), 0.5);
     newVelocity = { ...a.velocity };
+  }
+
+  // Abort if any optic lies between the new position and either sibling
+  for (const optic of optics) {
+    if (optic.isCollision(newPosition, a.position)) return null;
+    if (optic.isCollision(newPosition, b.position)) return null;
   }
 
   const ray = makeRay(newPosition, newVelocity);
