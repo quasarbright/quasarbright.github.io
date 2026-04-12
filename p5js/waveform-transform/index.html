@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waveform Morph Explorer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        h1 {
+            margin-bottom: 0.5rem;
+            color: #00d4ff;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        .subtitle {
+            margin-bottom: 2rem;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-row {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #aaa;
+        }
+
+        input[type="range"] {
+            width: 300px;
+            margin-right: 1rem;
+        }
+
+        .freq-display {
+            color: #00d4ff;
+            font-weight: bold;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-family: 'Courier New', monospace;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.playing {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .waveforms {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .waveform-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            backdrop-filter: blur(10px);
+        }
+
+        .waveform-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.05);
+        }
+
+        .waveform-card.active {
+            border-color: #00d4ff;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .waveform-card h3 {
+            margin-bottom: 0.5rem;
+            color: #00d4ff;
+        }
+
+        canvas {
+            width: 100%;
+            height: 80px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+
+        #mainCanvas {
+            width: 100%;
+            max-width: 600px;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .morph-indicator {
+            text-align: center;
+            color: #00d4ff;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            min-height: 1.5rem;
+        }
+
+        .info {
+            text-align: center;
+            color: #888;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎵 Waveform Morph Explorer</h1>
+    <p class="subtitle">Click waveforms to morph between them while playing</p>
+
+    <div class="controls">
+        <div class="control-row">
+            <label for="frequency">
+                Frequency: <span class="freq-display" id="freqDisplay">440 Hz</span>
+            </label>
+            <input type="range" id="frequency" min="100" max="1000" value="440" step="1">
+        </div>
+        <div class="control-row">
+            <label for="volume">
+                Volume: <span class="freq-display" id="volumeDisplay">15%</span>
+            </label>
+            <input type="range" id="volume" min="0" max="100" value="15" step="1">
+        </div>
+        <div class="control-row">
+            <label for="morphSpeed">
+                Transition Speed: <span class="freq-display" id="speedDisplay">Very Slow</span>
+            </label>
+            <input type="range" id="morphSpeed" min="1" max="10" value="1" step="1">
+        </div>
+        <button id="playBtn">Play</button>
+    </div>
+
+    <canvas id="mainCanvas"></canvas>
+    <div class="morph-indicator" id="morphIndicator"></div>
+
+    <div class="waveforms">
+        <div class="waveform-card active" data-waveform="sine">
+            <h3>Sine</h3>
+            <canvas class="preview" data-type="sine"></canvas>
+        </div>
+        <div class="waveform-card" data-waveform="square">
+            <h3>Square</h3>
+            <canvas class="preview" data-type="square"></canvas>
+        </div>
+        <div class="waveform-card" data-waveform="sawtooth">
+            <h3>Sawtooth</h3>
+            <canvas class="preview" data-type="sawtooth"></canvas>
+        </div>
+        <div class="waveform-card" data-waveform="triangle">
+            <h3>Triangle</h3>
+            <canvas class="preview" data-type="triangle"></canvas>
+        </div>
+    </div>
+
+    <div class="info">
+        💡 Click different waveforms while playing to hear smooth transitions
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
