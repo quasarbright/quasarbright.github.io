@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frequency Matcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .instructions {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .sound-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .sound-section h2 {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #444;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .play-button {
+            background: #667eea;
+            color: white;
+            flex: 1;
+        }
+
+        .play-button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .play-button:active {
+            transform: translateY(0);
+        }
+
+        .play-button.playing {
+            background: #e74c3c;
+        }
+
+        .control-group {
+            margin-top: 15px;
+        }
+
+        .frequency-display {
+            text-align: center;
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .slider-container {
+            margin-bottom: 15px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        .adjust-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .adjust-btn {
+            background: #764ba2;
+            color: white;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .adjust-btn:hover {
+            background: #653a8a;
+        }
+
+        .new-game-button {
+            background: #2ecc71;
+            color: white;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .new-game-button:hover {
+            background: #27ae60;
+        }
+
+        .result {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+            white-space: pre-line;
+        }
+
+        .result.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .result.close {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffeaa7;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Frequency Matcher</h1>
+        <p class="instructions">Listen to the target sound and match its frequency!</p>
+
+        <div class="sound-section">
+            <h2>Target Sound</h2>
+            <div class="button-group">
+                <button class="play-button" id="playTarget">Play Target</button>
+            </div>
+        </div>
+
+        <div class="sound-section">
+            <h2>Your Guess</h2>
+            <div class="frequency-display" id="guessDisplay">440 Hz</div>
+
+            <div class="slider-container">
+                <input type="range" id="frequencySlider" min="200" max="800" value="440" step="1">
+                <div class="range-labels">
+                    <span>200 Hz</span>
+                    <span>800 Hz</span>
+                </div>
+            </div>
+
+            <div class="adjust-buttons">
+                <button class="adjust-btn" id="decreaseBtn">−</button>
+                <button class="play-button" id="playGuess" style="flex: 1;">Play Your Sound</button>
+                <button class="adjust-btn" id="increaseBtn">+</button>
+            </div>
+        </div>
+
+        <button class="new-game-button" id="submitGuess">Submit Guess</button>
+        <button class="new-game-button hidden" id="newGame">New Game</button>
+
+        <div class="result hidden" id="result"></div>
+    </div>
+
+    <script>
+        // Audio context and oscillators
+        let audioContext;
+        let targetOscillator = null;
+        let guessOscillator = null;
+        let targetGainNode = null;
+        let guessGainNode = null;
+
+        // Game state
+        let targetFrequency = 0;
+        let guessFrequency = 440;
+        let gameActive = true;
+        let startTime = 0;
+
+        // DOM elements
+        const playTargetBtn = document.getElementById('playTarget');
+        const playGuessBtn = document.getElementById('playGuess');
+        const frequencySlider = document.getElementById('frequencySlider');
+        const guessDisplay = document.getElementById('guessDisplay');
+        const increaseBtn = document.getElementById('increaseBtn');
+        const decreaseBtn = document.getElementById('decreaseBtn');
+        const submitGuessBtn = document.getElementById('submitGuess');
+        const newGameBtn = document.getElementById('newGame');
+        const resultDiv = document.getElementById('result');
+
+        // Initialize audio context on user interaction
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // Generate random target frequency (200-800 Hz)
+        function generateTargetFrequency() {
+            return Math.floor(Math.random() * 601) + 200; // 200 to 800 inclusive
+        }
+
+        // Start new game
+        function newGame() {
+            gameActive = true;
+            targetFrequency = generateTargetFrequency();
+            guessFrequency = 440;
+            frequencySlider.value = 440;
+            updateGuessDisplay();
+
+            resultDiv.classList.add('hidden');
+            submitGuessBtn.classList.remove('hidden');
+            newGameBtn.classList.add('hidden');
+
+            stopAllSounds();
+            startTime = Date.now();
+        }
+
+        // Play target frequency
+        function playTargetSound() {
+            initAudio();
+
+            if (targetOscillator) {
+                stopTargetSound();
+                return;
+            }
+
+            targetOscillator = audioContext.createOscillator();
+            targetGainNode = audioContext.createGain();
+
+            targetOscillator.type = 'sine';
+            targetOscillator.frequency.value = targetFrequency;
+
+            targetGainNode.gain.value = 0.3;
+
+            targetOscillator.connect(targetGainNode);
+            targetGainNode.connect(audioContext.destination);
+
+            targetOscillator.start();
+            playTargetBtn.textContent = 'Stop Target';
+            playTargetBtn.classList.add('playing');
+        }
+
+        function stopTargetSound() {
+            if (targetOscillator) {
+                targetOscillator.stop();
+                targetOscillator.disconnect();
+                targetGainNode.disconnect();
+                targetOscillator = null;
+                targetGainNode = null;
+                playTargetBtn.textContent = 'Play Target';
+                playTargetBtn.classList.remove('playing');
+            }
+        }
+
+        // Play guess frequency
+        function playGuessSound() {
+            initAudio();
+
+            if (guessOscillator) {
+                stopGuessSound();
+                return;
+            }
+
+            guessOscillator = audioContext.createOscillator();
+            guessGainNode = audioContext.createGain();
+
+            guessOscillator.type = 'sine';
+            guessOscillator.frequency.value = guessFrequency;
+
+            guessGainNode.gain.value = 0.3;
+
+            guessOscillator.connect(guessGainNode);
+            guessGainNode.connect(audioContext.destination);
+
+            guessOscillator.start();
+            playGuessBtn.textContent = 'Stop Your Sound';
+            playGuessBtn.classList.add('playing');
+        }
+
+        function stopGuessSound() {
+            if (guessOscillator) {
+                guessOscillator.stop();
+                guessOscillator.disconnect();
+                guessGainNode.disconnect();
+                guessOscillator = null;
+                guessGainNode = null;
+                playGuessBtn.textContent = 'Play Your Sound';
+                playGuessBtn.classList.remove('playing');
+            }
+        }
+
+        function stopAllSounds() {
+            stopTargetSound();
+            stopGuessSound();
+        }
+
+        // Update guess frequency display
+        function updateGuessDisplay() {
+            guessDisplay.textContent = `${guessFrequency} Hz`;
+        }
+
+        // Update guess frequency from slider
+        function updateGuessFromSlider() {
+            guessFrequency = parseInt(frequencySlider.value);
+            updateGuessDisplay();
+
+            // Update oscillator frequency if playing
+            if (guessOscillator) {
+                guessOscillator.frequency.value = guessFrequency;
+            }
+        }
+
+        // Adjust frequency by delta
+        function adjustFrequency(delta) {
+            guessFrequency = Math.max(200, Math.min(800, guessFrequency + delta));
+            frequencySlider.value = guessFrequency;
+            updateGuessDisplay();
+
+            // Update oscillator frequency if playing
+            if (guessOscillator) {
+                guessOscillator.frequency.value = guessFrequency;
+            }
+        }
+
+        // Submit guess
+        function submitGuess() {
+            if (!gameActive) return;
+
+            gameActive = false;
+            stopAllSounds();
+
+            const elapsedTime = Date.now() - startTime;
+            const seconds = (elapsedTime / 1000).toFixed(1);
+            const timeText = `Time: ${seconds}s`;
+
+            const difference = Math.abs(targetFrequency - guessFrequency);
+
+            if (difference === 0) {
+                resultDiv.textContent = `🎉 Perfect! The frequency was ${targetFrequency} Hz!\n${timeText}`;
+                resultDiv.className = 'result correct';
+            } else if (difference <= 5) {
+                resultDiv.textContent = `Close! You guessed ${guessFrequency} Hz, the answer was ${targetFrequency} Hz (off by ${difference} Hz)\n${timeText}`;
+                resultDiv.className = 'result close';
+            } else {
+                resultDiv.textContent = `You guessed ${guessFrequency} Hz, the answer was ${targetFrequency} Hz (off by ${difference} Hz)\n${timeText}`;
+                resultDiv.className = 'result';
+                resultDiv.style.background = '#f8d7da';
+                resultDiv.style.color = '#721c24';
+                resultDiv.style.border = '2px solid #f5c6cb';
+            }
+
+            resultDiv.classList.remove('hidden');
+            submitGuessBtn.classList.add('hidden');
+            newGameBtn.classList.remove('hidden');
+        }
+
+        // Event listeners
+        playTargetBtn.addEventListener('click', playTargetSound);
+        playGuessBtn.addEventListener('click', playGuessSound);
+        frequencySlider.addEventListener('input', updateGuessFromSlider);
+        increaseBtn.addEventListener('click', () => adjustFrequency(1));
+        decreaseBtn.addEventListener('click', () => adjustFrequency(-1));
+        submitGuessBtn.addEventListener('click', submitGuess);
+        newGameBtn.addEventListener('click', newGame);
+
+        // Initialize game
+        newGame();
+    </script>
+</body>
+</html>
