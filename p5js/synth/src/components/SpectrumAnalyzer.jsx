@@ -6,10 +6,43 @@ const noteToFrequency = (note) => {
   return Tone.Frequency(note).toFrequency()
 }
 
-function SpectrumAnalyzer({ synth, activeNotes }) {
+// Calculate filter response at a given frequency
+const getFilterResponse = (freq, filterType, cutoff, Q) => {
+  // Proper biquad filter magnitude response
+  const r = freq / cutoff
+  const r2 = r * r
+  const denominator = Math.sqrt(Math.pow(1 - r2, 2) + Math.pow(r / Q, 2))
+
+  switch (filterType) {
+    case 'lowpass':
+      return 1 / denominator
+    case 'highpass':
+      return r2 / denominator
+    case 'bandpass':
+      return (r / Q) / denominator
+    case 'notch':
+      return Math.abs(1 - r2) / denominator
+    default:
+      return 1
+  }
+}
+
+function SpectrumAnalyzer({ synth, activeNotes, activeFilters, filterFrequency, filterQ }) {
   const canvasRef = useRef(null)
   const analyserRef = useRef(null)
   const animationRef = useRef(null)
+
+  // Use refs to track current filter params so draw loop isn't stale
+  const activeFiltersRef = useRef(activeFilters)
+  const filterFrequencyRef = useRef(filterFrequency)
+  const filterQRef = useRef(filterQ)
+
+  // Update refs when props change
+  useEffect(() => {
+    activeFiltersRef.current = activeFilters
+    filterFrequencyRef.current = filterFrequency
+    filterQRef.current = filterQ
+  }, [activeFilters, filterFrequency, filterQ])
 
   useEffect(() => {
     if (!synth) return
@@ -127,6 +160,45 @@ function SpectrumAnalyzer({ synth, activeNotes }) {
         ctx.shadowBlur = 0
         ctx.globalAlpha = 1
       })
+
+      // Draw filter response curve
+      if (activeFiltersRef.current && activeFiltersRef.current.size > 0) {
+        ctx.strokeStyle = '#ff00ff'
+        ctx.lineWidth = 3
+        ctx.globalAlpha = 0.7
+        ctx.shadowBlur = 10
+        ctx.shadowColor = '#ff00ff'
+        ctx.beginPath()
+
+        const numPoints = 200
+        for (let i = 0; i < numPoints; i++) {
+          const freqRatio = i / numPoints
+          const logFreq = logMin + freqRatio * (logMax - logMin)
+          const freq = Math.pow(10, logFreq)
+          const x = freqRatio * width
+
+          // Calculate combined filter response
+          let response = 1
+          activeFiltersRef.current.forEach(filterType => {
+            response *= getFilterResponse(freq, filterType, filterFrequencyRef.current, filterQRef.current)
+          })
+
+          // Convert response to dB and scale to canvas height
+          const responseDb = 20 * Math.log10(Math.max(response, 0.001))
+          const normalizedResponse = Math.max(0, Math.min(1, (responseDb + 40) / 40))
+          const y = height - (normalizedResponse * height)
+
+          if (i === 0) {
+            ctx.moveTo(x, y)
+          } else {
+            ctx.lineTo(x, y)
+          }
+        }
+
+        ctx.stroke()
+        ctx.shadowBlur = 0
+        ctx.globalAlpha = 1
+      }
 
       // Draw frequency labels with logarithmic spacing
       ctx.fillStyle = '#666'

@@ -23,6 +23,7 @@ const KEY_TO_NOTE = {
 }
 
 const WAVEFORMS = ['sine', 'square', 'sawtooth', 'triangle']
+const FILTER_TYPES = ['lowpass', 'highpass', 'bandpass', 'notch']
 
 function App() {
   const [waveform, setWaveform] = useState('sine')
@@ -36,11 +37,33 @@ function App() {
   const [sustain, setSustain] = useState(0.3)
   const [release, setRelease] = useState(0.1)
 
+  // Filter parameters
+  const [activeFilters, setActiveFilters] = useState(new Set())
+  const [filterFrequency, setFilterFrequency] = useState(2000)
+  const [filterQ, setFilterQ] = useState(1)
+
+  const [outputNode, setOutputNode] = useState(null)
+
   const synthRef = useRef(null)
+  const filtersRef = useRef({}) // Map of filter type to filter instance
   const activeVoicesRef = useRef(new Map())
 
-  // Initialize synth
+  // Initialize synth and filters
   useEffect(() => {
+    // Create output node for visualization (0dB passthrough)
+    const output = new Tone.Gain(1).toDestination()
+    setOutputNode(output)
+
+    // Create all filter instances
+    FILTER_TYPES.forEach(type => {
+      filtersRef.current[type] = new Tone.Filter({
+        type,
+        frequency: filterFrequency,
+        Q: filterQ,
+      })
+    })
+
+    // Create synth - will connect chain in another effect
     synthRef.current = new Tone.PolySynth(Tone.Synth, {
       oscillator: { type: waveform },
       envelope: {
@@ -49,12 +72,14 @@ function App() {
         sustain,
         release,
       },
-    }).toDestination()
+    })
 
     synthRef.current.volume.value = volume
 
     return () => {
       synthRef.current.dispose()
+      Object.values(filtersRef.current).forEach(filter => filter.dispose())
+      output.dispose()
     }
   }, [])
 
@@ -80,6 +105,46 @@ function App() {
       })
     }
   }, [attack, decay, sustain, release])
+
+  // Rebuild filter chain when active filters change
+  useEffect(() => {
+    if (!synthRef.current || !outputNode) return
+
+    // Disconnect everything first
+    synthRef.current.disconnect()
+    Object.values(filtersRef.current).forEach(filter => filter.disconnect())
+
+    // Build the chain based on active filters
+    const activeFilterList = FILTER_TYPES.filter(type => activeFilters.has(type))
+
+    if (activeFilterList.length === 0) {
+      // No filters active - connect directly to output node
+      synthRef.current.connect(outputNode)
+    } else {
+      // Chain filters: synth -> filter1 -> filter2 -> ... -> output node
+      synthRef.current.connect(filtersRef.current[activeFilterList[0]])
+
+      for (let i = 0; i < activeFilterList.length - 1; i++) {
+        filtersRef.current[activeFilterList[i]].connect(filtersRef.current[activeFilterList[i + 1]])
+      }
+
+      filtersRef.current[activeFilterList[activeFilterList.length - 1]].connect(outputNode)
+    }
+  }, [activeFilters, outputNode])
+
+  // Update filter frequency for all filters
+  useEffect(() => {
+    Object.values(filtersRef.current).forEach(filter => {
+      filter.frequency.value = filterFrequency
+    })
+  }, [filterFrequency])
+
+  // Update filter Q for all filters
+  useEffect(() => {
+    Object.values(filtersRef.current).forEach(filter => {
+      filter.Q.value = filterQ
+    })
+  }, [filterQ])
 
   // Start audio context on first interaction
   const startAudio = async () => {
@@ -245,11 +310,85 @@ function App() {
               />
             </div>
           </div>
+
+          {/* Filter */}
+          <div className="controls-row">
+            <div className="control-group">
+              <label>Filter Types (click to toggle)</label>
+              <div className="waveform-buttons">
+                {FILTER_TYPES.map(type => (
+                  <button
+                    key={type}
+                    className={activeFilters.has(type) ? 'active' : ''}
+                    onClick={async () => {
+                      await startAudio()
+                      setActiveFilters(prev => {
+                        const newSet = new Set(prev)
+                        if (newSet.has(type)) {
+                          newSet.delete(type)
+                        } else {
+                          newSet.add(type)
+                        }
+                        return newSet
+                      })
+                    }}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="control-group">
+              <label>Cutoff: {filterFrequency.toFixed(0)} Hz</label>
+              <input
+                type="range"
+                min="0"
+                max="1000"
+                step="1"
+                value={(() => {
+                  // Convert frequency to logarithmic slider position
+                  const minLog = Math.log(20)
+                  const maxLog = Math.log(20000)
+                  return ((Math.log(filterFrequency) - minLog) / (maxLog - minLog)) * 1000
+                })()}
+                onChange={(e) => {
+                  // Convert slider position to logarithmic frequency
+                  const minLog = Math.log(20)
+                  const maxLog = Math.log(20000)
+                  const freq = Math.exp(minLog + (Number(e.target.value) / 1000) * (maxLog - minLog))
+                  setFilterFrequency(freq)
+                  startAudio()
+                }}
+              />
+            </div>
+
+            <div className="control-group">
+              <label>Resonance: {filterQ.toFixed(1)}</label>
+              <input
+                type="range"
+                min="0.1"
+                max="30"
+                step="0.1"
+                value={filterQ}
+                onChange={(e) => {
+                  setFilterQ(Number(e.target.value))
+                  startAudio()
+                }}
+              />
+            </div>
+          </div>
         </section>
 
         <section className="visualizers">
-          <WaveformVisualizer synth={synthRef.current} />
-          <SpectrumAnalyzer synth={synthRef.current} activeNotes={activeNotes} />
+          <WaveformVisualizer synth={outputNode} />
+          <SpectrumAnalyzer
+            synth={outputNode}
+            activeNotes={activeNotes}
+            activeFilters={activeFilters}
+            filterFrequency={filterFrequency}
+            filterQ={filterQ}
+          />
           <EnvelopeVisualizer synth={synthRef.current} activeNotes={activeNotes} />
         </section>
 
