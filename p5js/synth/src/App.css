@@ -67,6 +67,12 @@ main {
   gap: 2rem;
 }
 
+.controls-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+}
+
 .control-group {
   display: flex;
   flex-direction: column;

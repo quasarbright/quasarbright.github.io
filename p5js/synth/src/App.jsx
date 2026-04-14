@@ -30,6 +30,12 @@ function App() {
   const [activeNotes, setActiveNotes] = useState(new Set())
   const [isStarted, setIsStarted] = useState(false)
 
+  // ADSR envelope parameters
+  const [attack, setAttack] = useState(0.005)
+  const [decay, setDecay] = useState(0.1)
+  const [sustain, setSustain] = useState(0.3)
+  const [release, setRelease] = useState(0.1)
+
   const synthRef = useRef(null)
   const activeVoicesRef = useRef(new Map())
 
@@ -38,10 +44,10 @@ function App() {
     synthRef.current = new Tone.PolySynth(Tone.Synth, {
       oscillator: { type: waveform },
       envelope: {
-        attack: 0.005,
-        decay: 0.1,
-        sustain: 0.3,
-        release: 0.1,
+        attack,
+        decay,
+        sustain,
+        release,
       },
     }).toDestination()
 
@@ -65,6 +71,15 @@ function App() {
       synthRef.current.volume.value = volume
     }
   }, [volume])
+
+  // Update envelope
+  useEffect(() => {
+    if (synthRef.current) {
+      synthRef.current.set({
+        envelope: { attack, decay, sustain, release }
+      })
+    }
+  }, [attack, decay, sustain, release])
 
   // Start audio context on first interaction
   const startAudio = async () => {
@@ -131,38 +146,104 @@ function App() {
 
       <main>
         <section className="controls">
-          <div className="control-group">
-            <label>Waveform</label>
-            <div className="waveform-buttons">
-              {WAVEFORMS.map(type => (
-                <button
-                  key={type}
-                  className={waveform === type ? 'active' : ''}
-                  onClick={async () => {
-                    await startAudio()
-                    setWaveform(type)
-                  }}
-                >
-                  {type}
-                </button>
-              ))}
+          {/* Waveform and Volume */}
+          <div className="controls-row">
+            <div className="control-group">
+              <label>Waveform</label>
+              <div className="waveform-buttons">
+                {WAVEFORMS.map(type => (
+                  <button
+                    key={type}
+                    className={waveform === type ? 'active' : ''}
+                    onClick={async () => {
+                      await startAudio()
+                      setWaveform(type)
+                    }}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="control-group">
+              <label>
+                Volume: {volume} dB
+              </label>
+              <input
+                type="range"
+                min="-40"
+                max="0"
+                value={volume}
+                onChange={(e) => {
+                  setVolume(Number(e.target.value))
+                  startAudio()
+                }}
+              />
             </div>
           </div>
 
-          <div className="control-group">
-            <label>
-              Volume: {volume} dB
-            </label>
-            <input
-              type="range"
-              min="-40"
-              max="0"
-              value={volume}
-              onChange={(e) => {
-                setVolume(Number(e.target.value))
-                startAudio()
-              }}
-            />
+          {/* ADSR Envelope */}
+          <div className="controls-row">
+            <div className="control-group">
+              <label>Attack: {attack.toFixed(3)}s</label>
+              <input
+                type="range"
+                min="0.001"
+                max="2"
+                step="0.001"
+                value={attack}
+                onChange={(e) => {
+                  setAttack(Number(e.target.value))
+                  startAudio()
+                }}
+              />
+            </div>
+
+            <div className="control-group">
+              <label>Decay: {decay.toFixed(3)}s</label>
+              <input
+                type="range"
+                min="0.001"
+                max="2"
+                step="0.001"
+                value={decay}
+                onChange={(e) => {
+                  setDecay(Number(e.target.value))
+                  startAudio()
+                }}
+              />
+            </div>
+
+            <div className="control-group">
+              <label>Sustain: {sustain.toFixed(2)}</label>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={sustain}
+                onChange={(e) => {
+                  setSustain(Number(e.target.value))
+                  startAudio()
+                }}
+              />
+            </div>
+
+            <div className="control-group">
+              <label>Release: {release.toFixed(3)}s</label>
+              <input
+                type="range"
+                min="0.001"
+                max="5"
+                step="0.001"
+                value={release}
+                onChange={(e) => {
+                  setRelease(Number(e.target.value))
+                  startAudio()
+                }}
+              />
+            </div>
           </div>
         </section>
 

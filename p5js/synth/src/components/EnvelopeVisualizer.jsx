@@ -3,7 +3,9 @@ import { useEffect, useRef } from 'react'
 function EnvelopeVisualizer({ synth, activeNotes }) {
   const canvasRef = useRef(null)
   const animationRef = useRef(null)
-  const noteStatesRef = useRef(new Map()) // Track note states: { startTime, releaseTime }
+  const noteInstancesRef = useRef([]) // Array of { id, note, startTime, releaseTime }
+  const previousActiveNotesRef = useRef(new Set())
+  const nextIdRef = useRef(0)
 
   useEffect(() => {
     if (!synth) return
@@ -20,20 +22,33 @@ function EnvelopeVisualizer({ synth, activeNotes }) {
     const dimColor = getComputedStyle(document.documentElement)
       .getPropertyValue('--accent-dim').trim()
 
-    // Track note start times
+    // Detect newly started notes (in activeNotes but not in previousActiveNotes)
     activeNotes.forEach(note => {
-      if (!noteStatesRef.current.has(note)) {
-        noteStatesRef.current.set(note, { startTime: Date.now(), releaseTime: null })
+      if (!previousActiveNotesRef.current.has(note)) {
+        // New note started
+        noteInstancesRef.current.push({
+          id: nextIdRef.current++,
+          note,
+          startTime: Date.now(),
+          releaseTime: null
+        })
       }
     })
 
-    // Mark notes as released when they leave activeNotes
-    Array.from(noteStatesRef.current.keys()).forEach(note => {
-      const state = noteStatesRef.current.get(note)
-      if (!activeNotes.has(note) && state.releaseTime === null) {
-        state.releaseTime = Date.now()
+    // Detect released notes (in previousActiveNotes but not in activeNotes)
+    previousActiveNotesRef.current.forEach(note => {
+      if (!activeNotes.has(note)) {
+        // Note was released - mark the most recent active instance
+        const instances = noteInstancesRef.current
+          .filter(inst => inst.note === note && inst.releaseTime === null)
+        if (instances.length > 0) {
+          instances[instances.length - 1].releaseTime = Date.now()
+        }
       }
     })
+
+    // Update previous active notes
+    previousActiveNotesRef.current = new Set(activeNotes)
 
     const draw = () => {
       // Clear canvas
@@ -110,10 +125,9 @@ function EnvelopeVisualizer({ synth, activeNotes }) {
 
       // Draw note positions on the envelope
       const currentTime = Date.now()
-      const notesToRemove = []
 
-      noteStatesRef.current.forEach((state, note) => {
-        const { startTime, releaseTime } = state
+      noteInstancesRef.current = noteInstancesRef.current.filter(instance => {
+        const { startTime, releaseTime } = instance
         let x, y
 
         if (releaseTime === null) {
@@ -148,9 +162,8 @@ function EnvelopeVisualizer({ synth, activeNotes }) {
             x = sustainX + (visualRelease * timeScale * releaseProgress)
             y = sustainY + (graphHeight - sustainY + graphTop) * releaseProgress
           } else {
-            // Release finished - remove this note
-            notesToRemove.push(note)
-            return
+            // Release finished - remove this instance
+            return false
           }
         }
 
@@ -162,10 +175,9 @@ function EnvelopeVisualizer({ synth, activeNotes }) {
         ctx.arc(x, y, 4, 0, Math.PI * 2)
         ctx.fill()
         ctx.shadowBlur = 0
-      })
 
-      // Clean up finished notes
-      notesToRemove.forEach(note => noteStatesRef.current.delete(note))
+        return true // Keep this instance
+      })
 
       animationRef.current = requestAnimationFrame(draw)
     }
