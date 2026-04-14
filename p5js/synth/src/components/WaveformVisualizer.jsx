@@ -77,9 +77,10 @@ function WaveformVisualizer({ synth }) {
 
   return (
     <div className="visualizer-container">
+      <h3 className="visualizer-label">Waveform</h3>
       <canvas
         ref={canvasRef}
-        width={800}
+        width={400}
         height={200}
         className="waveform-canvas"
       />

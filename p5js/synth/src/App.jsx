@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import * as Tone from 'tone'
 import WaveformVisualizer from './components/WaveformVisualizer'
+import SpectrumAnalyzer from './components/SpectrumAnalyzer'
+import EnvelopeVisualizer from './components/EnvelopeVisualizer'
 import './App.css'
 
 // Keyboard mapping: AWSEDFTGYHUJK layout for piano
@@ -121,7 +123,7 @@ function App() {
   return (
     <div className="app">
       <header>
-        <h1>🎹 Synthesizer (BLUE THEME TEST)</h1>
+        <h1>Synthesizer</h1>
         {!isStarted && (
           <p className="start-hint">Click anywhere or press a key to start</p>
         )}
@@ -156,15 +158,19 @@ function App() {
               min="-40"
               max="0"
               value={volume}
-              onChange={async (e) => {
-                await startAudio()
+              onChange={(e) => {
                 setVolume(Number(e.target.value))
+                startAudio()
               }}
             />
           </div>
         </section>
 
-        <WaveformVisualizer synth={synthRef.current} />
+        <section className="visualizers">
+          <WaveformVisualizer synth={synthRef.current} />
+          <SpectrumAnalyzer synth={synthRef.current} activeNotes={activeNotes} />
+          <EnvelopeVisualizer synth={synthRef.current} activeNotes={activeNotes} />
+        </section>
 
         <section className="keyboard">
           <div className="keys">

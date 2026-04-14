@@ -153,7 +153,13 @@ input[type="range"]::-moz-range-thumb:hover {
   box-shadow: 0 0 10px var(--accent);
 }
 
-/* Visualizer */
+/* Visualizers */
+.visualizers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
 .visualizer-container {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
@@ -162,9 +168,22 @@ input[type="range"]::-moz-range-thumb:hover {
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.waveform-canvas {
+.visualizer-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.waveform-canvas,
+.spectrum-canvas,
+.envelope-canvas {
   display: block;
   border-radius: 8px;
   max-width: 100%;
@@ -259,12 +278,18 @@ input[type="range"]::-moz-range-thumb:hover {
     font-size: 2rem;
   }
 
+  .visualizers {
+    grid-template-columns: 1fr;
+  }
+
   .keys {
     transform: scale(0.8);
     transform-origin: center;
   }
 
-  .waveform-canvas {
+  .waveform-canvas,
+  .spectrum-canvas,
+  .envelope-canvas {
     width: 100%;
   }
 }
