@@ -1,16 +1,107 @@
-<!DOCTYPE html>
-<html>
-
+<!doctype html>
+<html lang="en">
 <head>
-    <title>quasarbright</title>
-    <script src="p5.js"></script>
-    <script src="p5.dom.js"></script>
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <meta charset="utf-8" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Boids</title>
+  <link rel="stylesheet" href="https://quasarbright.github.io/sketches/shared/cohesion.css" />
+  <script type="module" src="https://quasarbright.github.io/sketches/shared/cohesion.js"></script>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
-    <script src="sketch.js"></script>
-</body>
+  <canvas id="sky"></canvas>
 
+  <control-panel floating collapsed title="Flock">
+    <div class="control">
+      <div class="control-head">
+        <span class="name" title="How many birds are in the flock.">count</span>
+        <span class="value" id="v-count"></span>
+      </div>
+      <input type="range" id="count" min="0" max="100" step="1"
+        title="How many birds are in the flock." />
+    </div>
+    <div class="control">
+      <div class="control-head">
+        <span class="name" title="How many times per second every bird looks around and adjusts its flight. Higher makes the whole flock move faster.">speed</span>
+        <span class="value" id="v-speed"></span>
+      </div>
+      <input type="range" id="speed" min="0" max="100" step="1"
+        title="How many times per second every bird looks around and adjusts its flight. Higher makes the whole flock move faster." />
+    </div>
+    <div class="control">
+      <div class="control-head">
+        <span class="name" title="How far away a bird can see the birds it reacts to.">vision</span>
+        <span class="value" id="v-vision"></span>
+      </div>
+      <input type="range" id="vision" min="30" max="200" step="5"
+        title="How far away a bird can see the birds it reacts to." />
+    </div>
+    <div class="control">
+      <div class="control-head">
+        <span class="name" title="How hard a bird steers away from birds that are too close.">separation</span>
+        <span class="value" id="v-separation"></span>
+      </div>
+      <input type="range" id="separation" min="0" max="3" step="0.05"
+        title="How hard a bird steers away from birds that are too close." />
+    </div>
+    <div class="control">
+      <div class="control-head">
+        <span class="name" title="How hard a bird steers toward the middle of the birds it can see.">cohesion</span>
+        <span class="value" id="v-cohesion"></span>
+      </div>
+      <input type="range" id="cohesion" min="0" max="3" step="0.05"
+        title="How hard a bird steers toward the middle of the birds it can see." />
+    </div>
+    <div class="control">
+      <div class="control-head">
+        <span class="name" title="How hard a bird tries to match the direction and speed of the birds it can see.">alignment</span>
+        <span class="value" id="v-alignment"></span>
+      </div>
+      <input type="range" id="alignment" min="0" max="3" step="0.05"
+        title="How hard a bird tries to match the direction and speed of the birds it can see." />
+    </div>
+  </control-panel>
+
+  <div class="control-bar">
+    <button class="btn" id="pause" title="pause / resume the flock">pause</button>
+    <button class="btn" id="scatter" title="throw every bird to a random spot, flying a random way">scatter</button>
+    <about-modal label="about">
+      <h2 class="title">Boids</h2>
+      <p class="intro">A flock of starlings turns as one body, but no bird is in charge. Each one
+        only watches the few birds around it. In 1987 Craig Reynolds showed that three simple
+        steering rules, followed by every bird on its own, are enough to get that flocking. He
+        called his simulated birds "boids."</p>
+
+      <div class="section-label">the three rules</div>
+      <p>Every bird looks at the others within its <code>vision</code> radius and adds up three
+        pushes:</p>
+      <ol>
+        <li><code>separation</code>: steer away from each nearby bird, harder the closer it is, so
+          birds don't collide.</li>
+        <li><code>cohesion</code>: steer toward the average position of the birds it sees, so it
+          doesn't drift off alone.</li>
+        <li><code>alignment</code>: steer toward the average velocity of the birds it sees, so
+          neighbors end up flying the same way.</li>
+      </ol>
+      <p>Birds also turn back from the edges of the screen, and flee from your cursor or finger.
+        That's all of it. Nothing in the code knows what a flock is.</p>
+
+      <div class="section-label">the colors</div>
+      <p>A bird's color comes from the direction it's flying. Birds heading the same way share a
+        color, so you can see alignment spread: a mixed crowd settles into patches of one hue as
+        each group agrees on a heading.</p>
+
+      <div class="section-label">finding neighbors quickly</div>
+      <p>The obvious way to find a bird's neighbors is to check its distance to every other bird.
+        With a thousand birds that's a million checks per step. Instead the screen is cut into
+        square buckets the size of the vision radius, and each step every bird is filed into its
+        bucket. Anyone a bird can see must be in its own bucket or one of the eight around it, so
+        it only checks those, a small fraction of the flock instead of all of it.</p>
+    </about-modal>
+  </div>
+
+  <mike-footer overlay></mike-footer>
+
+  <script type="module" src="boids.js"></script>
+</body>
 </html>

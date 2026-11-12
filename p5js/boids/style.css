@@ -1,11 +1,27 @@
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background-color: black;
-  overflow: hidden;
+/* Boids: a flock at last light. Deep blue sky, warmer at the horizon; birds tinted by heading. */
+:root {
+  --bg:        #0b0f1a;
+  --panel:     #141a28;
+  --panel-2:   #1c2333;
+  --border:    #283043;
+  --text:      #e3e5ee;
+  --muted:     #8d93a8;
+  --faint:     #596076;
+  --accent:    #b4a8dc;  /* pale lilac, the middle of the flock's color ramp */
+  --accent-hi: #cfc6f0;
+  --on-accent: #0b0f1a;
 }
 
-body {
-  margin: 0;
+html, body {
+  margin: 0; height: 100%; overflow: hidden;
+  background: var(--bg);
 }
+
+#sky {
+  position: absolute; left: 0; top: 0; display: block;
+  touch-action: none;
+}
+
+.control-bar .btn { background: rgba(20, 26, 40, .75); backdrop-filter: blur(6px); }
+
+[data-background] .control-bar { display: none; }
