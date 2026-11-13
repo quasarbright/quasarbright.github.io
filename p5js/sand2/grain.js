@@ -1,7 +1,43 @@
+// Colors are [r, g, b] arrays. Each grain picks a random shade once, so piles have texture.
+
+// [r,g,b], number -> [r,g,b]: brighten or darken by a random factor in [1 - amount, 1 + amount]
+function shadeRGB(rgb, amount, rand = Math.random()) {
+  const k = 1 + (rand * 2 - 1) * amount
+  return [rgb[0] * k, rgb[1] * k, rgb[2] * k]
+}
+
+// [r,g,b], [r,g,b], number -> [r,g,b]
+function lerpRGB(a, b, t) {
+  t = Math.min(1, Math.max(0, t))
+  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
+}
+
+const COLORS = {
+  sand: [230, 184, 112],
+  water: [52, 128, 232],
+  acid: [118, 214, 58],
+  stone: [138, 140, 148],
+  wood: [128, 82, 46],
+  fireHot: [255, 72, 28],
+  fireCool: [255, 196, 64],
+  lavaHot: [226, 52, 16],
+  lavaCool: [255, 124, 30],
+  gasoline: [242, 214, 76],
+  gunpowder: [92, 88, 100],
+}
+
 class Sand {
-  // -> Color
+  constructor() {
+    this.rgb = shadeRGB(this.baseColor(), 0.09)
+  }
+
+  baseColor() {
+    return COLORS.sand
+  }
+
+  // -> [r, g, b]
   getColor() {
-    return color(227, 180, 113)
+    return this.rgb
   }
 
   // Index -> Void
@@ -42,6 +78,7 @@ class Liquid {
     this.viscocity = 0
     // probability of moving around in another liquid
     this.dissolveProbability = 0.01
+    this.shade = Math.random()
   }
   update({row, col}) {
     let newIdx = {row, col}
@@ -84,7 +121,7 @@ class Liquid {
 
 class Water extends Liquid {
   getColor() {
-    return color(30, 40, 232)
+    return this.rgb ??= shadeRGB(COLORS.water, 0.06, this.shade)
   }
 }
 
@@ -92,7 +129,7 @@ class Water extends Liquid {
 class Acid extends Liquid {
 
   getColor() {
-    return color(57, 150, 20)
+    return this.rgb ??= shadeRGB(COLORS.acid, 0.07, this.shade)
   }
 
   update({row, col}) {
@@ -115,10 +152,12 @@ class Fire {
 
   constructor() {
     this.remainingLifespan = Fire.MAX_LIFESPAN
+    this.shade = Math.random()
   }
 
   getColor() {
-    return lerpColor(color(222, 57, 11), color(240, 171, 10), Math.sqrt(map(this.remainingLifespan, Fire.MAX_LIFESPAN, 0, 0, 1)))
+    const t = Math.sqrt(Math.max(0, 1 - this.remainingLifespan / Fire.MAX_LIFESPAN))
+    return shadeRGB(lerpRGB(COLORS.fireHot, COLORS.fireCool, t), 0.08, this.shade)
   }
 
   update({row, col}) {
@@ -170,7 +209,8 @@ class Lava extends Liquid {
   }
 
   getColor() {
-    return lerpColor(color(222, 57, 11), color(237, 107, 14), Math.sqrt(map(this.remainingLifespan, Lava.MAX_LIFESPAN, 0, 0, 1)))
+    const t = Math.sqrt(Math.max(0, 1 - this.remainingLifespan / Lava.MAX_LIFESPAN))
+    return shadeRGB(lerpRGB(COLORS.lavaHot, COLORS.lavaCool, t), 0.08, this.shade)
   }
 
   update({row, col}) {
@@ -208,20 +248,29 @@ class Lava extends Liquid {
 // moves like water, but super flammable
 class Gasoline extends Liquid { 
   getColor() {
-    return color(207, 157, 21)
+    return this.rgb ??= shadeRGB(COLORS.gasoline, 0.05, this.shade)
   }
 }
 
 // moves like sand, but super flammable
 class Gunpowder extends Sand {
-  getColor() {
-    return color(36)
+  constructor() {
+    super()
+    this.rgb = shadeRGB(COLORS.gunpowder, 0.22)
   }
 }
 
 class Stone {
+  constructor() {
+    this.rgb = shadeRGB(this.baseColor(), 0.14)
+  }
+
+  baseColor() {
+    return COLORS.stone
+  }
+
   getColor() {
-    return color(128)
+    return this.rgb
   }
 
   // Does not move
@@ -229,8 +278,8 @@ class Stone {
 }
 
 class Wood extends Stone {
-  getColor() {
-    return color(46, 35, 15)
+  baseColor() {
+    return COLORS.wood
   }
 }
 
