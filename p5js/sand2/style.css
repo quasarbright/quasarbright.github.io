@@ -49,11 +49,6 @@ button { font: inherit; }
   letter-spacing: .02em;
   text-shadow: 0 3px 0 #7d5a28;
 }
-.sand-head about-modal .btn {
-  background: transparent; border-color: var(--border); color: var(--muted); padding: 6px 14px;
-  border-radius: 999px;
-}
-.sand-head about-modal .btn:hover { color: var(--text); background: var(--panel); }
 
 /* ---------- the box ---------- */
 .sand-box {
@@ -149,19 +144,6 @@ button { font: inherit; }
 .sand-brush-value {
   width: 2ch; text-align: right; color: var(--text); font-variant-numeric: tabular-nums;
 }
-
-/* ---------- about modal ---------- */
-.cohesion-about p, .sand-rules { max-width: 62ch; }
-.sand-rules { padding-left: 1.2em; }
-.sand-rules li + li { margin-top: .4em; }
-.m-sand { color: #e6b870; }
-.m-gunpowder { color: #a7a2b0; }
-.m-water { color: #5e9cf0; }
-.m-stone { color: #b4b6bd; }
-.m-wood { color: #c08a5c; }
-.m-acid { color: #86dc50; }
-.m-fire { color: #ffb347; }
-.m-lava { color: #ff7a2e; }
 
 mike-footer { flex: none; }
 

@@ -17,41 +17,6 @@
     <main class="sand-app">
         <header class="sand-head">
             <h1 class="sand-title">Sand</h1>
-            <about-modal label="About">
-                <h2 class="title">Sand</h2>
-                <p>
-                    The box is a grid of 100 &times; 100 cells, and each cell holds at most one grain.
-                    Sixty times a second, every grain gets one turn to move or react. A grain only
-                    looks at the 8 cells touching it, and what it does depends on its material.
-                    Everything you see, from heaps to puddles to spreading fires, comes from those
-                    local rules.
-                </p>
-                <div class="section-label">Moving</div>
-                <p>
-                    <b class="m-sand">Sand</b> and <b class="m-gunpowder">gunpowder</b> fall straight
-                    down if they can, otherwise slide diagonally down, which is what makes slopes. They
-                    sink through liquids by swapping places with them.
-                    <b class="m-water">Liquids</b> try the same, then slide sideways, which is what
-                    flattens a puddle. Lava is thick: most turns it doesn't spread. Two liquids side by
-                    side occasionally swap, so they slowly mix.
-                    <b class="m-stone">Stone</b> and <b class="m-wood">wood</b> never move.
-                </p>
-                <p>
-                    Turns go from the bottom row up, so a falling grain lands in the space the grain
-                    under it just left, and a column of sand falls together instead of one row per turn.
-                </p>
-                <div class="section-label">Reacting</div>
-                <p>Each turn, a grain gets a chance to act on each neighbor:</p>
-                <ul class="sand-rules">
-                    <li><b class="m-acid">Acid</b> dissolves wood (10%), sand (5%) and stone (1%).</li>
-                    <li><b class="m-fire">Fire</b> lights gasoline and gunpowder (10%) and wood (1%).
-                        It burns out over time, faster with empty space or non-flammable things around
-                        it, and water puts it out at once.</li>
-                    <li><b class="m-lava">Lava</b> lights flammable things the same way and melts
-                        stone into more lava (0.3%). It cools over time and turns to stone; touching
-                        water cools it instantly.</li>
-                </ul>
-            </about-modal>
         </header>
 
         <div class="sand-box">
