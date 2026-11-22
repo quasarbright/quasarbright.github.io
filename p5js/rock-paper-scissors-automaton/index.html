@@ -1,18 +1,142 @@
-<!DOCTYPE html>
-<html>
-
+<!doctype html>
+<html lang="en">
 <head>
-    <title>Rock Paper Scissors Cellular Automaton</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <script src="p5.js"></script>
-    <meta charset="utf-8" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rock Paper Scissors Automaton</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="https://quasarbright.github.io/sketches/shared/cohesion.css" />
+  <script type="module" src="https://quasarbright.github.io/sketches/shared/cohesion.js"></script>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
-    <h1>Rock Paper Scissors Cellular Automaton</h1>
-    <div>
-        <script src="sketch.js"></script>
-    </div>
-</body>
+  <canvas id="field"></canvas>
 
+  <h1 class="rps-title">Rock Paper Scissors</h1>
+
+  <control-panel floating collapsed title="Rule">
+    <div class="control">
+      <div class="control-head">
+        <span class="name" title="How many species are in the cycle. Each one beats the next and loses to the one after it, wrapping around, like rock, paper, scissors with more hands.">species</span>
+        <span class="value" id="v-species"></span>
+      </div>
+      <input type="range" id="species" min="3" max="12" step="1"
+        title="How many species are in the cycle. Each one beats the next and loses to the one after it, wrapping around, like rock, paper, scissors with more hands." />
+    </div>
+
+    <div class="control">
+      <div class="control-head">
+        <span class="name" title="A starting point for the rule below. Picking one sets reach, neighborhood, threshold and chance.">preset</span>
+      </div>
+      <div class="rps-presets" id="presets"></div>
+    </div>
+
+    <div class="control">
+      <div class="control-head">
+        <span class="name" title="How far away, in cells, a cell looks for neighbors that beat it.">reach</span>
+        <span class="value" id="v-range"></span>
+      </div>
+      <input type="range" id="range" min="1" max="5" step="1"
+        title="How far away, in cells, a cell looks for neighbors that beat it." />
+    </div>
+
+    <div class="control">
+      <div class="control-head">
+        <span class="name" title="The shape of the area a cell looks at. A wave spreads out in this shape, so a square neighborhood grows square waves and a circle grows round ones.">neighborhood</span>
+      </div>
+      <div class="rps-seg" id="shape" role="group"
+        title="The shape of the area a cell looks at. A wave spreads out in this shape, so a square neighborhood grows square waves and a circle grows round ones.">
+        <button class="btn" data-shape="square">square</button>
+        <button class="btn" data-shape="diamond">diamond</button>
+        <button class="btn" data-shape="circle">circle</button>
+      </div>
+    </div>
+
+    <div class="control">
+      <div class="control-head">
+        <span class="name" title="How many neighbors have to beat a cell before it gets taken over. Above 1, the sharp corners of a wave stall and the wave curls into spirals.">threshold</span>
+        <span class="value" id="v-threshold"></span>
+      </div>
+      <input type="range" id="threshold" min="1" max="8" step="1"
+        title="How many neighbors have to beat a cell before it gets taken over. Above 1, the sharp corners of a wave stall and the wave curls into spirals." />
+    </div>
+
+    <div class="control">
+      <div class="control-head">
+        <span class="name" title="Once enough neighbors beat a cell, the chance it actually gets taken over this step. Each extra beating neighbor is another try. Below 100% the waves get soft, ragged edges.">chance</span>
+        <span class="value" id="v-chance"></span>
+      </div>
+      <input type="range" id="chance" min="5" max="100" step="5"
+        title="Once enough neighbors beat a cell, the chance it actually gets taken over this step. Each extra beating neighbor is another try. Below 100% the waves get soft, ragged edges." />
+    </div>
+
+    <div class="control">
+      <div class="control-head">
+        <span class="name" title="How big each cell is on screen. Smaller cells give finer, more numerous spirals. Changing it starts over.">cell size</span>
+        <span class="value" id="v-cell"></span>
+      </div>
+      <input type="range" id="cell" min="1" max="6" step="1"
+        title="How big each cell is on screen. Smaller cells give finer, more numerous spirals. Changing it starts over." />
+    </div>
+  </control-panel>
+
+  <div class="control-bar">
+    <button class="btn rps-icon" id="pause" aria-label="pause" title="pause / resume (space)"></button>
+    <button class="btn rps-icon" id="slower" aria-label="slower" title="half as many steps per second">
+      <svg viewBox="0 0 24 24"><polygon points="11 19 2 12 11 5 11 19"/><polygon points="22 19 13 12 22 5 22 19"/></svg>
+    </button>
+    <span class="rps-speed" id="speed" title="steps per second"></span>
+    <button class="btn rps-icon" id="faster" aria-label="faster" title="twice as many steps per second">
+      <svg viewBox="0 0 24 24"><polygon points="13 19 22 12 13 5 13 19"/><polygon points="2 19 11 12 2 5 2 19"/></svg>
+    </button>
+    <button class="btn rps-icon" id="scramble" aria-label="scramble" title="scramble: give every cell a random species (R)">
+      <svg viewBox="0 0 24 24"><path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"/><path d="M2 6h1.6c1.4 0 2.7.8 3.4 2"/><path d="M22 18h-6.2c-1.3 0-2.5-.6-3.3-1.7l-.5-.8"/></svg>
+    </button>
+    <about-modal label="about">
+      <h2 class="title">Rock Paper Scissors</h2>
+      <p class="intro">Fill a grid with rock, paper and scissors at random, and let every square
+        lose to its neighbors by the usual rules. Rock gets covered by paper, paper gets cut by
+        scissors, scissors get smashed by rock. Nobody wins for good, so the colors chase each other
+        around forever, and the chase winds itself into spinning spirals.</p>
+
+      <div class="section-label">the rule</div>
+      <p>Each square of the grid (a <em>cell</em>) holds one species. With more than three
+        species they sit in a circle: each one is beaten by the next and wraps around at the end.
+        Every step, every cell counts how many of its neighbors are the species that beats it. If
+        that count reaches the <code>threshold</code>, the cell is taken over and becomes that
+        species. (With <code>chance</code> below 100%, it only might be.) The neighbors are the
+        cells within <code>reach</code>, in a square, diamond or circle.</p>
+      <figure class="rps-fig">
+        <div id="hood-fig"></div>
+        <figcaption id="hood-cap"></figcaption>
+      </figure>
+
+      <div class="section-label">why spirals</div>
+      <p>Look for a point where, walking a small loop around it, you pass every species in order.
+        Each species keeps eating the one behind it, so the boundaries rotate around that point
+        forever and wind up into a spiral. A random start has thousands of these points. They
+        crowd each other out until a few big spirals own the screen.</p>
+      <p>The <code>threshold</code> is what makes them clean. With a threshold of 1 a single
+        enemy is enough, and almost every random cell has one, so the whole grid just flips in
+        lockstep and stays static noise. That's why the original version of this page started from
+        smooth blobs instead, and why it grew squares: with one enemy enough, a wave advances one
+        cell in every direction each step, and the 3×3 neighborhood makes that a square. Raise the
+        threshold and lone specks can't take anything over. Only solid fronts advance, the sharp
+        tips of a front stall because they touch few cells, and the fronts round off and curl.</p>
+      <p>The neighborhood's shape becomes the waves' shape: a square neighborhood grows waves
+        with corners, a circle grows round ones. Each preset picks a neighborhood and then, for
+        each species count, the threshold that grows the best spirals. Too low and the field flips
+        in lockstep as static; too high and nothing can be taken over at all. More species put more
+        bands of color in every arm.</p>
+
+      <div class="section-label">play with it</div>
+      <p>Move the mouse (or drag a finger) over the field to spray fresh randomness, which seeds
+        new spirals.</p>
+    </about-modal>
+  </div>
+
+  <mike-footer overlay></mike-footer>
+
+  <script type="module" src="ui.js"></script>
+</body>
 </html>

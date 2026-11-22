@@ -1,9 +1,75 @@
-html, body {
-  height: 100%;
+/* Rock Paper Scissors: the species' own colors do the work; chrome stays neutral navy. */
+:root {
+  --accent:    #8fb0ff;
+  --accent-hi: #b0c8ff;
+  --on-accent: #0e0f16;
 }
 
-textarea {
-  background: #000000;
-  color: #FFFFFF;
-  font-size: 8pt;
+html, body {
+  margin: 0; height: 100%; overflow: hidden;
+  background: var(--bg);
+  font-family: var(--font-ui);
+  color: var(--text);
+}
+
+#field {
+  position: absolute; left: 0; top: 0; display: block;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.rps-title {
+  position: fixed; left: 16px; top: 10px; margin: 0; z-index: 3;
+  font-size: 1.05rem; font-weight: 650; letter-spacing: .01em;
+  color: var(--text);
+  text-shadow: 0 0 2px rgba(0,0,0,.9), 0 1px 3px rgba(0,0,0,.8), 0 0 10px rgba(0,0,0,.6);
+  pointer-events: none;
+}
+
+.control-panel { width: 260px; max-height: calc(100vh - 110px); overflow-y: auto; }
+
+.rps-presets {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+}
+.rps-presets .btn, .rps-seg .btn {
+  padding: 6px 8px; font-size: .82rem; text-align: center; white-space: nowrap;
+}
+.rps-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+.control-bar .btn {
+  background: rgba(23, 26, 36, .78); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  height: 34px;
+}
+.control-bar .rps-icon { width: 38px; padding: 0; display: grid; place-items: center; }
+.rps-icon svg {
+  width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.rps-speed {
+  min-width: 56px; height: 34px; display: grid; place-items: center; padding: 0 8px;
+  font-size: .85rem; color: var(--text);
+  background: rgba(23, 26, 36, .78); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+}
+
+/* the footer sits on bright, busy color: strong text plus a solid shadow, no scrim */
+mike-footer {
+  color: var(--text) !important; opacity: 1 !important;
+  text-shadow: 0 0 2px rgba(0,0,0,.95), 0 1px 3px rgba(0,0,0,.9), 0 0 8px rgba(0,0,0,.7);
+}
+mike-footer a { color: var(--accent-hi); }
+
+.rps-fig { margin: 12px 0 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.rps-fig figcaption { color: var(--muted); font-size: .85rem; text-align: center; max-width: 34em; }
+.rps-fig svg { display: block; }
+
+.rps-nogl { position: fixed; inset: 0; display: grid; place-items: center; color: var(--muted); }
+
+[data-background] .control-bar, [data-background] .rps-title { display: none; }
+
+@media (max-width: 600px) {
+  .rps-title { font-size: .95rem; }
+  .control-panel { width: min(260px, calc(100vw - 32px)); }
+  .control-bar { gap: 4px; bottom: 34px; }
+  .control-bar .rps-icon { width: 34px; }
 }
