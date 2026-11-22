@@ -365,19 +365,28 @@ function gpuBehind() {
   while (fences.length && gl.clientWaitSync(fences[0], 0, 0) !== gl.TIMEOUT_EXPIRED) gl.deleteSync(fences.shift());
   return fences.length > IN_FLIGHT;
 }
+// Frame timestamps wobble by a millisecond or two, and feeding that wobble into the step count
+// turned a steady "step every other frame" (60 steps/s on a 120Hz screen) into the odd skipped
+// frame followed by a double step, which reads as jitter. So time is counted in whole frames of
+// the display's refresh rate (snapped to the nearest standard rate), and real time is used only
+// for a frame that's clearly late.
+const RATES = [30, 48, 50, 60, 72, 75, 90, 100, 120, 144, 165, 240];
+let avgDt = 0;
+function frameTime(dt) {
+  avgDt = avgDt ? avgDt + 0.05 * (dt - avgDt) : dt;
+  const hz = RATES.reduce((a, b) => (Math.abs(b - 1 / avgDt) < Math.abs(a - 1 / avgDt) ? b : a));
+  return Math.abs(dt - avgDt) < 0.5 * avgDt ? 1 / hz : dt;
+}
 function tick(t) {
-  const dt = lastT ? Math.min(0.1, (t - lastT) / 1000) : 1 / 60;
+  const dt = lastT ? Math.min(0.1, frameTime((t - lastT) / 1000)) : 1 / 60;
   lastT = t;
   if (!state.paused) {
     acc += state.stepsPerSec * dt;
     if (acc > 16) acc = 16;
     if (gpuBehind()) acc = Math.min(acc, 1); // run slower instead of queuing a backlog
     else {
-      // A little slack, so frame-time noise doesn't turn a steady "step every other frame" into
-      // an occasional skipped frame followed by a double step.
-      const slack = Math.min(0.5, 0.25 * state.stepsPerSec * dt);
       let stepped = false;
-      while (acc >= 1 - slack) { acc -= 1; pass(0); stepped = true; }
+      while (acc >= 1 - 1e-6) { acc -= 1; pass(0); stepped = true; }
       if (stepped) fences.push(gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0));
     }
   }
