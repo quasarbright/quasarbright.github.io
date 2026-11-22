@@ -32,9 +32,8 @@ function sync() {
   // plain words only: what a cell looks at and when it changes, nothing the panel doesn't show
   const around = r.range === 1 && r.shape === "square" ? `the ${r.nb} cells touching it` : `the ${r.nb} nearest cells around it`;
   const chance = r.chance < 1 ? `, and even then only about ${r.chance === 0.5 ? "half" : `${Math.round(r.chance * 100)}% of`} the time` : "";
-  const start = PRESETS[state.preset].seed === "blobs" ? " It starts from smooth patches of color instead of random dots." : "";
   $("rule-readout").textContent =
-    `A cell turns into the color that beats it when at least ${r.threshold} of ${around} ${r.threshold === 1 ? "has" : "have"} that color${chance}.${start}`;
+    `A cell turns into the color that beats it when at least ${r.threshold} of ${around} ${r.threshold === 1 ? "has" : "have"} that color${chance}.`;
 
   $("cell").value = state.cellSize;
   $("v-cell").textContent = `${state.cellSize}px`;
@@ -53,7 +52,7 @@ if (!background && $("v-species")) {
   for (const [key, p] of Object.entries(PRESETS)) {
     const b = document.createElement("button");
     b.className = "btn"; b.dataset.preset = key; b.textContent = p.label; b.title = p.blurb;
-    b.addEventListener("click", () => { choosePreset(key); sync(); syncSpeed(); });
+    b.addEventListener("click", () => { choosePreset(key); sync(); });
     presetsEl.appendChild(b);
   }
 

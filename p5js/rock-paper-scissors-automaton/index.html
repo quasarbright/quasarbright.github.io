@@ -50,11 +50,11 @@
 
     <div class="control">
       <div class="control-head">
-        <span class="name" title="How big a patch your mouse or finger paints as it moves over the field: random colors, or one solid color in the squares rule.">brush size</span>
+        <span class="name" title="How big a patch of random colors your mouse or finger paints as it moves over the field.">brush size</span>
         <span class="value" id="v-brush"></span>
       </div>
       <input type="range" id="brush" min="10" max="200" step="10"
-        title="How big a patch your mouse or finger paints as it moves over the field: random colors, or one solid color in the squares rule." />
+        title="How big a patch of random colors your mouse or finger paints as it moves over the field." />
     </div>
   </control-panel>
 
@@ -127,14 +127,14 @@
       <div class="rps-fig-actions"><button class="btn" id="fig-restart" title="start these three over from new random noise">restart</button></div>
 
       <div class="section-label">a threshold of 1: squares</div>
-      <p>The <code>squares</code> rule uses a threshold of 1: a single neighbor that beats a cell is
-        enough to take it over. Started from random noise, it only flickers, so this rule starts
-        from smooth patches of color instead. With one enemy enough, a front moves one cell in every
-        direction each step, and "one cell in every direction" on the 8 touching cells is a
-        square, so the waves grow as squares. The bigger squares swallow the smaller ones until one
-        color fills the screen, and then it starts over with new patches.</p>
+      <p>With a threshold of 1, a single neighbor that beats a cell is enough to take it over.
+        Started from random noise, that only flickers, so the diagram below starts from smooth
+        patches of color instead. A front then moves one cell in every direction each step, and
+        "one cell in every direction" on the 8 touching cells is a square, so the waves grow as
+        squares. The bigger squares swallow the smaller ones until one color fills the grid, so
+        it starts over every few seconds.</p>
       <figure class="rps-fig"><canvas id="fig-original" width="300" height="180"></canvas>
-        <figcaption>The squares rule, starting from smooth patches.</figcaption></figure>
+        <figcaption>A threshold of 1, starting from smooth patches.</figcaption></figure>
 
       <div class="section-label">neighborhood shape</div>
       <p>The shape of the area a cell looks at becomes the shape of the waves. Below, each grid
@@ -150,8 +150,7 @@
 
       <div class="section-label">play with it</div>
       <p>Move the mouse (or drag a finger) over the field to spray fresh randomness and seed new
-        spirals. In the <code>squares</code> rule it paints a blob of one color instead, and
-        squares grow out of it. More species put more bands of color in every arm. The <code>soft</code> rule
+        spirals. More species put more bands of color in every arm. The <code>soft</code> rule
         makes each change happen only some of the time, which gives it fuzzy edges.</p>
     </about-modal>
   </div>
