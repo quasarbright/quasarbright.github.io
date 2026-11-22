@@ -387,14 +387,31 @@ canvas.addEventListener("pointerleave", () => { last = null; });
 canvas.addEventListener("pointerup", (e) => { if (e.pointerType !== "mouse") last = null; });
 
 // ---------------------------------------------------------------- loop
-let acc = 0, lastT = 0;
+// The GPU runs behind the CPU. If the steps asked for take longer than a frame (the big rule
+// at 1px cells on a large screen can), the work used to pile up in the GPU's queue and the page
+// got slower and slower. Now each frame drops a fence, and while the GPU hasn't reached the last
+// one, no new steps are queued and the missed steps are forgiven: the sim runs slower than the
+// speed setting instead of falling further and further behind.
+let acc = 0, lastT = 0, fence = null;
+function gpuBusy() {
+  if (!fence) return false;
+  const st = gl.clientWaitSync(fence, 0, 0);
+  if (st === gl.TIMEOUT_EXPIRED) return true;
+  gl.deleteSync(fence); fence = null;
+  return false;
+}
 function tick(t) {
   const dt = lastT ? Math.min(0.1, (t - lastT) / 1000) : 1 / 60;
   lastT = t;
   if (!state.paused) {
-    acc += state.stepsPerSec * dt;
-    if (acc > 16) acc = 16;
-    while (acc >= 1) { acc -= 1; pass(0); }
+    if (gpuBusy()) acc = 0;
+    else {
+      acc += state.stepsPerSec * dt;
+      if (acc > 16) acc = 16;
+      let stepped = false;
+      while (acc >= 1) { acc -= 1; pass(0); stepped = true; }
+      if (stepped) { fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0); gl.flush(); }
+    }
   }
   if (brush) pass(2);
   draw();
