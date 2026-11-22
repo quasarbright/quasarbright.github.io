@@ -1,6 +1,8 @@
-import { state, PRESETS, applyPreset, neighborCount, setSpecies, setCellSize, scramble, background } from "./main.js";
+import { state, PRESETS, choosePreset, presetRule, palette, setSpecies, setCellSize, scramble, background } from "./main.js";
+import "./about.js";
 
 const $ = (id) => document.getElementById(id);
+const MIN_SPECIES = 3, MAX_SPECIES = 12;
 
 // Start the rule panel open on roomy screens; on phones it would cover the field.
 const panel = document.querySelector("control-panel");
@@ -17,73 +19,47 @@ function syncPause() {
 }
 function syncSpeed() { if ($("speed")) $("speed").textContent = `${state.stepsPerSec}/s`; }
 
+const SHAPE_WORD = { square: "square", diamond: "diamond", circle: "circle" };
+
 function sync() {
-  if (background || !$("species")) return;
-  $("species").value = state.species;
+  if (background || !$("v-species")) return;
   $("v-species").textContent = state.species;
-  $("range").value = state.range;
-  $("v-range").textContent = state.range;
-  const nb = neighborCount(state.range, state.shape);
-  $("threshold").max = nb;
-  $("threshold").value = state.threshold;
-  $("v-threshold").textContent = `${state.threshold} of ${nb}`;
-  $("chance").value = Math.round(state.chance * 100);
-  $("v-chance").textContent = `${Math.round(state.chance * 100)}%`;
+  $("species-down").disabled = state.species <= MIN_SPECIES;
+  $("species-up").disabled = state.species >= MAX_SPECIES;
+  $("swatches").innerHTML = palette(state.species)
+    .map((c) => `<span style="background:rgb(${c.map((v) => Math.round(v * 255)).join(",")})"></span>`).join("");
+
+  for (const b of document.querySelectorAll("#presets .btn")) b.classList.toggle("is-active", b.dataset.preset === state.preset);
+  const r = presetRule();
+  const chance = r.chance < 1 ? `, each a ${Math.round(r.chance * 100)}% chance` : "";
+  $("rule-readout").textContent =
+    `Taken over when ${r.threshold} of ${r.nb} neighbors (a ${SHAPE_WORD[r.shape]}, reach ${r.range}) beat it${chance}.`;
+
   $("cell").value = state.cellSize;
   $("v-cell").textContent = `${state.cellSize}px`;
-  for (const b of document.querySelectorAll("#shape .btn")) b.classList.toggle("is-active", b.dataset.shape === state.shape);
-  for (const b of document.querySelectorAll("#presets .btn")) b.classList.toggle("is-active", b.dataset.preset === state.preset);
-  drawHood();
+  $("brush").value = state.brushRadius;
+  $("v-brush").textContent = `${state.brushRadius}px`;
 }
 
-// A picture of the current neighborhood for the about modal: the center cell, the cells it
-// looks at, and how many of them must beat it.
-function drawHood() {
-  const fig = document.getElementById("hood-fig");
-  if (!fig) return;
-  const R = state.range, cell = Math.max(10, Math.min(22, Math.floor(200 / (2 * R + 1))));
-  const size = (2 * R + 1) * cell;
-  const r2 = (R + 0.5) ** 2;
-  let rects = "";
-  for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) {
-    let inside = true;
-    if (state.shape === "diamond") inside = Math.abs(dx) + Math.abs(dy) <= R;
-    if (state.shape === "circle") inside = dx * dx + dy * dy <= r2;
-    const fill = dx === 0 && dy === 0 ? "var(--text)" : inside ? "var(--accent)" : "var(--panel-2)";
-    const op = dx === 0 && dy === 0 ? 1 : inside ? 0.55 : 1;
-    rects += `<rect x="${(dx + R) * cell + 1}" y="${(dy + R) * cell + 1}" width="${cell - 2}" height="${cell - 2}" rx="2" fill="${fill}" fill-opacity="${op}"/>`;
-  }
-  fig.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${rects}</svg>`;
-  const nb = neighborCount(R, state.shape);
-  document.getElementById("hood-cap").textContent =
-    `The current rule: the white cell looks at the ${nb} blue cells, a ${state.shape} of reach ${R}. ` +
-    `It's taken over when ${state.threshold} or more of them are the species that beats it.`;
+function changeSpecies(d) {
+  const n = Math.max(MIN_SPECIES, Math.min(MAX_SPECIES, state.species + d));
+  if (n === state.species) return;
+  setSpecies(n); sync();
 }
 
-if (!background && $("species")) {
+if (!background && $("v-species")) {
   const presetsEl = $("presets");
   for (const [key, p] of Object.entries(PRESETS)) {
     const b = document.createElement("button");
     b.className = "btn"; b.dataset.preset = key; b.textContent = p.label; b.title = p.blurb;
-    b.addEventListener("click", () => { applyPreset(key); sync(); });
+    b.addEventListener("click", () => { choosePreset(key); sync(); });
     presetsEl.appendChild(b);
   }
 
-  const custom = () => { state.preset = null; };
-  $("species").addEventListener("input", (e) => { setSpecies(+e.target.value); sync(); });
-  $("range").addEventListener("input", (e) => {
-    state.range = +e.target.value; custom();
-    state.threshold = Math.min(state.threshold, neighborCount(state.range, state.shape));
-    sync();
-  });
-  for (const b of document.querySelectorAll("#shape .btn")) b.addEventListener("click", () => {
-    state.shape = b.dataset.shape; custom();
-    state.threshold = Math.min(state.threshold, neighborCount(state.range, state.shape));
-    sync();
-  });
-  $("threshold").addEventListener("input", (e) => { state.threshold = +e.target.value; custom(); sync(); });
-  $("chance").addEventListener("input", (e) => { state.chance = +e.target.value / 100; custom(); sync(); });
+  $("species-down").addEventListener("click", () => changeSpecies(-1));
+  $("species-up").addEventListener("click", () => changeSpecies(1));
   $("cell").addEventListener("input", (e) => { setCellSize(+e.target.value); sync(); });
+  $("brush").addEventListener("input", (e) => { state.brushRadius = +e.target.value; sync(); });
 
   $("pause").addEventListener("click", () => { state.paused = !state.paused; syncPause(); });
   $("slower").addEventListener("click", () => { state.stepsPerSec = Math.max(1, state.stepsPerSec / 2); syncSpeed(); });
@@ -93,12 +69,12 @@ if (!background && $("species")) {
   window.addEventListener("keydown", (e) => {
     if (e.target.closest && e.target.closest("input, select, textarea")) return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (document.querySelector(".cohesion-modal")) return;
     if (e.code === "Space") { e.preventDefault(); state.paused = !state.paused; syncPause(); }
     else if (e.key === "r" || e.key === "R") scramble();
+    else if (e.key === "-" || e.key === "_") changeSpecies(-1);
+    else if (e.key === "+" || e.key === "=") changeSpecies(1);
   });
-
-  // the about modal's content only exists while it's open
-  document.addEventListener("cohesion-modal-open", () => drawHood());
 
   sync(); syncPause(); syncSpeed();
 }

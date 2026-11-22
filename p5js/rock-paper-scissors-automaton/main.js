@@ -28,6 +28,11 @@ export const PRESETS = {
     blurb: "Takeovers are random: each beating neighbor is a coin flip. Round spirals with wobbly edges.",
     table: { 3: [4, .5], 4: [3, .5], 5: [3, .5], 6: [3, .5], 7: [3, .5], 8: [3, .5], 9: [2, .5], 10: [2, .5], 11: [2, .5], 12: [2, .5] },
   },
+  original: {
+    label: "original", range: 1, shape: "square", seed: "blobs", wrap: false,
+    blurb: "The first version of this page: one beating neighbor is enough, and it starts from smooth blobs instead of noise. Waves grow as squares.",
+    table: { 3: [1, 1], 4: [1, 1], 5: [1, 1], 6: [1, 1], 7: [1, 1], 8: [1, 1], 9: [1, 1], 10: [1, 1], 11: [1, 1], 12: [1, 1] },
+  },
   big: {
     label: "big", range: 5, shape: "circle",
     blurb: "A circle of reach 5: fewer, bigger, smoother spirals.",
@@ -51,7 +56,7 @@ const state = {
   species: 3,
   preset: "pinwheels",
   range: 1, threshold: 3, shape: "square", chance: 1,
-  cellSize: 4,          // CSS pixels per cell
+  cellSize: 1,          // CSS pixels per cell
   stepsPerSec: 60,
   paused: false,
   brushRadius: 40,      // CSS pixels
@@ -66,6 +71,10 @@ export function applyPreset(key) {
   const [threshold, chance] = p.table[state.species] || p.table[12];
   state.range = p.range; state.shape = p.shape;
   state.threshold = threshold; state.chance = chance;
+}
+export function presetRule() {
+  return { range: state.range, shape: state.shape, threshold: state.threshold, chance: state.chance,
+    nb: neighborCount(state.range, state.shape) };
 }
 applyPreset(state.preset);
 
@@ -95,6 +104,7 @@ function oklchToSrgb(L, C, hDeg) {
     return x <= 0.0031308 ? 12.92 * x : 1.055 * x ** (1 / 2.4) - 0.055;
   });
 }
+export { oklchToSrgb };
 export function palette(n) {
   const out = [];
   // Past 6 species neighboring hues get close, so alternate light and dark to keep bands apart.
@@ -132,6 +142,10 @@ precision highp float; precision highp int;
 uniform sampler2D u_state;
 uniform ivec2 u_size;
 uniform int u_n, u_range, u_threshold, u_shape, u_mode; // mode 0 step, 1 seed, 2 brush only
+uniform int u_wrap;                // 1: edges wrap around; 0: cells past the edge don't exist
+uniform int u_blobs;               // 1: seed and brush with smooth blobs instead of noise
+uniform uint u_seed;               // changes on every scramble
+uniform float u_blobScale;         // blob noise frequency, per cell
 uniform float u_chance;
 uniform uint u_frame;
 uniform vec2 u_brushA, u_brushB;   // brush stroke segment, in cells
@@ -139,9 +153,27 @@ uniform float u_brushR;            // in cells; 0 = no brush
 out vec4 o;
 ${HASH}
 int at(ivec2 p) {
+  if (u_wrap == 0 && (any(lessThan(p, ivec2(0))) || any(greaterThanEqual(p, u_size)))) return -1;
   p = (p % u_size + u_size) % u_size;
   return int(texelFetch(u_state, p, 0).r * 255.0 + 0.5);
 }
+// Smooth value noise, a few octaves, for the "original" preset's blobby start.
+float lattice(ivec2 q) { return float(hash(uvec3(uvec2(q + 4096), u_seed)) >> 8u) / 16777216.0; }
+float vnoise(vec2 x) {
+  vec2 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);
+  ivec2 q = ivec2(i);
+  return mix(mix(lattice(q), lattice(q + ivec2(1, 0)), f.x),
+             mix(lattice(q + ivec2(0, 1)), lattice(q + ivec2(1, 1)), f.x), f.y);
+}
+int blobState(ivec2 p) {
+  vec2 x = vec2(p) * u_blobScale;
+  float n = 0.5 * vnoise(x) + 0.25 * vnoise(x * 2.0 + 17.0) + 0.125 * vnoise(x * 4.0 + 31.0);
+  n /= 0.875;
+  // the first version folded the noise into bands (x5, keep the fraction) and split them by species
+  int k = int(fract(n * 5.0) * float(u_n));
+  return (k + int(u_seed % uint(u_n))) % u_n;
+}
+int freshState(ivec2 p, uint h) { return u_blobs == 1 ? blobState(p) : int(h % uint(u_n)); }
 float segDist(vec2 p, vec2 a, vec2 b) {
   vec2 ab = b - a; float t = dot(ab, ab) > 0.0 ? clamp(dot(p - a, ab) / dot(ab, ab), 0.0, 1.0) : 0.0;
   return length(p - a - t * ab);
@@ -151,7 +183,7 @@ void main() {
   uint h = hash(uvec3(uvec2(p), u_frame));
   int s;
   if (u_mode == 1) {
-    s = int(h % uint(u_n));
+    s = freshState(p, h);
   } else {
     s = at(p) % u_n;
     if (u_mode == 0) {
@@ -173,7 +205,7 @@ void main() {
       }
     }
     if (u_brushR > 0.0 && segDist(vec2(p) + 0.5, u_brushA, u_brushB) < u_brushR) {
-      s = int(hash(uvec3(uvec2(p), u_frame ^ 0x9e3779b9u)) % uint(u_n));
+      s = freshState(p, hash(uvec3(uvec2(p), u_frame ^ 0x9e3779b9u)));
     }
   }
   o = vec4(float(s) / 255.0, 0.0, 0.0, 1.0);
@@ -227,7 +259,7 @@ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), g
 gl.enableVertexAttribArray(0);
 gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 
-let gridW = 0, gridH = 0;
+let gridW = 0, gridH = 0, seed = 1;
 let tex = [], fbo = [], cur = 0, frame = 1;
 
 function makeTargets() {
@@ -264,6 +296,12 @@ function pass(mode) {
   gl.uniform1i(u.u_mode, mode);
   gl.uniform1f(u.u_chance, state.chance);
   gl.uniform1ui(u.u_frame, frame++ >>> 0);
+  gl.uniform1i(u.u_wrap, PRESETS[state.preset]?.wrap === false ? 0 : 1);
+  gl.uniform1i(u.u_blobs, PRESETS[state.preset]?.seed === "blobs" ? 1 : 0);
+  gl.uniform1ui(u.u_seed, seed >>> 0);
+  // the first version's noise frequency, per cell (its blob size relative to the cells is what
+  // decides how its waves behave, so this doesn't scale with cell size)
+  gl.uniform1f(u.u_blobScale, 0.03);
   if (brush) {
     gl.uniform2f(u.u_brushA, brush.a[0], brush.a[1]);
     gl.uniform2f(u.u_brushB, brush.b[0], brush.b[1]);
@@ -295,7 +333,10 @@ function draw() {
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 
-export function scramble() { pass(1); draw(); }
+export function scramble() { seed = (Math.random() * 2 ** 32) >>> 0; pass(1); draw(); }
+
+// Switching preset starts over, so the new rule's own pattern is what you see.
+export function choosePreset(key) { applyPreset(key); scramble(); }
 
 // Changing the species count re-derives a preset's threshold and starts over.
 export function setSpecies(n) {
