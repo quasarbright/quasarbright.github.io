@@ -29,10 +29,11 @@ function simFigure(canvas, rule, { cell = 2, rate = 15, warm = 0, cores = false,
   function draw() {
     sim.draw(ctx, pal, cell);
     if (cores) {
-      for (const [x, y] of sim.cores()) {
+      for (const [x, y, turn] of sim.cores()) {
+        // white for one turning direction, black for the other
         ctx.beginPath(); ctx.arc(x * cell, y * cell, 2.6, 0, Math.PI * 2);
-        ctx.fillStyle = "#fff"; ctx.fill();
-        ctx.lineWidth = 1.2; ctx.strokeStyle = "rgba(0,0,0,.75)"; ctx.stroke();
+        ctx.fillStyle = turn > 0 ? "#fff" : "#0e0f16"; ctx.fill();
+        ctx.lineWidth = 1.2; ctx.strokeStyle = turn > 0 ? "rgba(0,0,0,.75)" : "rgba(255,255,255,.85)"; ctx.stroke();
       }
     }
   }

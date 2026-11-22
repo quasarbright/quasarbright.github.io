@@ -72,8 +72,8 @@
     </button>
     <about-modal label="about">
       <h2 class="title">Rock Paper Scissors</h2>
-      <p class="intro">Fill a grid with rock, paper and scissors at random, and let every square
-        get beaten by its neighbors by the usual rules. Nobody wins for good, so the colors chase
+      <p class="intro">Fill a grid with rock, paper and scissors at random, and let each square
+        be taken over by its neighbors, by the usual rules. Nobody wins for good, so the colors chase
         each other around forever, and the chase winds itself into spinning spirals.</p>
 
       <div class="section-label">who beats whom</div>
@@ -98,28 +98,28 @@
       <div class="section-label">why spirals</div>
       <p>Find a point where, walking a small loop around it, you pass every species in order. Each
         species keeps taking over the one behind it, so the boundaries around that point rotate
-        forever and wind up into a spiral. The white dots below mark every such point, computed
+        forever and wind up into a spiral. The dots below mark every such point, computed
         live. A random start has thousands of them; they crowd each other out until a few big
         spirals own the space.</p>
       <figure class="rps-fig"><canvas id="fig-cores" width="300" height="180"></canvas>
-        <figcaption>White dots: spiral centers. Each turns one way or the other.</figcaption></figure>
+        <figcaption>Dots mark spiral centers: white ones turn one way, black ones the other.</figcaption></figure>
 
       <div class="section-label">the threshold</div>
       <p>The threshold is what decides whether spirals appear at all. A random cell has about
-        8 ÷ 3, so two or three, neighbors that beat it. Set the threshold below that and nearly
-        every cell gets taken over every step: the whole grid flips together and stays static.
-        Set it above and almost nothing can be taken over, so the noise freezes. Just above the
+        8 ÷ 3 ≈ 2.7 neighbors that beat it. Set the threshold below that and nearly
+        every cell gets taken over every step: the whole grid flips together and stays static (the first grid below is slowed down so you can see it).
+        Set it well above and almost nothing can be taken over, so the noise freezes. Just above the
         average, lone specks can't win but solid fronts can, and the fronts curl into spirals.</p>
       <figure class="rps-fig rps-row">
-        <div><canvas id="fig-t1" width="180" height="180"></canvas><figcaption>1 of 8: flips in lockstep (slowed down)</figcaption></div>
-        <div><canvas id="fig-t3" width="180" height="180"></canvas><figcaption>3 of 8: spirals</figcaption></div>
-        <div><canvas id="fig-t5" width="180" height="180"></canvas><figcaption>5 of 8: frozen</figcaption></div>
+        <div><canvas id="fig-t1" width="180" height="180"></canvas><figcaption>1 of 8<br>lockstep</figcaption></div>
+        <div><canvas id="fig-t3" width="180" height="180"></canvas><figcaption>3 of 8<br>spirals</figcaption></div>
+        <div><canvas id="fig-t5" width="180" height="180"></canvas><figcaption>5 of 8<br>frozen</figcaption></div>
       </figure>
       <div class="rps-fig-actions"><button class="btn" id="fig-restart" title="start these three over from new random noise">restart</button></div>
 
       <div class="section-label">the first version</div>
-      <p>The first version of this page used a threshold of 1. From noise that only flickers, so it
-        started from smooth blobs instead. With one enemy enough, a front moves one cell in every
+      <p>The first version of this page used a threshold of 1. From random noise that only flickers,
+        so it started from smooth blobs instead. With one enemy enough, a front moves one cell in every
         direction each step, and "one cell in every direction" on the 8 touching cells is a
         square. That's why it grew squares, and it's the <code>original</code> rule here.</p>
       <figure class="rps-fig"><canvas id="fig-original" width="300" height="180"></canvas>
