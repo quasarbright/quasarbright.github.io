@@ -352,30 +352,33 @@ canvas.addEventListener("pointerleave", () => { last = null; });
 canvas.addEventListener("pointerup", (e) => { if (e.pointerType !== "mouse") last = null; });
 
 // ---------------------------------------------------------------- loop
-// The GPU runs behind the CPU. If the steps asked for take longer than a frame (the big rule
-// at 1px cells on a large screen can), the work used to pile up in the GPU's queue and the page
-// got slower and slower. Now each frame drops a fence, and while the GPU hasn't reached the last
-// one, no new steps are queued and the missed steps are forgiven: the sim runs slower than the
-// speed setting instead of falling further and further behind.
-let acc = 0, lastT = 0, fence = null;
-function gpuBusy() {
-  if (!fence) return false;
-  const st = gl.clientWaitSync(fence, 0, 0);
-  if (st === gl.TIMEOUT_EXPIRED) return true;
-  gl.deleteSync(fence); fence = null;
-  return false;
+// The GPU runs behind the CPU. If the steps asked for take longer than a frame (a big screen at
+// 1px cells can), the work piles up in the GPU's queue and the page gets slower and slower. So
+// each frame that steps drops a fence, and only when the GPU is more than two frames behind does a
+// frame skip stepping. Checking just the last frame's fence made healthy frames skip at random
+// (the GPU is normally still finishing the previous frame when the next one starts), which
+// showed up as jitter.
+const IN_FLIGHT = 2;
+let acc = 0, lastT = 0;
+const fences = [];
+function gpuBehind() {
+  while (fences.length && gl.clientWaitSync(fences[0], 0, 0) !== gl.TIMEOUT_EXPIRED) gl.deleteSync(fences.shift());
+  return fences.length > IN_FLIGHT;
 }
 function tick(t) {
   const dt = lastT ? Math.min(0.1, (t - lastT) / 1000) : 1 / 60;
   lastT = t;
   if (!state.paused) {
-    if (gpuBusy()) acc = 0;
+    acc += state.stepsPerSec * dt;
+    if (acc > 16) acc = 16;
+    if (gpuBehind()) acc = Math.min(acc, 1); // run slower instead of queuing a backlog
     else {
-      acc += state.stepsPerSec * dt;
-      if (acc > 16) acc = 16;
+      // A little slack, so frame-time noise doesn't turn a steady "step every other frame" into
+      // an occasional skipped frame followed by a double step.
+      const slack = Math.min(0.5, 0.25 * state.stepsPerSec * dt);
       let stepped = false;
-      while (acc >= 1) { acc -= 1; pass(0); stepped = true; }
-      if (stepped) { fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0); gl.flush(); }
+      while (acc >= 1 - slack) { acc -= 1; pass(0); stepped = true; }
+      if (stepped) fences.push(gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0));
     }
   }
   if (brush) pass(2);
