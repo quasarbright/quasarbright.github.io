@@ -244,7 +244,7 @@ function spinFigure(canvas, cap) {
     else if (active && active.ring === 0) {
       const from = names[active.before], to = names[(active.before + 1) % n];
       cap.textContent = `Step ${step}: next to the center, a ${from} cell has a ${to} neighbor and becomes ${to}.`;
-    } else if (active) cap.textContent = `Step ${step}: the same thing happens ring by ring, further out.`;
+    } else if (active) cap.textContent = `Step ${step}: cells further out flip the same way, ring by ring.`;
     else cap.textContent = `Step ${step} done. The center has turned a little more.`;
   }
 

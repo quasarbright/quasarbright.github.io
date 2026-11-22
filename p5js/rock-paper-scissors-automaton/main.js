@@ -30,7 +30,7 @@ export const PRESETS = {
   },
   original: {
     label: "squares", range: 1, shape: "square", seed: "blobs", wrap: false,
-    blurb: "Starts from smooth patches of color instead of random dots, and square waves spread out from them. This is how the page first worked.",
+    blurb: "Starts from smooth patches of color instead of random dots, and square waves spread out from them.",
     table: { 3: [1, 1], 4: [1, 1], 5: [1, 1], 6: [1, 1], 7: [1, 1], 8: [1, 1], 9: [1, 1], 10: [1, 1], 11: [1, 1], 12: [1, 1] },
   },
   big: {
