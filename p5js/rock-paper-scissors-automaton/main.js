@@ -29,14 +29,9 @@ export const PRESETS = {
     table: { 3: [4, .5], 4: [3, .5], 5: [3, .5], 6: [3, .5], 7: [3, .5], 8: [3, .5], 9: [2, .5], 10: [2, .5], 11: [2, .5], 12: [2, .5] },
   },
   original: {
-    label: "squares", range: 1, shape: "square", seed: "blobs", wrap: false,
+    label: "squares", range: 1, shape: "square", seed: "blobs", wrap: false, speed: 8,
     blurb: "Starts from smooth patches of color instead of random dots, and square waves spread out from them.",
     table: { 3: [1, 1], 4: [1, 1], 5: [1, 1], 6: [1, 1], 7: [1, 1], 8: [1, 1], 9: [1, 1], 10: [1, 1], 11: [1, 1], 12: [1, 1] },
-  },
-  big: {
-    label: "big", range: 5, shape: "circle",
-    blurb: "A few big, smooth spirals.",
-    table: { 3: [28, 1], 4: [20, 1], 5: [13, .5], 6: [12, 1], 7: [12, 1], 8: [10, 1], 9: [9, 1], 10: [8, 1], 11: [7, 1], 12: [7, 1] },
   },
 };
 
@@ -57,7 +52,7 @@ const state = {
   preset: "pinwheels",
   range: 1, threshold: 3, shape: "square", chance: 1,
   cellSize: 1,          // CSS pixels per cell
-  stepsPerSec: 60,
+  stepsPerSec: 60,       // set from the rule below
   paused: false,
   brushRadius: 40,      // CSS pixels
 };
@@ -77,6 +72,7 @@ export function presetRule() {
     nb: neighborCount(state.range, state.shape) };
 }
 applyPreset(state.preset);
+state.stepsPerSec = PRESETS[state.preset].speed || 60;
 
 const SHAPES = { square: 0, diamond: 1, circle: 2 };
 const MAX_SPECIES = 16;
@@ -150,6 +146,7 @@ uniform float u_chance;
 uniform uint u_frame;
 uniform vec2 u_brushA, u_brushB;   // brush stroke segment, in cells
 uniform float u_brushR;            // in cells; 0 = no brush
+uniform int u_brushSpecies;        // smooth-start rules paint one solid color per stroke
 out vec4 o;
 ${HASH}
 int at(ivec2 p) {
@@ -204,8 +201,16 @@ void main() {
         if (rnd < pr) s = pred;
       }
     }
-    if (u_brushR > 0.0 && segDist(vec2(p) + 0.5, u_brushA, u_brushB) < u_brushR) {
-      s = freshState(p, hash(uvec3(uvec2(p), u_frame ^ 0x9e3779b9u)));
+    if (u_brushR > 0.0) {
+      vec2 q = vec2(p) + 0.5;
+      if (u_blobs == 1) {
+        // a solid blob of one color with a wobbly edge: the rule grows smooth squares from it,
+        // where random dots would only flicker
+        float wob = 0.75 + 0.5 * vnoise(q * 0.08);
+        if (segDist(q, u_brushA, u_brushB) < u_brushR * wob) s = u_brushSpecies % u_n;
+      } else if (segDist(q, u_brushA, u_brushB) < u_brushR) {
+        s = freshState(p, hash(uvec3(uvec2(p), u_frame ^ 0x9e3779b9u)));
+      }
     }
   }
   o = vec4(float(s) / 255.0, 0.0, 0.0, 1.0);
@@ -306,6 +311,7 @@ function pass(mode) {
     gl.uniform2f(u.u_brushA, brush.a[0], brush.a[1]);
     gl.uniform2f(u.u_brushB, brush.b[0], brush.b[1]);
     gl.uniform1f(u.u_brushR, state.brushRadius / state.cellSize);
+    gl.uniform1i(u.u_brushSpecies, brushSpecies);
     brush = null;
   } else gl.uniform1f(u.u_brushR, 0);
   gl.activeTexture(gl.TEXTURE0);
@@ -336,7 +342,13 @@ function draw() {
 export function scramble() { seed = (Math.random() * 2 ** 32) >>> 0; pass(1); draw(); }
 
 // Switching preset starts over, so the new rule's own pattern is what you see.
-export function choosePreset(key) { applyPreset(key); scramble(); }
+// Each rule also brings its own pace: squares runs slowly, like the page it comes from, so its
+// waves read as growing squares rather than flicker.
+export function choosePreset(key) {
+  applyPreset(key);
+  state.stepsPerSec = PRESETS[key].speed || 60;
+  scramble();
+}
 
 // Changing the species count re-derives a preset's threshold and starts over.
 export function setSpecies(n) {
@@ -367,6 +379,7 @@ function resize() {
 // ---------------------------------------------------------------- pointer brush
 // Moving the pointer over the field sprays fresh randomness in a circle around it.
 let last = null;
+let brushSpecies = 0; // picked fresh for each stroke
 function toCells(e) {
   const r = canvas.getBoundingClientRect();
   return [
@@ -376,6 +389,7 @@ function toCells(e) {
 }
 function onMove(e) {
   const p = toCells(e);
+  if (!last) brushSpecies = Math.floor(Math.random() * state.species);
   const a = last || p;
   // merge with a pending stroke so fast moves between frames still paint a continuous line
   brush = brush ? { a: brush.a, b: p } : { a, b: p };
@@ -392,7 +406,22 @@ canvas.addEventListener("pointerup", (e) => { if (e.pointerType !== "mouse") las
 // got slower and slower. Now each frame drops a fence, and while the GPU hasn't reached the last
 // one, no new steps are queued and the missed steps are forgiven: the sim runs slower than the
 // speed setting instead of falling further and further behind.
-let acc = 0, lastT = 0, fence = null;
+let acc = 0, lastT = 0, fence = null, lastSettleCheck = 0;
+// The squares rule always ends as one solid color (the page it comes from did too). Look at a
+// few rows now and then, and once they're all one color, start over from fresh patches.
+function settled() {
+  const rows = 6, buf = new Uint8Array(gridW * 4);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fbo[cur]);
+  let first = -1;
+  for (let k = 0; k < rows; k++) {
+    gl.readPixels(0, Math.floor(((k + 0.5) / rows) * gridH), gridW, 1, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+    for (let i = 0; i < gridW * 4; i += 4) {
+      if (first < 0) first = buf[i];
+      else if (buf[i] !== first) return false;
+    }
+  }
+  return true;
+}
 function gpuBusy() {
   if (!fence) return false;
   const st = gl.clientWaitSync(fence, 0, 0);
@@ -411,6 +440,10 @@ function tick(t) {
       let stepped = false;
       while (acc >= 1) { acc -= 1; pass(0); stepped = true; }
       if (stepped) { fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0); gl.flush(); }
+      if (stepped && PRESETS[state.preset].seed === "blobs" && t - lastSettleCheck > 2000) {
+        lastSettleCheck = t;
+        if (settled()) scramble();
+      }
     }
   }
   if (brush) pass(2);

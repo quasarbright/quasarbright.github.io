@@ -53,7 +53,7 @@ if (!background && $("v-species")) {
   for (const [key, p] of Object.entries(PRESETS)) {
     const b = document.createElement("button");
     b.className = "btn"; b.dataset.preset = key; b.textContent = p.label; b.title = p.blurb;
-    b.addEventListener("click", () => { choosePreset(key); sync(); });
+    b.addEventListener("click", () => { choosePreset(key); sync(); syncSpeed(); });
     presetsEl.appendChild(b);
   }
 
