@@ -15,27 +15,27 @@ const background = params.has("background");
 export const PRESETS = {
   pinwheels: {
     label: "pinwheels", range: 1, shape: "square",
-    blurb: "Only the 8 touching cells, 3 of which must win. Lots of small pinwheels with corners.",
+    blurb: "Lots of small spirals with squarish corners.",
     table: { 3: [3, 1], 4: [2, 1], 5: [1, .5], 6: [1, .5], 7: [1, .5], 8: [1, .5], 9: [1, .5], 10: [1, .5], 11: [1, .5], 12: [1, .5] },
   },
   round: {
     label: "round", range: 2, shape: "circle",
-    blurb: "A circle of reach 2 with no randomness: rounder spirals with crisp edges.",
+    blurb: "Rounder spirals with clean edges.",
     table: { 3: [5, 1], 4: [4, 1], 5: [3, 1], 6: [3, 1], 7: [3, 1], 8: [3, 1], 9: [3, 1], 10: [3, 1], 11: [3, 1], 12: [2, 1] },
   },
   soft: {
     label: "soft", range: 2, shape: "circle",
-    blurb: "Takeovers are random: each beating neighbor is a coin flip. Round spirals with wobbly edges.",
+    blurb: "Round spirals with fuzzy edges, because cells only change some of the time.",
     table: { 3: [4, .5], 4: [3, .5], 5: [3, .5], 6: [3, .5], 7: [3, .5], 8: [3, .5], 9: [2, .5], 10: [2, .5], 11: [2, .5], 12: [2, .5] },
   },
   original: {
-    label: "original", range: 1, shape: "square", seed: "blobs", wrap: false,
-    blurb: "The first version of this page: one beating neighbor is enough, and it starts from smooth blobs instead of noise. Waves grow as squares.",
+    label: "squares", range: 1, shape: "square", seed: "blobs", wrap: false,
+    blurb: "Starts from smooth patches of color instead of random dots, and square waves spread out from them. This is how the page first worked.",
     table: { 3: [1, 1], 4: [1, 1], 5: [1, 1], 6: [1, 1], 7: [1, 1], 8: [1, 1], 9: [1, 1], 10: [1, 1], 11: [1, 1], 12: [1, 1] },
   },
   big: {
     label: "big", range: 5, shape: "circle",
-    blurb: "A circle of reach 5: fewer, bigger, smoother spirals.",
+    blurb: "A few big, smooth spirals.",
     table: { 3: [28, 1], 4: [20, 1], 5: [13, .5], 6: [12, 1], 7: [12, 1], 8: [10, 1], 9: [9, 1], 10: [8, 1], 11: [7, 1], 12: [7, 1] },
   },
 };

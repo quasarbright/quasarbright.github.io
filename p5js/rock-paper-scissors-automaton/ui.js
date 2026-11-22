@@ -19,8 +19,6 @@ function syncPause() {
 }
 function syncSpeed() { if ($("speed")) $("speed").textContent = `${state.stepsPerSec}/s`; }
 
-const SHAPE_WORD = { square: "square", diamond: "diamond", circle: "circle" };
-
 function sync() {
   if (background || !$("v-species")) return;
   $("v-species").textContent = state.species;
@@ -31,9 +29,12 @@ function sync() {
 
   for (const b of document.querySelectorAll("#presets .btn")) b.classList.toggle("is-active", b.dataset.preset === state.preset);
   const r = presetRule();
-  const chance = r.chance < 1 ? `, each a ${Math.round(r.chance * 100)}% chance` : "";
+  // plain words only: what a cell looks at and when it changes, nothing the panel doesn't show
+  const around = r.range === 1 && r.shape === "square" ? `the ${r.nb} cells touching it` : `the ${r.nb} nearest cells around it`;
+  const chance = r.chance < 1 ? `, and even then only about ${r.chance === 0.5 ? "half" : `${Math.round(r.chance * 100)}% of`} the time` : "";
+  const start = PRESETS[state.preset].seed === "blobs" ? " It starts from smooth patches of color instead of random dots." : "";
   $("rule-readout").textContent =
-    `Taken over when ${r.threshold} of ${r.nb} neighbors (a ${SHAPE_WORD[r.shape]}, reach ${r.range}) beat it${chance}.`;
+    `A cell turns into the color that beats it when at least ${r.threshold} of ${around} ${r.threshold === 1 ? "has" : "have"} that color${chance}.${start}`;
 
   $("cell").value = state.cellSize;
   $("v-cell").textContent = `${state.cellSize}px`;

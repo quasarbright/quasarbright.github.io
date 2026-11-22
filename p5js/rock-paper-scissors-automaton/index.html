@@ -33,7 +33,7 @@
 
     <div class="control">
       <div class="control-head">
-        <span class="name" title="Which rule the cells follow. Picking one starts over so you see that rule's own pattern.">rule</span>
+        <span class="name" title="Which kind of pattern the cells make. Picking one starts the field over.">rule</span>
       </div>
       <div class="rps-presets" id="presets"></div>
       <div class="rps-rule" id="rule-readout"></div>
@@ -121,9 +121,9 @@
       <p>The first version of this page used a threshold of 1. Started from random noise, that rule
         only flickers, so the page started from smooth blobs instead. With one enemy enough, a front moves one cell in every
         direction each step, and "one cell in every direction" on the 8 touching cells is a
-        square. That's why it grew squares, and it's the <code>original</code> rule here.</p>
+        square. That's why it grew squares, and it's the <code>squares</code> rule here.</p>
       <figure class="rps-fig"><canvas id="fig-original" width="300" height="180"></canvas>
-        <figcaption>The original rule, starting from blobs.</figcaption></figure>
+        <figcaption>The squares rule, starting from smooth patches.</figcaption></figure>
 
       <div class="section-label">neighborhood shape</div>
       <p>The shape of the area a cell looks at becomes the shape of the waves. Below, each grid
@@ -140,7 +140,7 @@
       <div class="section-label">play with it</div>
       <p>Move the mouse (or drag a finger) over the field to spray fresh randomness and seed new
         spirals. More species put more bands of color in every arm. The <code>soft</code> rule
-        makes each takeover a coin flip, which wobbles the edges.</p>
+        makes each change happen only some of the time, which gives it fuzzy edges.</p>
     </about-modal>
   </div>
 
