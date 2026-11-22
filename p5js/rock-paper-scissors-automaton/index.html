@@ -96,9 +96,18 @@
         <figcaption id="fig-rule-cap">&nbsp;</figcaption></figure>
 
       <div class="section-label">why spirals</div>
-      <p>Find a point where, walking a small loop around it, you pass every species in order. Each
-        species keeps taking over the one behind it, so the boundaries around that point rotate
-        forever and wind up into a spiral. The dots below mark every such point, computed
+      <p>Start small. Below, the grid begins as three wedges, rock, paper and scissors, meeting at
+        one point in the middle (the white dot). Walk a small loop around that point and you pass
+        all three in order. Each step, every cell with a neighbor that beats it flips to that
+        color. Here the cells flip one at a time, slowed down, starting next to the center and
+        working outward. In the real thing they all flip at once.</p>
+      <figure class="rps-fig"><canvas id="fig-spin" width="264" height="264"></canvas>
+        <figcaption id="fig-spin-cap">&nbsp;</figcaption></figure>
+      <p>Right next to the center, each cell is taken over by the one beside it, which is then
+        taken over by the next one, so the colors there go around in a circle forever. Every lap
+        pushes a new band of color outward, and the bands wind up into a spiral.</p>
+      <p>Any point like that, where a small loop passes every species in order, becomes a spiral
+        center. The dots below mark every such point in a random start, computed
         live. A random start has thousands of them; they crowd each other out until a few big
         spirals own the space.</p>
       <figure class="rps-fig"><canvas id="fig-cores" width="300" height="180"></canvas>

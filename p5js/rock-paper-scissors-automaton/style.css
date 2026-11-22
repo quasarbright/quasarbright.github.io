@@ -86,7 +86,7 @@ mike-footer a { color: var(--accent-hi); }
 .rps-row figcaption { font-size: .8rem; }
 .rps-fig-actions { display: flex; justify-content: center; margin: -6px 0 16px; }
 .rps-fig-actions .btn { padding: 4px 12px; font-size: .85rem; }
-#fig-rule-cap { min-height: 2.6em; }
+#fig-rule-cap, #fig-spin-cap { min-height: 2.6em; }
 .rps-graphs > div { width: 200px; max-width: calc(33% - 8px); }
 .rps-graphs svg { width: 100%; height: auto; overflow: visible; }
 .rps-pulse { animation: rps-pulse 3s linear infinite; }

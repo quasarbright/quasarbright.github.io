@@ -181,10 +181,99 @@ function ruleFigure(canvas, cap) {
   });
 }
 
+// How a spiral forms, cell by cell: three wedges meet at one point. Each step, the cells that
+// will flip do so one at a time (really they all flip together), nearest the center first and
+// in order around it, so you can watch the colors rotate at the center and spread outward.
+function spinFigure(canvas, cap) {
+  if (!canvas) return;
+  const n = 3, W = 12, STEPS = 8, cell = canvas.width / W, c = W / 2;
+  const sim = new MiniSim(W, W, { n, range: 1, shape: "square", threshold: 1, chance: 1, wrap: false });
+  const ctx = canvas.getContext("2d");
+  const pal = rgb(n);
+  const names = ["rock", "paper", "scissors"];
+  let shown, order, idx, t0, step, holdUntil;
+
+  function seed() {
+    for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+      const dx = x + 0.5 - c, dy = y + 0.5 - c;
+      sim.a[y * W + x] = Math.floor(((Math.atan2(dy, dx) + Math.PI) / (2 * Math.PI)) * n) % n;
+    }
+    shown = Uint8Array.from(sim.a);
+    step = 0; order = []; idx = 0; holdUntil = 0;
+  }
+  // work out the next step, then list the cells that change: ring by ring out from the
+  // center, and around each ring by angle
+  function plan() {
+    const before = Uint8Array.from(sim.a);
+    sim.step(); step++;
+    order = [];
+    for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+      const i = y * W + x;
+      if (sim.a[i] === before[i]) continue;
+      const dx = x + 0.5 - c, dy = y + 0.5 - c;
+      const ring = Math.max(Math.abs(dx), Math.abs(dy)) - 0.5;
+      order.push({ i, x, y, ring, ang: (Math.atan2(dy, dx) + 2 * Math.PI) % (2 * Math.PI) });
+    }
+    order.sort((p, q) => p.ring - q.ring || p.ang - q.ang);
+    idx = 0;
+  }
+  // the cells next to the center flip slowly, the rest quickly
+  const delay = (o) => (o.ring === 0 ? 450 : 1400 / Math.max(1, order.length - 4));
+
+  function draw(active) {
+    for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+      ctx.fillStyle = css(pal[shown[y * W + x]]);
+      ctx.fillRect(x * cell, y * cell, cell, cell);
+    }
+    ctx.strokeStyle = "rgba(14,15,22,.25)"; ctx.lineWidth = 1;
+    for (let i = 0; i <= W; i++) {
+      ctx.beginPath(); ctx.moveTo(i * cell, 0); ctx.lineTo(i * cell, canvas.height); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, i * cell); ctx.lineTo(canvas.width, i * cell); ctx.stroke();
+    }
+    if (active) {
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 3;
+      ctx.strokeRect(active.x * cell + 2, active.y * cell + 2, cell - 4, cell - 4);
+    }
+    ctx.beginPath(); ctx.arc(c * cell, c * cell, cell * 0.2, 0, Math.PI * 2);
+    ctx.fillStyle = "#fff"; ctx.fill();
+    ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(14,15,22,.8)"; ctx.stroke();
+  }
+  function caption(active) {
+    if (!cap) return;
+    if (step === 0) cap.textContent = "Three wedges meet at the white dot.";
+    else if (active && active.ring === 0) {
+      const from = names[active.before], to = names[(active.before + 1) % n];
+      cap.textContent = `Step ${step}: next to the center, a ${from} cell has a ${to} neighbor and becomes ${to}.`;
+    } else if (active) cap.textContent = `Step ${step}: the same thing happens ring by ring, further out.`;
+    else cap.textContent = `Step ${step} done. The center has turned a little more.`;
+  }
+
+  seed(); draw(null); caption(null);
+  t0 = 0; holdUntil = 1600;
+  running.push((t) => {
+    if (!t0) t0 = t;
+    const now = t - t0;
+    if (now < holdUntil) return;
+    if (idx >= order.length) {
+      if (step >= STEPS) { seed(); t0 = t; holdUntil = 1600; draw(null); caption(null); return; }
+      plan();
+      t0 = t; holdUntil = 0;
+      if (!order.length) return;
+    }
+    const o = order[idx];
+    o.before = shown[o.i];
+    shown[o.i] = sim.a[o.i];
+    idx++;
+    if (idx < order.length) { draw(o); caption(o); t0 = t; holdUntil = delay(order[idx]); }
+    else { draw(null); caption(null); t0 = t; holdUntil = 1300; }
+  });
+}
+
 function start(el) {
   stop();
   cycleFigure(el.querySelector("#fig-cycle"));
   ruleFigure(el.querySelector("#fig-rule"), el.querySelector("#fig-rule-cap"));
+  spinFigure(el.querySelector("#fig-spin"), el.querySelector("#fig-spin-cap"));
   simFigure(el.querySelector("#fig-cores"), { n: 3, range: 1, shape: "square", threshold: 3, chance: 1 },
     { cell: 3, rate: 8, warm: 40, cores: true });
   const three = [
