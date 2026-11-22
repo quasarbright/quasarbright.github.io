@@ -97,7 +97,11 @@ function oklchToSrgb(L, C, hDeg) {
 }
 export function palette(n) {
   const out = [];
-  for (let i = 0; i < n; i++) out.push(oklchToSrgb(0.74, 0.14, 25 + (360 * i) / n));
+  // Past 6 species neighboring hues get close, so alternate light and dark to keep bands apart.
+  for (let i = 0; i < n; i++) {
+    const L = n > 6 ? (i % 2 ? 0.62 : 0.82) : 0.74;
+    out.push(oklchToSrgb(L, 0.14, 25 + (360 * i) / n));
+  }
   return out;
 }
 

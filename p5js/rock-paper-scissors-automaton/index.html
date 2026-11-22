@@ -46,9 +46,9 @@
       </div>
       <div class="rps-seg" id="shape" role="group"
         title="The shape of the area a cell looks at. A wave spreads out in this shape, so a square neighborhood grows square waves and a circle grows round ones.">
-        <button class="btn" data-shape="square">square</button>
-        <button class="btn" data-shape="diamond">diamond</button>
-        <button class="btn" data-shape="circle">circle</button>
+        <button class="btn" data-shape="square" title="Every cell within reach, a square. Waves grow with corners.">square</button>
+        <button class="btn" data-shape="diamond" title="Cells within reach counting only straight steps, a diamond. Waves grow as diamonds.">diamond</button>
+        <button class="btn" data-shape="circle" title="Cells within reach as the crow flies, a circle. Waves grow round.">circle</button>
       </div>
     </div>
 
@@ -118,10 +118,7 @@
         crowd each other out until a few big spirals own the screen.</p>
       <p>The <code>threshold</code> is what makes them clean. With a threshold of 1 a single
         enemy is enough, and almost every random cell has one, so the whole grid just flips in
-        lockstep and stays static noise. That's why the original version of this page started from
-        smooth blobs instead, and why it grew squares: with one enemy enough, a wave advances one
-        cell in every direction each step, and the 3×3 neighborhood makes that a square. Raise the
-        threshold and lone specks can't take anything over. Only solid fronts advance, the sharp
+        lockstep and stays static noise. Raise the threshold and lone specks can't take anything over. Only solid fronts advance, the sharp
         tips of a front stall because they touch few cells, and the fronts round off and curl.</p>
       <p>The neighborhood's shape becomes the waves' shape: a square neighborhood grows waves
         with corners, a circle grows round ones. Each preset picks a neighborhood and then, for
